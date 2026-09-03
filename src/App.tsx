@@ -198,6 +198,22 @@ export default function App() {
   const [cols, setCols] = useState({ price: true, eff: true, width: true, safety: false, seats: false, fuel: false });
   const [detail, setDetail] = useState<Vehicle | null>(null);
   const [photoFull, setPhotoFull] = useState<Vehicle | null>(null);
+  const [splash, setSplash] = useState(() => { try { return !sessionStorage.getItem('gf-splash-seen'); } catch { return true; } });
+  const splashBtn = useRef<HTMLButtonElement>(null);
+  const dismissSplash = () => {
+    setSplash(false);
+    try { sessionStorage.setItem('gf-splash-seen', '1'); } catch { /* private mode: show again next visit */ }
+    if (splashBtn.current && splashBtn.current.contains(document.activeElement)) (document.activeElement as HTMLElement).blur();
+  };
+  useEffect(() => {
+    if (!splash) return;
+    splashBtn.current?.focus();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const t = setTimeout(dismissSplash, 2800);
+    return () => { clearTimeout(t); document.body.style.overflow = prevOverflow; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [splash]);
   const [cmpOpen, setCmpOpen] = useState(false);
   const [toast, setToast] = useState('');
   const [dark, setDark] = useState(localStorage.getItem('gf-theme') === 'dark');
@@ -367,6 +383,15 @@ export default function App() {
   return (
     <>
       <a className="skip" href="#results">Skip to results</a>
+      {splash && (
+        <div className="splash" role="dialog" aria-modal="true" aria-label="Welcome to GarageFit">
+          <img className="splash-logo" src="logo.svg" alt="" aria-hidden="true" />
+          <h1>GarageFit</h1>
+          <p className="splash-tag">Find cars that actually fit your life</p>
+          <p className="splash-count">{VEHICLES.length} vehicles · {VEHICLES.filter((v) => v.verified).length} verified specs</p>
+          <button ref={splashBtn} type="button" className="btn primary splash-go" onClick={dismissSplash}>Get started</button>
+        </div>
+      )}
       {swUpdate && (
         <div className="updatebar" role="status">
           <span>New version available — reload to get the latest vehicles and fixes.</span>
