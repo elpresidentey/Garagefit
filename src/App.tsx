@@ -385,11 +385,21 @@ export default function App() {
       <a className="skip" href="#results">Skip to results</a>
       {splash && (
         <div className="splash" role="dialog" aria-modal="true" aria-label="Welcome to GarageFit">
-          <img className="splash-logo" src="logo.svg" alt="" aria-hidden="true" />
-          <h1>GarageFit</h1>
-          <p className="splash-tag">Find cars that actually fit your life</p>
-          <p className="splash-count">{VEHICLES.length} vehicles · {VEHICLES.filter((v) => v.verified).length} verified specs</p>
-          <button ref={splashBtn} type="button" className="btn primary splash-go" onClick={dismissSplash}>Get started</button>
+          <img className="splash-bg" src="vehicles/bmw-3-2024.jpg" alt="" aria-hidden="true" onError={(e) => e.currentTarget.remove()} />
+          <div className="splash-shade" aria-hidden="true" />
+          <div className="splash-in">
+            <img className="splash-logo" src="logo.svg" alt="" aria-hidden="true" />
+            <p className="splash-kicker">Car comparison, simplified</p>
+            <h1>GarageFit</h1>
+            <p className="splash-tag">Find cars that actually fit your life — price, efficiency, garage fit and safety, side by side.</p>
+            <p className="splash-stats">
+              <span><b>{VEHICLES.length}</b>vehicles</span>
+              <span><b>{VEHICLES.filter((v) => v.verified).length}</b>verified specs</span>
+              <span><b>{VEHICLES.filter((v) => v.nhtsaStars).length}</b>NHTSA rated</span>
+            </p>
+            <button ref={splashBtn} type="button" className="btn primary splash-go" onClick={dismissSplash}>Get started</button>
+            <div className="splash-bar" aria-hidden="true"><span /></div>
+          </div>
         </div>
       )}
       {swUpdate && (
