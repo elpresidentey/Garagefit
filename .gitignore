@@ -1,0 +1,10 @@
+# deps / build
+node_modules/
+dist/
+# data backups + run logs
+src/data.ts.bak
+src/data.ts.bak2
+image-*.log
+# OS / editor
+.DS_Store
+Thumbs.db
