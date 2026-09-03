@@ -384,22 +384,16 @@ export default function App() {
     <>
       <a className="skip" href="#results">Skip to results</a>
       {splash && (
-        <div className="splash" role="dialog" aria-modal="true" aria-label="Welcome to GarageFit">
-          <img className="splash-bg" src="vehicles/bmw-3-2024.jpg" alt="" aria-hidden="true" onError={(e) => e.currentTarget.remove()} />
-          <div className="splash-shade" aria-hidden="true" />
+        <div className="splash" role="dialog" aria-modal="true" aria-label="Welcome to GarageFit" onClick={dismissSplash}>
           <div className="splash-in">
-            <img className="splash-logo" src="logo.svg" alt="" aria-hidden="true" />
-            <p className="splash-kicker">Car comparison, simplified</p>
-            <h1>GarageFit</h1>
-            <p className="splash-tag">Find cars that actually fit your life — price, efficiency, garage fit and safety, side by side.</p>
-            <p className="splash-stats">
-              <span><b>{VEHICLES.length}</b>vehicles</span>
-              <span><b>{VEHICLES.filter((v) => v.verified).length}</b>verified specs</span>
-              <span><b>{VEHICLES.filter((v) => v.nhtsaStars).length}</b>NHTSA rated</span>
-            </p>
-            <button ref={splashBtn} type="button" className="btn primary splash-go" onClick={dismissSplash}>Get started</button>
-            <div className="splash-bar" aria-hidden="true"><span /></div>
+            <div className="splash-medal" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="#ffffff" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="2.4"/><path d="M12 14.4V20.6M4.2 10.2l7 2.5M19.8 10.2l-7 2.5"/></svg>
+            </div>
+            <h1>GarageFit<span className="dots" aria-hidden="true" /></h1>
+            <p className="splash-tag">Find cars that actually fit your life</p>
           </div>
+          <button ref={splashBtn} type="button" className="splash-skip" onClick={dismissSplash}>Skip</button>
+          <div className="splash-bar" aria-hidden="true"><span /></div>
         </div>
       )}
       {swUpdate && (
