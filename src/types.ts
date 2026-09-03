@@ -26,6 +26,10 @@ export interface Vehicle {
   imageUrl?: string;
   /** Required if imageUrl is set and the license needs it (e.g. Wikimedia Commons). */
   imageCredit?: string;
+  /** NHTSA 5-star overall rating (1-5) from api.nhtsa.gov, where rated. */
+  nhtsaStars?: number;
+  /** True when MSRP, efficiency, and body width were verified against manufacturer/EPA sources. */
+  verified?: boolean;
 }
 
 export type SortKey = 'fit' | 'price-asc' | 'price-desc' | 'eff-desc' | 'year-desc' | 'safety-desc' | 'width-asc';

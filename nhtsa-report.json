@@ -1,0 +1,593 @@
+[
+  {
+    "id": "toyota-rav4-2024-le",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Toyota RAV4 SUV AWD",
+    "nhtsaId": 19443,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "honda-cr-v-2024-ex",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Honda CR-V SUV AWD",
+    "nhtsaId": 19599,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "toyota-rav4-hybrid-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Toyota RAV4 HYBRID SUV AWD",
+    "nhtsaId": 19444,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "mazda-cx-5-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Mazda CX-5 SUV AWD",
+    "nhtsaId": 19375,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "subaru-forester-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Subaru Forester SUV AWD",
+    "nhtsaId": 19387,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "subaru-outback-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Subaru Outback SW AWD",
+    "nhtsaId": 19381,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "hyundai-tucson-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Hyundai Tucson SUV Early Release AWD",
+    "nhtsaId": 19533,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "hyundai-tucson-hybrid-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Hyundai Tucson HEV SUV Early Release AWD",
+    "nhtsaId": 19534,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "kia-sportage-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Kia Sportage SUV AWD",
+    "nhtsaId": 19260,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "kia-sportage-hybrid-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Kia Sportage Hybrid SUV FWD",
+    "nhtsaId": 19261,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "honda-hr-v-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Honda HR-V SUV AWD",
+    "nhtsaId": 18961,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "toyota-corolla-cross-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Toyota COROLLA CROSS SUV AWD",
+    "nhtsaId": 19435
+  },
+  {
+    "id": "chevrolet-equinox-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Chevrolet Equinox SUV FWD",
+    "nhtsaId": 19005
+  },
+  {
+    "id": "ford-escape-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Ford Escape SUV AWD",
+    "nhtsaId": 19112,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "vw-tiguan-2024",
+    "status": "rated",
+    "stars": 4,
+    "desc": "2024 Volkswagen Tiguan SUV FWD",
+    "nhtsaId": 19102,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "nissan-rogue-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Nissan Rogue SUV AWD",
+    "nhtsaId": 19580,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "toyota-highlander-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Toyota HIGHLANDER SUV FWD",
+    "nhtsaId": 19450,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "honda-pilot-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Honda PILOT SUV AWD",
+    "nhtsaId": 19604,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "kia-telluride-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Kia Telluride SUV AWD",
+    "nhtsaId": 19272,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "hyundai-santa-fe-2024",
+    "status": "rated",
+    "stars": 4,
+    "desc": "2024 Hyundai Santa Fe SUV AWD",
+    "nhtsaId": 19540,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "hyundai-palisade-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Hyundai Palisade SUV Early Release AWD",
+    "nhtsaId": 19553,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "ford-explorer-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Ford Explorer SUV 4WD",
+    "nhtsaId": 19121,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "jeep-grand-cherokee-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Jeep Grand Cherokee SUV 4WD",
+    "nhtsaId": 19307,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "jeep-wrangler-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "ford-bronco-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Ford Bronco SUV 4WD",
+    "nhtsaId": 19107
+  },
+  {
+    "id": "toyota-sienna-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "honda-odyssey-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Honda ODYSSEY PV FWD",
+    "nhtsaId": 19602,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "chrysler-pacifica-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Chrysler Pacifica PV FWD",
+    "nhtsaId": 19293,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "kia-sorento-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Kia Sorento SUV AWD",
+    "nhtsaId": 19266,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "dodge-durango-2024",
+    "status": "rated",
+    "stars": 4,
+    "desc": "2024 Dodge Durango SUV AWD",
+    "nhtsaId": 19298,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "toyota-camry-2025",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "honda-accord-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "toyota-corolla-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Toyota COROLLA 4 DR FWD",
+    "nhtsaId": 19429,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "toyota-prius-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Toyota PRIUS 5 HB AWD",
+    "nhtsaId": 19438,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "honda-civic-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "hyundai-elantra-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Hyundai Elantra 4 DR FWD",
+    "nhtsaId": 19543,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "hyundai-sonata-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Hyundai Sonata 4 DR FWD",
+    "nhtsaId": 19550,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "nissan-altima-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Nissan Altima 4 DR FWD",
+    "nhtsaId": 19560,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "vw-jetta-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Volkswagen Jetta 4 DR FWD",
+    "nhtsaId": 19098,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "mazda-3-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "bmw-3-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "bmw-x3-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 BMW X3 SUV AWD",
+    "nhtsaId": 19222,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "bmw-x5-2024",
+    "status": "rated",
+    "stars": 4,
+    "desc": "2024 BMW X5 SUV AWD",
+    "nhtsaId": 19227,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "mercedes-c-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Mercedes-Benz C-Class 4 DR AWD",
+    "nhtsaId": 19608
+  },
+  {
+    "id": "mercedes-glc-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Mercedes-Benz GLC SUV AWD",
+    "nhtsaId": 19634
+  },
+  {
+    "id": "audi-q5-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Audi Q5 SUV AWD",
+    "nhtsaId": 19505,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "ford-f150-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "chevrolet-silverado-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Chevrolet Silverado 1500 PU/CC 4WD",
+    "nhtsaId": 19073,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "ram-1500-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "toyota-tacoma-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Toyota TACOMA PU/EC 2WD",
+    "nhtsaId": 20017
+  },
+  {
+    "id": "toyota-tundra-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Toyota TUNDRA PU/CC 4WD",
+    "nhtsaId": 19457,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "ford-maverick-2024",
+    "status": "rated",
+    "stars": 4,
+    "desc": "2024 Ford Maverick PU/CC FWD",
+    "nhtsaId": 19146,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "ford-mustang-mach-e-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "tesla-model-y-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "tesla-model-3-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Tesla Model 3 4 DR AWD",
+    "nhtsaId": 19950
+  },
+  {
+    "id": "hyundai-ioniq-5-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Hyundai Ioniq 5 SUV Early Release AWD",
+    "nhtsaId": 19547,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "kia-ev6-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Kia EV6 SUV AWD",
+    "nhtsaId": 19258,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "kia-niro-ev-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Kia Niro EV SUV FWD",
+    "nhtsaId": 19256
+  },
+  {
+    "id": "vw-id4-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Volkswagen ID.4 SUV RWD",
+    "nhtsaId": 19097,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "nissan-leaf-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "nissan-ariya-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Nissan ARIYA SUV 2WD",
+    "nhtsaId": 19585,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "chevrolet-bolt-euv-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "bmw-i4-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "audi-q4-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Audi Q4 e-tron SUV AWD",
+    "nhtsaId": 19502,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "rivian-r1t-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Rivian R1T PU/CC AWD",
+    "nhtsaId": 19958
+  },
+  {
+    "id": "rivian-r1s-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Rivian R1S SUV AWD",
+    "nhtsaId": 19959
+  },
+  {
+    "id": "lucid-air-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Lucid Air 4 DR AWD",
+    "nhtsaId": 19982,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "toyota-prius-prime-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Toyota PRIUS PRIME 5 HB FWD",
+    "nhtsaId": 19439,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "toyota-rav4-prime-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Toyota RAV4 PRIME SUV AWD",
+    "nhtsaId": 19445,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "hyundai-tucson-phev-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Hyundai Tucson PHEV SUV Later Release AWD",
+    "nhtsaId": 20790
+  },
+  {
+    "id": "kia-sportage-phev-2024",
+    "status": "ERR:picks is not iterable",
+    "stars": null
+  },
+  {
+    "id": "ford-escape-phev-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Ford Escape PHEV SUV FWD",
+    "nhtsaId": 19115,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "chrysler-pacifica-hybrid-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Chrysler Pacifica Hybrid PV FWD",
+    "nhtsaId": 19295,
+    "front": null,
+    "side": null
+  },
+  {
+    "id": "toyota-mirai-2024",
+    "status": "unrated",
+    "stars": null,
+    "desc": "2024 Toyota MIRAI 4 DR RWD",
+    "nhtsaId": 19460
+  },
+  {
+    "id": "honda-crv-hybrid-2024",
+    "status": "rated",
+    "stars": 5,
+    "desc": "2024 Honda CR-V HYBRID SUV AWD",
+    "nhtsaId": 19601,
+    "front": null,
+    "side": null
+  }
+]

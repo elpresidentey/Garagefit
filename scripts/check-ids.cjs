@@ -1,6 +1,10 @@
 const fs = require('fs');
 const src = fs.readFileSync('src/data.ts', 'utf8');
 const ids = [...src.matchAll(/\{id:"([^"]+)"/g)].map((m) => m[1]);
-const r = JSON.parse(fs.readFileSync('image-report.json', 'utf8')).map((x) => x.id);
-console.log('data:', ids.length, 'report:', r.length);
-console.log('missing from report:', JSON.stringify(ids.filter((i) => !r.includes(i))));
+console.log('records:', ids.length);
+console.log('verified:', (src.match(/verified:true/g) || []).length);
+const t = src.split('\n').find((l) => l.includes('kia-telluride-2024'));
+console.log('telluride tail:', JSON.stringify(t.slice(-200)));
+// sanity: every record line ends with } or },
+const bad = src.split('\n').filter((l) => l.includes('{id:"') && !/},?\s*$/.test(l));
+console.log('malformed lines:', bad.length);

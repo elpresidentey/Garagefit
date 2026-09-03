@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { VEHICLES, DATA_STAMP, DEFAULT_BASELINE_ID } from './data';
+import { CarGlyph } from './icons';
 import type { FilterState, SortKey, Vehicle } from './types';
 
 const FUELS = ['Gasoline', 'Hybrid', 'PHEV', 'EV', 'Hydrogen'];
 const BODIES = [...new Set(VEHICLES.map((v) => v.body))];
 const MAKES = [...new Set(VEHICLES.map((v) => v.make))].sort();
 const SAFETY_SCORE: Record<string, number> = { 'TSP+': 3, TSP: 2, '—': 0 };
-const ICON: Record<string, string> = { SUV: '🚙', Sedan: '🚗', Truck: '🛻', Minivan: '🚐', Wagon: '🚗', Hatch: '🚗', Coupe: '🏎️', Crossover: '🚙' };
 const money = (n: number) => '$' + Math.round(n).toLocaleString();
 const byId = (id: string | null) => VEHICLES.find((v) => v.id === id) ?? null;
 // Width fit-bar scale (mirrors-out inches across the catalog).
-const WMIN = 69, WMAX = 87;
+const WMIN = 69, WMAX = 98;
 const wPct = (w: number) => Math.min(100, Math.max(0, ((w - WMIN) / (WMAX - WMIN)) * 100)).toFixed(1);
 /** Magnitude of the relative difference, e.g. "12%". Direction comes from the pill. */
 function pctDiff(v: number, base: number): string {
@@ -51,7 +51,7 @@ function readURL(): Partial<FilterState> {
 
 const DEFAULTS: FilterState = {
   baselineId: DEFAULT_BASELINE_ID, q: '', preset: '', sort: 'fit', view: 'cards',
-  maxPrice: 80000, minYear: 2019, maxWidth: 85, narrowOnly: false,
+  maxPrice: 80000, minYear: 2019, maxWidth: 98, narrowOnly: false,
   topSafety: false, handsFree: false, fuels: [], bodies: [], make: '', minEff: 0,
 };
 
@@ -212,6 +212,29 @@ export default function App() {
     window.addEventListener('online', on); window.addEventListener('offline', on);
     return () => { window.removeEventListener('online', on); window.removeEventListener('offline', on); };
   }, []);
+
+  // Section scrollspy + back-to-top visibility
+  const [showTop, setShowTop] = useState(false);
+  const [activeSec, setActiveSec] = useState('');
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setShowTop(window.scrollY > 700);
+        const marks = ['baseline', 'browse', 'results'].map((id) => {
+          const el = document.getElementById(id);
+          return { id, d: el ? Math.abs(el.getBoundingClientRect().top - 160) : Number.POSITIVE_INFINITY };
+        });
+        marks.sort((a, b) => a.d - b.d);
+        if (marks[0] && marks[0].d < 600) setActiveSec(marks[0].id);
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
+  }, []);
+  const jump = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   useEffect(() => {
     localStorage.setItem('gf-state-v1', JSON.stringify(f));
     localStorage.setItem('gf-favs', JSON.stringify(favs));
@@ -295,14 +318,14 @@ export default function App() {
   if (f.q) tags.push(`“${f.q}”`);
   if (f.maxPrice < 80000) tags.push(`≤ ${money(f.maxPrice)}`);
   if (f.minYear > 2019) tags.push(`${f.minYear}+`);
-  if (f.maxWidth < 85) tags.push(`≤ ${f.maxWidth}″`);
+  if (f.maxWidth < 98) tags.push(`≤ ${f.maxWidth}″`);
   if (f.topSafety) tags.push('Top safety');
   if (f.handsFree) tags.push('Hands-free');
   if (f.fuels.length) tags.push(f.fuels.join(', '));
   if (f.bodies.length) tags.push(f.bodies.join(', '));
   if (f.make) tags.push(f.make);
 
-  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2019, maxWidth: 85, narrowOnly: false, topSafety: false, handsFree: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
+  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2019, maxWidth: 98, narrowOnly: false, topSafety: false, handsFree: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
 
   return (
     <>
@@ -316,23 +339,31 @@ export default function App() {
       )}
       <header className="topbar">
         <div className="wrap topbar-in">
-          <div className="brand"><span className="logo" aria-hidden="true">▣</span><div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div></div>
+          <a className="brand" href="#results" onClick={(e) => { e.preventDefault(); jump('results'); }} style={{ textDecoration: 'none', color: 'inherit' }}>
+            <span className="logo" aria-hidden="true">▣</span>
+            <div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div>
+          </a>
+          <nav className="topnav" aria-label="Section navigation">
+            <a href="#baseline" className={activeSec === 'baseline' ? 'on' : ''} aria-current={activeSec === 'baseline' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('baseline'); }}>Your baseline</a>
+            <a href="#browse" className={activeSec === 'browse' ? 'on' : ''} aria-current={activeSec === 'browse' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('browse'); }}>Browse &amp; filter</a>
+            <a href="#results" className={activeSec === 'results' ? 'on' : ''} aria-current={activeSec === 'results' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('results'); }}>Results</a>
+          </nav>
           <div className="top-actions">
             {offline && <span className="pill same">● offline — cached</span>}
             <div className="searchbox"><span aria-hidden="true">⌕</span><label className="sr-only" htmlFor="gf-search">Search make, model, or trim</label><input id="gf-search" value={f.q} onChange={(e) => patch({ q: e.target.value })} type="search" placeholder="Search make, model, trim…" /></div>
             <button className="btn ghost" onClick={() => setDark((d) => !d)} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-pressed={dark}>◐</button>
-            <button className="btn ghost" onClick={share}>⤴ Share</button>
-            <button className="btn ghost" onClick={exportCSV}>⭳ CSV</button>
+            <button className="btn ghost" onClick={share}>⤴ <span className="btn-txt">Share</span></button>
+            <button className="btn ghost" onClick={exportCSV}>⭳ <span className="btn-txt">CSV</span></button>
             <button className="btn ghost" onClick={() => window.print()} aria-label="Print this view">⎙</button>
           </div>
         </div>
       </header>
 
       <main className="wrap">
-        <section className="baseline">
+        <section className="baseline" id="baseline" aria-label="Your baseline vehicle">
           {baseline ? (
             <>
-              <div className="b-car" aria-hidden="true"><span>{ICON[baseline.body] ?? '🚗'}</span>
+              <div className="b-car" aria-hidden="true"><CarGlyph body={baseline.body} />
                 {baseline.imageUrl && (
                   <img
                     key={baseline.id}
@@ -348,26 +379,30 @@ export default function App() {
               <div className="b-info">
                 <span className="kicker">Your baseline vehicle</span>
                 <h2>{baseline.year} {baseline.make} {baseline.model} <span className="sub">{baseline.trim}</span></h2>
-                <p>{baseline.body} · {baseline.fuel} · {baseline.eff} {baseline.effUnit} · Safety {baseline.safety} · Width {baseline.widthFolded}″ folded / {baseline.widthExtended}″ out · {baseline.seats} seats · {baseline.legroom}″ legroom</p>
+                <p>{baseline.body} · {baseline.fuel} · {baseline.seats} seats · {baseline.legroom}″ legroom{baseline.rangeMi ? ` · ${baseline.rangeMi} mi range` : ''}</p>
                 <div className="b-stats">
                   <span className="stat"><b>{money(baseline.msrp)}</b>MSRP</span>
                   <span className="stat"><b>{baseline.eff} {baseline.effUnit}</b>efficiency</span>
                   <span className="stat"><b>{baseline.widthExtended}″</b>mirrors out</span>
+                  <span className="stat"><b>{baseline.widthFolded}″</b>mirrors folded</span>
+                  <span className="stat"><b>{baseline.safety === '—' ? 'Not rated' : baseline.safety}</b>IIHS safety</span>
                 </div>
               </div>
               <div className="b-select">
-                <label className="sr-only" htmlFor="gf-baseline">Baseline vehicle</label>
-                <select id="gf-baseline" value={baseline.id} onChange={(e) => patch({ baselineId: e.target.value })}>
-                  {VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.year} {v.make} {v.model} {v.trim}</option>)}
-                </select>
-                <button className="btn ghost" onClick={() => patch({ baselineId: null })}>Clear</button>
+                <label className="b-label" htmlFor="gf-baseline">Comparing against</label>
+                <div className="b-row">
+                  <select id="gf-baseline" value={baseline.id} onChange={(e) => patch({ baselineId: e.target.value })}>
+                    {VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.year} {v.make} {v.model} {v.trim}</option>)}
+                  </select>
+                  <button className="btn ghost" onClick={() => patch({ baselineId: null })}>Clear</button>
+                </div>
               </div>
             </>
           ) : (
             <>
               <div className="b-info"><span className="kicker">Comparison mode</span><h2>No baseline — showing absolute values</h2><p>Pick a car you own so every row shows ▲ better / ▼ worse relative to it.</p></div>
               <div className="b-select">
-                <label className="sr-only" htmlFor="gf-baseline-new">Baseline vehicle</label>
+                <label className="b-label" htmlFor="gf-baseline-new">Choose your baseline</label>
                 <select id="gf-baseline-new" defaultValue="" onChange={(e) => e.target.value && patch({ baselineId: e.target.value })}>
                   <option value="">Choose baseline…</option>
                   {VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.year} {v.make} {v.model} {v.trim}</option>)}
@@ -377,7 +412,7 @@ export default function App() {
           )}
         </section>
 
-        <div className="stickybar">
+        <div className="stickybar" id="browse">
           <div className="presets" role="toolbar" aria-label="Quick presets">{PRESETS.map((p) => <button key={p.id} className={'preset' + (f.preset === p.id ? ' on' : '')} aria-pressed={f.preset === p.id} onClick={() => patch({ preset: f.preset === p.id ? '' : p.id })}>{p.label}</button>)}</div>
           <div className="controls">
             <div className="control"><label htmlFor="gf-sort">Sort</label>
@@ -404,7 +439,7 @@ export default function App() {
                   <label htmlFor="gf-minyear">Min year {f.minYear}</label><input id="gf-minyear" type="range" min={2019} max={2026} value={f.minYear} onChange={(e) => patch({ minYear: +e.target.value })} />
                 </fieldset>
                 <fieldset><legend>Garage fit</legend>
-                  <label htmlFor="gf-maxwidth">Max width (out, in) {f.maxWidth}</label><input id="gf-maxwidth" type="range" min={68} max={85} step={0.5} value={f.maxWidth} onChange={(e) => patch({ maxWidth: +e.target.value })} />
+                  <label htmlFor="gf-maxwidth">Max width (out, in) {f.maxWidth}</label><input id="gf-maxwidth" type="range" min={68} max={98} step={0.5} value={f.maxWidth} onChange={(e) => patch({ maxWidth: +e.target.value })} />
                   <label className="check"><input type="checkbox" checked={f.narrowOnly} onChange={(e) => patch({ narrowOnly: e.target.checked })} /> Fits my baseline width</label>
                 </fieldset>
                 <fieldset><legend>Safety &amp; assist</legend>
@@ -441,7 +476,7 @@ export default function App() {
                   onClick={() => setDetail(v)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDetail(v); } }}
                 >
-                  <div className={`carimg fuel-${v.fuel}`}><span className="car-emoji" aria-hidden="true">{ICON[v.body] ?? '🚗'}</span>
+                  <div className={`carimg fuel-${v.fuel}`}><CarGlyph body={v.body} />
                     {v.imageUrl && (
                       <img
                         className="car-photo"
@@ -456,9 +491,10 @@ export default function App() {
                     <span className="fuel">{v.fuel}{v.rangeMi ? ` · ${v.rangeMi}mi` : ''}</span>
                     <button className="fav" aria-label={favs.includes(v.id) ? `Remove ${v.make} ${v.model} from favorites` : `Add ${v.make} ${v.model} to favorites`} aria-pressed={favs.includes(v.id)} onClick={(e) => { e.stopPropagation(); setFavs((s) => s.includes(v.id) ? s.filter((x) => x !== v.id) : [...s, v.id]); }}>{favs.includes(v.id) ? '★' : '☆'}</button>
                   </div>
+                  <div className="shade" aria-hidden="true"></div>
                   <div className="body">
                     <h3 id={`t-${v.id}`}>{v.year} {v.make} {v.model}</h3>
-                    <div className="sub">{v.trim} · {v.body} · {v.seats} seats · {v.safety}</div>
+                    <div className="sub">{v.trim} · {v.body} · {v.seats} seats · {v.safety}{v.nhtsaStars ? ` · ★${v.nhtsaStars} NHTSA` : ''}</div>
                     <div className="price">{money(v.msrp)}<small> MSRP</small></div>
                     <div className="deltas">
                       {baseline ? (<><Delta kind="msrp" v={v.msrp} b={baseline.msrp} /><Delta kind="eff" v={v.eff} b={baseline.eff} /><Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} /></>) : (<span className="pill same">{v.eff} {v.effUnit} · {v.widthExtended}″ wide</span>)}
@@ -560,6 +596,15 @@ export default function App() {
                 cell: b ? <span className="pill same">{b.body === detail.body ? '= same' : `${b.body} → ${detail.body}`}</span> : undefined },
               { label: 'Safety', mine: detail.safety, base: b?.safety,
                 cell: b ? <Delta kind="safety" v={detail.safety} b={b.safety} /> : undefined },
+              { label: 'NHTSA rating', mine: detail.nhtsaStars ? `${'★'.repeat(detail.nhtsaStars)}${'☆'.repeat(5 - detail.nhtsaStars)} ${detail.nhtsaStars}/5` : 'Not rated',
+                base: b ? (b.nhtsaStars ? `${b.nhtsaStars}/5` : 'Not rated') : undefined,
+                cell: b && detail.nhtsaStars && b.nhtsaStars
+                  ? (detail.nhtsaStars === b.nhtsaStars
+                      ? <span className="pill same">= same</span>
+                      : detail.nhtsaStars > b.nhtsaStars
+                        ? <span className="pill good">▲ +{detail.nhtsaStars - b.nhtsaStars} star{detail.nhtsaStars - b.nhtsaStars > 1 ? 's' : ''}</span>
+                        : <span className="pill bad">▼ {detail.nhtsaStars - b.nhtsaStars} star{(detail.nhtsaStars - b.nhtsaStars) < -1 ? 's' : ''}</span>)
+                  : (b ? <span className="pill same">n/a</span> : undefined) },
               { label: 'Front legroom', mine: `${detail.legroom}″`, base: b ? `${b.legroom}″` : undefined,
                 cell: b && b.legroom !== detail.legroom
                   ? <span className="pill same">{detail.legroom > b.legroom ? `+${(detail.legroom - b.legroom).toFixed(1)}″ roomier` : `${(detail.legroom - b.legroom).toFixed(1)}″ tighter`}</span>
@@ -612,7 +657,7 @@ export default function App() {
                     <span className="fuel">{detail.fuel}{detail.rangeMi ? ` · ${detail.rangeMi}mi` : ''}</span>
                   </div>
                 )}
-                <span className="kicker">Closer analysis</span>
+                <span className="kicker">Closer analysis{detail.verified ? ' · ✓ specs verified' : ''}</span>
                 <h2>{detail.year} {detail.make} {detail.model} <small style={{ color: 'var(--muted)' }}>{detail.trim}</small></h2>
                 <p className="d-sub">{detail.body} · {detail.doors} doors · {detail.seats} seats · {detail.fuel}{detail.handsFree ? ' · hands-free driving' : ''}</p>
                 {v ? <p className="verdict" role="status">{v}</p> : <p className="verdict">{baseline ? 'This is your baseline vehicle — everything compares against it.' : 'Set a baseline to see upgrade/trade-off verdicts here.'}</p>}
@@ -716,7 +761,24 @@ export default function App() {
       )}
 
       {toast && <div className="toast show" role="status" aria-live="polite">{toast}</div>}
-      <footer className="wrap foot"><span>Dataset snapshot {DATA_STAMP} · {VEHICLES.length} vehicles</span><span> · Snapshot pricing, not live dealer pricing · MSRP USD</span></footer>
+      <button className={'totop' + (showTop ? ' show' : '')} onClick={() => jump('results')} aria-hidden={!showTop} tabIndex={showTop ? 0 : -1} aria-label="Back to top">↑</button>
+      <footer className="foot">
+        <div className="wrap foot-in">
+          <div className="brand"><span className="logo" aria-hidden="true">▣</span><div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div></div>
+          <nav className="foot-nav" aria-label="Footer">
+            <a href="#baseline" onClick={(e) => { e.preventDefault(); jump('baseline'); }}>Your baseline</a>
+            <a href="#browse" onClick={(e) => { e.preventDefault(); jump('browse'); }}>Browse &amp; filter</a>
+            <a href="#results" onClick={(e) => { e.preventDefault(); jump('results'); }}>Results</a>
+            <button className="linklike" onClick={exportCSV}>Export CSV</button>
+            <button className="linklike" onClick={share}>Share view</button>
+            <button className="linklike" onClick={() => window.print()}>Print</button>
+          </nav>
+          <div className="foot-meta">
+            <span>Dataset snapshot {DATA_STAMP} · {VEHICLES.length} vehicles ({VEHICLES.filter((v) => v.verified).length} with manufacturer/EPA-verified specs)</span>
+            <span>Snapshot pricing, not live dealer pricing · MSRP USD</span>
+          </div>
+        </div>
+      </footer>
     </>
   );
 }
