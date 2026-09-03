@@ -43,6 +43,10 @@ export interface FilterState {
   maxPrice: number;
   minYear: number;
   maxWidth: number;
+  /** User's garage opening clearance, mirrors-out, in inches. 0 = not set. */
+  garageWidth: number;
+  /** When true (and garageWidth is set), hide vehicles wider than the opening. */
+  garageFitOnly: boolean;
   narrowOnly: boolean;
   topSafety: boolean;
   handsFree: boolean;

@@ -19,14 +19,17 @@ function pctDiff(v: number, base: number): string {
   return `${p >= 10 ? Math.round(p) : p.toFixed(1)}%`;
 }
 
+/** Fit verdict vs the user's garage opening (mirrors-out). null when no opening is set. */
+function garageFit(v: Vehicle, gw: number): { ok: boolean; clearance: number } | null {
+  if (!gw) return null;
+  return { ok: v.widthExtended <= gw, clearance: +(gw - v.widthExtended).toFixed(1) };
+}
+
 const PRESETS: { id: string; label: string; fn: (v: Vehicle) => boolean }[] = [
-  { id: 'ev50', label: '⚡ EVs under $50k', fn: (v) => v.fuel === 'EV' && v.msrp < 50000 },
-  { id: 'fam', label: '👨‍👩‍👧 Family SUVs', fn: (v) => (v.body === 'SUV' || v.body === 'Minivan') && v.seats >= 7 },
-  { id: 'safe', label: '🛡️ Top Safety', fn: (v) => v.safety === 'TSP+' || v.safety === 'TSP' },
-  { id: 'fueleff', label: '🌿 40+ MPG(e)', fn: (v) => v.eff >= 40 },
-  { id: 'lrev', label: '🔋 Long-range EVs 250mi+', fn: (v) => v.fuel === 'EV' && (v.rangeMi ?? 0) >= 250 },
-  { id: 'hands', label: '🛣️ Hands-free', fn: (v) => v.handsFree },
-  { id: 'compact', label: '🅿️ Compact ≤78″', fn: (v) => v.widthExtended <= 78 },
+  { id: 'ev50', label: 'EVs under $50k', fn: (v) => v.fuel === 'EV' && v.msrp < 50000 },
+  { id: 'fam', label: 'Family SUVs', fn: (v) => (v.body === 'SUV' || v.body === 'Minivan') && v.seats >= 7 },
+  { id: 'safe', label: 'Top Safety', fn: (v) => v.safety === 'TSP+' || v.safety === 'TSP' },
+  { id: 'fueleff', label: '40+ MPG(e)', fn: (v) => v.eff >= 40 },
 ];
 
 function readURL(): Partial<FilterState> {
@@ -41,6 +44,8 @@ function readURL(): Partial<FilterState> {
   if (p.get('maxPrice')) out.maxPrice = +p.get('maxPrice')!;
   if (p.get('minYear')) out.minYear = +p.get('minYear')!;
   if (p.get('maxWidth')) out.maxWidth = +p.get('maxWidth')!;
+  if (p.get('gw')) out.garageWidth = +p.get('gw')!;
+  if (p.get('gwOnly') === '1') out.garageFitOnly = true;
   (['narrowOnly', 'topSafety', 'handsFree'] as const).forEach((k) => { if (p.get(k) === '1') (out as Record<string, unknown>)[k] = true; });
   if (p.get('fuels')) out.fuels = p.get('fuels')!.split(',');
   if (p.get('bodies')) out.bodies = p.get('bodies')!.split(',');
@@ -51,7 +56,7 @@ function readURL(): Partial<FilterState> {
 
 const DEFAULTS: FilterState = {
   baselineId: DEFAULT_BASELINE_ID, q: '', preset: '', sort: 'fit', view: 'cards',
-  maxPrice: 80000, minYear: 2019, maxWidth: 98, narrowOnly: false,
+  maxPrice: 80000, minYear: 2019, maxWidth: 98, garageWidth: 0, garageFitOnly: false, narrowOnly: false,
   topSafety: false, handsFree: false, fuels: [], bodies: [], make: '', minEff: 0,
 };
 
@@ -60,28 +65,28 @@ function Delta({ kind, v, b }: { kind: 'msrp' | 'eff' | 'width' | 'seats' | 'saf
   if (kind === 'msrp' && typeof v === 'number' && typeof b === 'number') {
     const d = v - b;
     if (d === 0) label = '= same price';
-    else if (d < 0) { cls = 'good'; label = `▲ ${money(-d)} cheaper`; }
-    else { cls = 'bad'; label = `▼ ${money(d)} more`; }
+    else if (d < 0) { cls = 'good'; label = `${money(-d)} cheaper`; }
+    else { cls = 'bad'; label = `${money(d)} more`; }
   } else if (kind === 'eff' && typeof v === 'number' && typeof b === 'number') {
     const d = v - b;
     if (d === 0) label = '= same';
-    else if (d > 0) { cls = 'good'; label = `▲ +${d} better`; }
-    else { cls = 'bad'; label = `▼ ${d} worse`; }
+    else if (d > 0) { cls = 'good'; label = `+${d} better`; }
+    else { cls = 'bad'; label = `${d} worse`; }
   } else if (kind === 'width' && typeof v === 'number' && typeof b === 'number') {
     const d = +(v - b).toFixed(1);
     if (d === 0) label = '= same width';
-    else if (d < 0) { cls = 'good'; label = `▲ ${d}″ narrower`; }
-    else { cls = 'bad'; label = `▼ +${d}″ wider`; }
+    else if (d < 0) { cls = 'good'; label = `${d}″ narrower`; }
+    else { cls = 'bad'; label = `+${d}″ wider`; }
   } else if (kind === 'seats' && typeof v === 'number' && typeof b === 'number') {
     const d = v - b;
     if (d === 0) label = '= seats';
-    else if (d > 0) { cls = 'good'; label = `▲ +${d} seats`; }
-    else { cls = 'bad'; label = `▼ ${d} seats`; }
+    else if (d > 0) { cls = 'good'; label = `+${d} seats`; }
+    else { cls = 'bad'; label = `${d} seats`; }
   } else if (kind === 'safety') {
     const a = SAFETY_SCORE[String(v)] ?? 0, c = SAFETY_SCORE[String(b)] ?? 0;
     if (a === c) label = String(v) || '—';
-    else if (a > c) { cls = 'good'; label = `▲ ${v} better`; }
-    else { cls = 'bad'; label = `▼ ${v} worse`; }
+    else if (a > c) { cls = 'good'; label = `${v} better`; }
+    else { cls = 'bad'; label = `${v} worse`; }
   }
   return <span className={`pill ${cls}`}>{label}</span>;
 }
@@ -190,13 +195,43 @@ export default function App() {
   const [shown, setShown] = useState(24);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [colsOpen, setColsOpen] = useState(false);
-  const [cols, setCols] = useState({ price: true, eff: true, seats: true, width: true, safety: true, fuel: true });
+  const [cols, setCols] = useState({ price: true, eff: true, width: true, safety: false, seats: false, fuel: false });
   const [detail, setDetail] = useState<Vehicle | null>(null);
+  const [photoFull, setPhotoFull] = useState<Vehicle | null>(null);
   const [cmpOpen, setCmpOpen] = useState(false);
   const [toast, setToast] = useState('');
   const [dark, setDark] = useState(localStorage.getItem('gf-theme') === 'dark');
   const [offline, setOffline] = useState(!navigator.onLine);
   const [swUpdate, setSwUpdate] = useState(false);
+  // Full-page vehicle view: browser-back/Escape support, body scroll lock, reset scroll on open
+  const dpRef = useRef<HTMLDivElement>(null);
+  const pushedRef = useRef(false);
+  const closeDetail = () => { setPhotoFull(null); if (pushedRef.current) window.history.back(); else setDetail(null); };
+  useEffect(() => {
+    if (!detail) return;
+    window.history.pushState({ gfDetail: detail.id }, '');
+    pushedRef.current = true;
+    dpRef.current?.scrollTo(0, 0);
+    dpRef.current?.focus();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onPop = () => { pushedRef.current = false; setPhotoFull(null); setDetail(null); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); closeDetail(); } };
+    window.addEventListener('popstate', onPop);
+    document.addEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      document.removeEventListener('keydown', onKey, true);
+      document.body.style.overflow = prevOverflow;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detail]);
+  useEffect(() => {
+    if (!photoFull) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); setPhotoFull(null); } };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [photoFull]);
   useEffect(() => {
     const on = () => setSwUpdate(true);
     window.addEventListener('gf:sw-update', on);
@@ -246,6 +281,8 @@ export default function App() {
     if (f.sort !== 'fit') p.set('sort', f.sort);
     if (f.view !== 'cards') p.set('view', f.view);
     p.set('maxPrice', String(f.maxPrice)); p.set('minYear', String(f.minYear)); p.set('maxWidth', String(f.maxWidth));
+    if (f.garageWidth) p.set('gw', String(f.garageWidth));
+    if (f.garageFitOnly && f.garageWidth) p.set('gwOnly', '1');
     if (f.narrowOnly) p.set('narrowOnly', '1');
     if (f.topSafety) p.set('topSafety', '1');
     if (f.handsFree) p.set('handsFree', '1');
@@ -274,12 +311,13 @@ export default function App() {
       'price-asc': (a, b) => a.msrp - b.msrp, 'price-desc': (a, b) => b.msrp - a.msrp,
       'eff-desc': (a, b) => b.eff - a.eff, 'year-desc': (a, b) => b.year - a.year,
       'safety-desc': (a, b) => (SAFETY_SCORE[b.safety] ?? 0) - (SAFETY_SCORE[a.safety] ?? 0),
-      'width-asc': (a, b) => a.widthExtended - b.widthExtended, fit: (a, b) => fitScore(b) - fitScore(a),
+      'width-asc': (a, b) => a.widthExtended - b.widthExtended, fit: (a, b) => fitScore(a) - fitScore(b),
     };
     const r = VEHICLES.filter((v) => {
       if (f.q && !(v.make + ' ' + v.model + ' ' + v.trim + ' ' + v.year).toLowerCase().includes(f.q.toLowerCase())) return false;
       if (v.msrp > f.maxPrice || v.year < f.minYear || v.widthExtended > f.maxWidth) return false;
       if (f.narrowOnly && baseline && v.widthExtended > baseline.widthExtended) return false;
+      if (f.garageFitOnly && f.garageWidth && v.widthExtended > f.garageWidth) return false;
       if (f.topSafety && !(v.safety === 'TSP' || v.safety === 'TSP+')) return false;
       if (f.handsFree && !v.handsFree) return false;
       if (f.fuels.length && !f.fuels.includes(v.fuel)) return false;
@@ -302,16 +340,8 @@ export default function App() {
     });
   };
   const share = async () => {
-    try { await navigator.clipboard.writeText(location.href); setToast('Share link copied ✓'); }
+    try { await navigator.clipboard.writeText(location.href); setToast('Share link copied'); }
     catch { prompt('Copy link:', location.href); }
-  };
-  const exportCSV = () => {
-    const head = 'year,make,model,trim,body,seats,fuel,eff,effUnit,msrp,widthFolded,widthExtended,safety';
-    const rows = results.map((v) => [v.year, v.make, v.model, '"' + v.trim + '"', v.body, v.seats, v.fuel, v.eff, v.effUnit, v.msrp, v.widthFolded, v.widthExtended, v.safety].join(','));
-    const blob = new Blob([[head, ...rows].join('\n')], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'garagefit.csv'; a.click();
-    setToast(`Exported ${results.length} vehicles`);
   };
   const tags: string[] = [];
   if (f.preset) tags.push(PRESETS.find((p) => p.id === f.preset)?.label ?? f.preset);
@@ -319,13 +349,20 @@ export default function App() {
   if (f.maxPrice < 80000) tags.push(`≤ ${money(f.maxPrice)}`);
   if (f.minYear > 2019) tags.push(`${f.minYear}+`);
   if (f.maxWidth < 98) tags.push(`≤ ${f.maxWidth}″`);
+  if (f.garageWidth) tags.push(`Garage opening ${f.garageWidth}″`);
+  if (f.garageFitOnly && f.garageWidth) tags.push('Fits garage');
   if (f.topSafety) tags.push('Top safety');
   if (f.handsFree) tags.push('Hands-free');
+  if (f.narrowOnly) tags.push('Fits baseline width');
+  if (f.minEff > 0) tags.push(`Min ${f.minEff} MPG(e)`);
   if (f.fuels.length) tags.push(f.fuels.join(', '));
   if (f.bodies.length) tags.push(f.bodies.join(', '));
   if (f.make) tags.push(f.make);
+  const hasActive = f.preset !== '' || f.q !== '' || f.maxPrice !== 80000 || f.minYear !== 2019 || f.maxWidth !== 98
+    || f.garageFitOnly || f.narrowOnly || f.topSafety || f.handsFree || f.make !== '' || f.minEff !== 0
+    || f.fuels.length > 0 || f.bodies.length > 0;
 
-  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2019, maxWidth: 98, narrowOnly: false, topSafety: false, handsFree: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
+  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2019, maxWidth: 98, garageFitOnly: false, narrowOnly: false, topSafety: false, handsFree: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
 
   return (
     <>
@@ -334,14 +371,14 @@ export default function App() {
         <div className="updatebar" role="status">
           <span>New version available — reload to get the latest vehicles and fixes.</span>
           <button className="btn primary" onClick={() => (window as unknown as { __gfUpdateSW?: () => void }).__gfUpdateSW?.()}>Reload to update</button>
-          <button className="btn ghost" onClick={() => setSwUpdate(false)} aria-label="Dismiss update notice">✕</button>
+          <button className="btn ghost" onClick={() => setSwUpdate(false)} aria-label="Dismiss update notice">Close</button>
         </div>
       )}
       <header className="topbar">
         <div className="wrap topbar-in">
           <a className="brand" href="#results" onClick={(e) => { e.preventDefault(); jump('results'); }} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <span className="logo" aria-hidden="true">▣</span>
-            <div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div>
+            <img className="logo" src="logo.svg" alt="" aria-hidden="true" />
+            <div><strong>GarageFit</strong></div>
           </a>
           <nav className="topnav" aria-label="Section navigation">
             <a href="#baseline" className={activeSec === 'baseline' ? 'on' : ''} aria-current={activeSec === 'baseline' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('baseline'); }}>Your baseline</a>
@@ -349,12 +386,21 @@ export default function App() {
             <a href="#results" className={activeSec === 'results' ? 'on' : ''} aria-current={activeSec === 'results' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('results'); }}>Results</a>
           </nav>
           <div className="top-actions">
-            {offline && <span className="pill same">● offline — cached</span>}
-            <div className="searchbox"><span aria-hidden="true">⌕</span><label className="sr-only" htmlFor="gf-search">Search make, model, or trim</label><input id="gf-search" value={f.q} onChange={(e) => patch({ q: e.target.value })} type="search" placeholder="Search make, model, trim…" /></div>
-            <button className="btn ghost" onClick={() => setDark((d) => !d)} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-pressed={dark}>◐</button>
-            <button className="btn ghost" onClick={share}>⤴ <span className="btn-txt">Share</span></button>
-            <button className="btn ghost" onClick={exportCSV}>⭳ <span className="btn-txt">CSV</span></button>
-            <button className="btn ghost" onClick={() => window.print()} aria-label="Print this view">⎙</button>
+            {offline && <span className="pill same">offline — cached</span>}
+            <div className="searchbox"><label className="sr-only" htmlFor="gf-search">Search make, model, or trim</label><input id="gf-search" value={f.q} onChange={(e) => patch({ q: e.target.value })} type="search" placeholder="Search make, model, trim…" /></div>
+            <button className="btn ghost icon-btn" onClick={() => setDark((d) => !d)} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-pressed={dark} title={dark ? 'Light mode' : 'Dark mode'}>
+              {dark ? (
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5 5l1.7 1.7M17.3 17.3L19 19M19 5l-1.7 1.7M6.7 17.3L5 19"/></svg>
+              ) : (
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 13.5A8 8 0 0 1 10.5 4 6.5 6.5 0 1 0 20 13.5Z"/></svg>
+              )}
+            </button>
+            <button className="btn ghost icon-btn" onClick={share} title="Copy share link" aria-label="Copy share link">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5M12 3.5L7.5 8M12 3.5l4.5 4.5"/><path d="M5 12.5V20h14v-7.5"/></svg>
+            </button>
+            <button className="btn ghost icon-btn" onClick={() => window.print()} title="Print this view" aria-label="Print this view">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 8V3.5h10V8"/><rect x="3.5" y="8" width="17" height="8.5" rx="2"/><path d="M7 13.5h10v7H7z"/></svg>
+            </button>
           </div>
         </div>
       </header>
@@ -379,12 +425,11 @@ export default function App() {
               <div className="b-info">
                 <span className="kicker">Your baseline vehicle</span>
                 <h2>{baseline.year} {baseline.make} {baseline.model} <span className="sub">{baseline.trim}</span></h2>
-                <p>{baseline.body} · {baseline.fuel} · {baseline.seats} seats · {baseline.legroom}″ legroom{baseline.rangeMi ? ` · ${baseline.rangeMi} mi range` : ''}</p>
+                <p>{baseline.body} · {baseline.fuel} · {baseline.seats} seats · {baseline.legroom}″ legroom</p>
                 <div className="b-stats">
                   <span className="stat"><b>{money(baseline.msrp)}</b>MSRP</span>
                   <span className="stat"><b>{baseline.eff} {baseline.effUnit}</b>efficiency</span>
-                  <span className="stat"><b>{baseline.widthExtended}″</b>mirrors out</span>
-                  <span className="stat"><b>{baseline.widthFolded}″</b>mirrors folded</span>
+                  <span className="stat"><b>{baseline.widthFolded}–{baseline.widthExtended}″</b>width folded–out</span>
                   <span className="stat"><b>{baseline.safety === '—' ? 'Not rated' : baseline.safety}</b>IIHS safety</span>
                 </div>
               </div>
@@ -400,7 +445,7 @@ export default function App() {
             </>
           ) : (
             <>
-              <div className="b-info"><span className="kicker">Comparison mode</span><h2>No baseline — showing absolute values</h2><p>Pick a car you own so every row shows ▲ better / ▼ worse relative to it.</p></div>
+              <div className="b-info"><span className="kicker">Comparison mode</span><h2>No baseline — showing absolute values</h2><p>Pick a car you own so every row shows better / worse relative to it.</p></div>
               <div className="b-select">
                 <label className="b-label" htmlFor="gf-baseline-new">Choose your baseline</label>
                 <select id="gf-baseline-new" defaultValue="" onChange={(e) => e.target.value && patch({ baselineId: e.target.value })}>
@@ -410,27 +455,44 @@ export default function App() {
               </div>
             </>
           )}
+          <div className="b-garage">
+            <label className="b-label" htmlFor="gf-garage">Your garage opening (mirrors-out)</label>
+            <div className="b-row">
+              <input id="gf-garage" className="b-garage-input" type="number" inputMode="decimal" min={60} max={140} step={0.5}
+                placeholder="e.g. 88" value={f.garageWidth || ''}
+                onChange={(e) => patch({ garageWidth: e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)) })}
+                aria-describedby="gf-garage-hint" />
+              <span className="b-garage-unit">inches</span>
+              {f.garageWidth > 0 && <button className="btn ghost" onClick={() => patch({ garageWidth: 0 })}>Clear</button>}
+              <span className="b-hint" id="gf-garage-hint">{f.garageWidth > 0
+                ? `${VEHICLES.filter((x) => x.widthExtended <= f.garageWidth).length} of ${VEHICLES.length} vehicles fit your opening`
+                : 'Optional — adds a fits / doesn’t-fit verdict to every vehicle'}</span>
+            </div>
+          </div>
         </section>
 
         <div className="stickybar" id="browse">
           <div className="presets" role="toolbar" aria-label="Quick presets">{PRESETS.map((p) => <button key={p.id} className={'preset' + (f.preset === p.id ? ' on' : '')} aria-pressed={f.preset === p.id} onClick={() => patch({ preset: f.preset === p.id ? '' : p.id })}>{p.label}</button>)}</div>
-          <div className="controls">
-            <div className="control"><label htmlFor="gf-sort">Sort</label>
-              <select id="gf-sort" value={f.sort} onChange={(e) => setF((s) => ({ ...s, sort: e.target.value as SortKey }))}>
-                <option value="fit">Best fit</option><option value="price-asc">Price ↑</option>
-                <option value="price-desc">Price ↓</option><option value="eff-desc">Efficiency ↓</option>
-                <option value="year-desc">Newest</option><option value="safety-desc">Safest</option>
-                <option value="width-asc">Narrowest</option>
-              </select>
+          <div className="toolbar">
+            <div className="controls">
+              <div className="control">
+                <select id="gf-sort" aria-label="Sort results" value={f.sort} onChange={(e) => setF((s) => ({ ...s, sort: e.target.value as SortKey }))}>
+                  <option value="fit">Best fit</option><option value="price-asc">Price low to high</option>
+                  <option value="price-desc">Price high to low</option><option value="eff-desc">Efficiency high to low</option>
+                  <option value="year-desc">Newest</option><option value="safety-desc">Safest</option>
+                  <option value="width-asc">Narrowest</option>
+                </select>
+              </div>
+              <div className="control seg" role="group" aria-label="Result layout">
+                <button className={f.view === 'cards' ? 'seg-on' : ''} aria-pressed={f.view === 'cards'} title="Card view" onClick={() => setF((s) => ({ ...s, view: 'cards' }))}>Cards</button>
+                <button className={f.view === 'table' ? 'seg-on' : ''} aria-pressed={f.view === 'table'} title="Table view" onClick={() => setF((s) => ({ ...s, view: 'table' }))}>Table</button>
+              </div>
+              <button className={'btn' + (filtersOpen ? ' on' : '')} onClick={() => setFiltersOpen((o) => !o)} aria-expanded={filtersOpen} aria-controls="gf-filters">Filters{tags.length ? ` (${tags.length})` : ''}</button>
+              {hasActive && <button className="btn ghost" onClick={clearFilters} title="Clear all filters" aria-label="Clear all filters">Clear</button>}
+              {f.view === 'table' && <button className={'btn ghost' + (colsOpen ? ' on' : '')} onClick={() => setColsOpen((o) => !o)} aria-expanded={colsOpen} aria-controls="gf-cols">Columns</button>}
             </div>
-            <div className="control seg" role="group" aria-label="Result layout">
-              <button className={f.view === 'cards' ? 'seg-on' : ''} aria-pressed={f.view === 'cards'} onClick={() => setF((s) => ({ ...s, view: 'cards' }))}>▦ Cards</button>
-              <button className={f.view === 'table' ? 'seg-on' : ''} aria-pressed={f.view === 'table'} onClick={() => setF((s) => ({ ...s, view: 'table' }))}>☰ Table</button>
-            </div>
-            <button className="btn" onClick={() => setFiltersOpen((o) => !o)} aria-expanded={filtersOpen} aria-controls="gf-filters">Filters ▾</button>
-            <button className="btn ghost" onClick={() => setColsOpen((o) => !o)} aria-expanded={colsOpen} aria-controls="gf-cols">Columns</button>
+            {tags.length > 0 && <div className="summary">{tags.map((t) => <span key={t} className="tag">{t}</span>)}</div>}
           </div>
-          <div className="summary">{tags.length ? tags.map((t) => <span key={t} className="tag">{t}</span>) : 'Showing everything — add a preset or filter to narrow.'}{baseline && <span className="tag">vs {baseline.model}</span>}</div>
           {filtersOpen && (
             <div className="filters" id="gf-filters">
               <div className="fgrid">
@@ -440,7 +502,10 @@ export default function App() {
                 </fieldset>
                 <fieldset><legend>Garage fit</legend>
                   <label htmlFor="gf-maxwidth">Max width (out, in) {f.maxWidth}</label><input id="gf-maxwidth" type="range" min={68} max={98} step={0.5} value={f.maxWidth} onChange={(e) => patch({ maxWidth: +e.target.value })} />
-                  <label className="check"><input type="checkbox" checked={f.narrowOnly} onChange={(e) => patch({ narrowOnly: e.target.checked })} /> Fits my baseline width</label>
+                  <label className="check"><input type="checkbox" checked={f.narrowOnly} disabled={!baseline} onChange={(e) => patch({ narrowOnly: e.target.checked })} /> Fits my baseline width</label>
+                  {!baseline && <p className="f-hint">Pick a baseline vehicle above to compare widths.</p>}
+                  <label className="check"><input type="checkbox" checked={f.garageFitOnly} disabled={!f.garageWidth} onChange={(e) => patch({ garageFitOnly: e.target.checked })} /> Only vehicles that fit my opening{f.garageWidth ? ` (${f.garageWidth}″)` : ''}</label>
+                  {!f.garageWidth && <p className="f-hint">Set your garage opening in the “Your baseline” section above.</p>}
                 </fieldset>
                 <fieldset><legend>Safety &amp; assist</legend>
                   <label className="check"><input type="checkbox" checked={f.topSafety} onChange={(e) => patch({ topSafety: e.target.checked })} /> Top safety only</label>
@@ -459,10 +524,10 @@ export default function App() {
               <div className="f-actions"><button className="btn ghost" onClick={clearFilters}>Clear all filters</button></div>
             </div>
           )}
-          {colsOpen && <div className="cols" id="gf-cols">{(Object.keys(cols) as (keyof typeof cols)[]).map((k) => <label key={k}><input type="checkbox" checked={cols[k]} onChange={(e) => setCols((c) => ({ ...c, [k]: e.target.checked }))} /> {k}</label>)}</div>}
+          {f.view === 'table' && colsOpen && <div className="cols" id="gf-cols">{(Object.keys(cols) as (keyof typeof cols)[]).map((k) => <label key={k}><input type="checkbox" checked={cols[k]} onChange={(e) => setCols((c) => ({ ...c, [k]: e.target.checked }))} /> {k}</label>)}</div>}
         </div>
 
-        <div className="count" role="status" aria-live="polite">{results.length} of {VEHICLES.length} vehicles{baseline ? ` vs your ${baseline.year} ${baseline.make} ${baseline.model}` : ''}</div>
+        <div className="count" role="status" aria-live="polite">{results.length} of {VEHICLES.length} vehicles{baseline ? ` vs your ${baseline.year} ${baseline.make} ${baseline.model}` : ''}{f.garageWidth ? ` · ${results.filter((x) => x.widthExtended <= f.garageWidth).length} fit your ${f.garageWidth}″ opening` : ''}</div>
 
         {f.view === 'cards' ? (
           <>
@@ -488,13 +553,14 @@ export default function App() {
                         onError={(e) => e.currentTarget.remove()}
                       />
                     )}
-                    <span className="fuel">{v.fuel}{v.rangeMi ? ` · ${v.rangeMi}mi` : ''}</span>
+                    <span className="fuel fuel-plain">{v.fuel}{v.rangeMi ? ` · ${v.rangeMi}mi` : ''}</span>
+                    {(() => { const gf = garageFit(v, f.garageWidth); return gf ? <span className={`gfit-badge ${gf.ok ? 'ok' : 'no'}`}>{gf.ok ? `Fits · ${gf.clearance.toFixed(1)}″ spare` : `${(-gf.clearance).toFixed(1)}″ too wide`}</span> : null; })()}
                     <button className="fav" aria-label={favs.includes(v.id) ? `Remove ${v.make} ${v.model} from favorites` : `Add ${v.make} ${v.model} to favorites`} aria-pressed={favs.includes(v.id)} onClick={(e) => { e.stopPropagation(); setFavs((s) => s.includes(v.id) ? s.filter((x) => x !== v.id) : [...s, v.id]); }}>{favs.includes(v.id) ? '★' : '☆'}</button>
                   </div>
                   <div className="shade" aria-hidden="true"></div>
                   <div className="body">
                     <h3 id={`t-${v.id}`}>{v.year} {v.make} {v.model}</h3>
-                    <div className="sub">{v.trim} · {v.body} · {v.seats} seats · {v.safety}{v.nhtsaStars ? ` · ★${v.nhtsaStars} NHTSA` : ''}</div>
+                    <div className="sub">{v.trim} · {v.body} · {v.seats} seats · {v.safety}{v.nhtsaStars ? ` · NHTSA ${v.nhtsaStars}/5` : ''}</div>
                     <div className="price">{money(v.msrp)}<small> MSRP</small></div>
                     <div className="deltas">
                       {baseline ? (<><Delta kind="msrp" v={v.msrp} b={baseline.msrp} /><Delta kind="eff" v={v.eff} b={baseline.eff} /><Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} /></>) : (<span className="pill same">{v.eff} {v.effUnit} · {v.widthExtended}″ wide</span>)}
@@ -502,15 +568,16 @@ export default function App() {
                     <div className="fitbar">
                       <div className="track">
                         {baseline && <span className="tick" style={{ left: `${wPct(baseline.widthExtended)}%` }} title={`Baseline: ${baseline.widthExtended}″`} />}
+                        {f.garageWidth > 0 && <span className="tick garage" style={{ left: `${wPct(f.garageWidth)}%` }} title={`Your garage opening: ${f.garageWidth}″`} />}
                         <span className="dot" style={{ left: `${wPct(v.widthExtended)}%` }} title={`${v.widthExtended}″ mirrors out`} />
                       </div>
-                      <div className="lbl"><span>↔ {v.widthExtended}″ wide</span>{baseline && <span>base {baseline.widthExtended}″</span>}</div>
+                      <div className="lbl"><span>{v.widthExtended}″ wide</span>{baseline && <span>base {baseline.widthExtended}″</span>}{f.garageWidth > 0 && <span>garage {f.garageWidth}″</span>}</div>
                     </div>
-                    <div className="specrow"><span>⛽ {v.eff} {v.effUnit}</span><span>↔ {v.widthExtended}″</span><span>🛡️ {v.safety}</span>{v.handsFree && <span>🛣️ hands-free</span>}</div>
+                    <div className="specrow"><span>{v.eff} {v.effUnit}</span><span>{v.widthExtended}″</span><span>{v.safety}</span>{v.handsFree && <span>hands-free</span>}</div>
                     <div className="actions">
-                      <button className="btn" onClick={(e) => { e.stopPropagation(); patch({ baselineId: v.id }); setToast('Baseline set — table now shows ▲▼ vs it'); }}>Set baseline</button>
+                      <button className="btn" onClick={(e) => { e.stopPropagation(); patch({ baselineId: v.id }); setToast('Baseline set — table now shows comparison vs it'); }}>Set baseline</button>
                       <button className="btn ghost" onClick={(e) => { e.stopPropagation(); setDetail(v); }}>More specs</button>
-                      <button className="btn ghost" onClick={(e) => { e.stopPropagation(); toggleCmp(v.id); }}>{compare.includes(v.id) ? '✓ in tray' : '+ Compare'}</button>
+                      <button className="btn ghost" onClick={(e) => { e.stopPropagation(); toggleCmp(v.id); }}>{compare.includes(v.id) ? 'In tray' : '+ Compare'}</button>
                     </div>
                   </div>
                 </article>
@@ -530,7 +597,7 @@ export default function App() {
                 {cols.price && <td>{money(v.msrp)}<br />{baseline && <Delta kind="msrp" v={v.msrp} b={baseline.msrp} />}</td>}
                 {cols.eff && <td>{v.eff} {v.effUnit}<br />{baseline && <Delta kind="eff" v={v.eff} b={baseline.eff} />}</td>}
                 {cols.seats && <td>{v.seats}<br />{baseline && <Delta kind="seats" v={v.seats} b={baseline.seats} />}</td>}
-                {cols.width && <td>{v.widthExtended}″<br />{baseline && <Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} />}</td>}
+                {cols.width && <td>{v.widthExtended}″<br />{baseline && <Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} />}{(() => { const gf = garageFit(v, f.garageWidth); return gf ? <span className={`pill ${gf.ok ? 'good' : 'bad'}`}>{gf.ok ? `${gf.clearance.toFixed(1)}″ spare` : `${(-gf.clearance).toFixed(1)}″ too wide`}</span> : null; })()}</td>}
                 {cols.safety && <td>{v.safety}<br />{baseline && <Delta kind="safety" v={v.safety} b={baseline.safety} />}</td>}
                 {cols.fuel && <td>{v.fuel}</td>}
                 <td><button className="btn" onClick={(e) => { e.stopPropagation(); patch({ baselineId: v.id }); }}>Baseline</button> <button className="btn ghost" onClick={(e) => { e.stopPropagation(); setDetail(v); }}>Specs</button></td>
@@ -542,7 +609,7 @@ export default function App() {
 
       {!!compare.length && (
         <div className="tray">
-          <span>⚖️ {compare.map((id) => { const v = byId(id)!; return `${v.make} ${v.model}`; }).join(' · ')}</span>
+          <span>{compare.map((id) => { const v = byId(id)!; return `${v.make} ${v.model}`; }).join(' · ')}</span>
           <button className="go" onClick={() => setCmpOpen(true)}>Compare ({compare.length})</button>
           <button onClick={() => setCompare([])}>Clear</button>
         </div>
@@ -551,21 +618,60 @@ export default function App() {
       {cmpOpen && (
         <Modal label={`Side-by-side comparison of ${compare.length} vehicles`} onClose={() => setCmpOpen(false)}>
             <h2>Side-by-side ({compare.length})</h2>
-            <div className="cmp">{compare.map((id) => { const v = byId(id)!; return (
-              <div className="col" key={id}>
-                <b>{v.year} {v.make} {v.model}</b><div><small>{v.trim}</small></div>
-                <div>{money(v.msrp)} {baseline && <Delta kind="msrp" v={v.msrp} b={baseline.msrp} />}</div>
-                <div>{v.eff} {v.effUnit} {baseline && <Delta kind="eff" v={v.eff} b={baseline.eff} />}</div>
-                <div>{v.widthExtended}″ {baseline && <Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} />}</div>
-                <div>{v.seats} seats · {v.safety}</div><div>{v.fuel}{v.rangeMi ? ` · ${v.rangeMi}mi` : ''}</div>
-              </div>); })}
-            </div>
+            {(() => {
+              const vs = compare.map((id) => byId(id)!).filter(Boolean);
+              const bestPrice = Math.min(...vs.map((x) => x.msrp));
+              const bestEff = Math.max(...vs.map((x) => x.eff));
+              const bestWidth = Math.min(...vs.map((x) => x.widthExtended));
+              const bestFuel = Math.min(...vs.map(annualFuel).filter((x): x is number => x != null));
+              const bestCO2 = Math.min(...vs.map(annualCO2).filter((x): x is number => x != null));
+              const bestFive = Math.min(...vs.map((x) => fiveYear(x).total).filter((x): x is number => x != null));
+              const bestTag = <span className="pill good">Best</span>;
+              return (
+              <div className="tablewrap"><table className="cmp-table">
+                <thead><tr>
+                  <th scope="col">Dimension</th>
+                  {vs.map((x) => (
+                    <th scope="col" key={x.id}>
+                      {x.imageUrl && <img className="cmp-photo" src={x.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => e.currentTarget.remove()} />}
+                      <b>{x.year} {x.make} {x.model}</b><br /><small>{x.trim}</small><br />
+                      <button className="linklike" onClick={() => toggleCmp(x.id)} aria-label={`Remove ${x.make} ${x.model} from comparison`}>Remove</button>
+                    </th>
+                  ))}
+                </tr></thead>
+                <tbody>
+                  <tr><th scope="row">Price (MSRP)</th>{vs.map((x) => <td key={x.id}>{money(x.msrp)} {x.msrp === bestPrice && bestTag}<br />{baseline && <Delta kind="msrp" v={x.msrp} b={baseline.msrp} />}</td>)}</tr>
+                  <tr><th scope="row">Efficiency</th>{vs.map((x) => <td key={x.id}>{x.eff} {x.effUnit} {x.eff === bestEff && bestTag}<br />{baseline && <Delta kind="eff" v={x.eff} b={baseline.eff} />}</td>)}</tr>
+                  <tr><th scope="row">Est. fuel cost / yr</th>{vs.map((x) => { const c = annualFuel(x); return <td key={x.id}>{c != null ? <>{money(c)} {c === bestFuel && bestTag}</> : '—'}</td>; })}</tr>
+                  <tr><th scope="row">Fuel type</th>{vs.map((x) => <td key={x.id}>{x.fuel}</td>)}</tr>
+                  <tr><th scope="row">Range</th>{vs.map((x) => <td key={x.id}>{x.rangeMi ? `${x.rangeMi} mi` : '—'}</td>)}</tr>
+                  <tr><th scope="row">Width, mirrors out</th>{vs.map((x) => <td key={x.id}>{x.widthExtended}″ {x.widthExtended === bestWidth && bestTag}<br />{baseline && <Delta kind="width" v={x.widthExtended} b={baseline.widthExtended} />}</td>)}</tr>
+                  <tr><th scope="row">Width, folded</th>{vs.map((x) => <td key={x.id}>{x.widthFolded}″</td>)}</tr>
+                  {f.garageWidth > 0 && <tr><th scope="row">Your garage ({f.garageWidth}″)</th>{vs.map((x) => { const g = garageFit(x, f.garageWidth); return <td key={x.id}>{g ? (g.ok ? <span className="pill good">{g.clearance.toFixed(1)}″ spare</span> : <span className="pill bad">{(-g.clearance).toFixed(1)}″ too wide</span>) : '—'}</td>; })}</tr>}
+                  <tr><th scope="row">Seats / doors</th>{vs.map((x) => <td key={x.id}>{x.seats} / {x.doors}<br />{baseline && <Delta kind="seats" v={x.seats} b={baseline.seats} />}</td>)}</tr>
+                  <tr><th scope="row">Body type</th>{vs.map((x) => <td key={x.id}>{x.body}</td>)}</tr>
+                  <tr><th scope="row">IIHS safety</th>{vs.map((x) => <td key={x.id}>{x.safety}<br />{baseline && <Delta kind="safety" v={x.safety} b={baseline.safety} />}</td>)}</tr>
+                  <tr><th scope="row">NHTSA rating</th>{vs.map((x) => <td key={x.id}>{x.nhtsaStars ? `${x.nhtsaStars}/5` : 'Not rated'}</td>)}</tr>
+                  <tr><th scope="row">Front legroom</th>{vs.map((x) => <td key={x.id}>{x.legroom}″</td>)}</tr>
+                  <tr><th scope="row">Hands-free</th>{vs.map((x) => <td key={x.id}>{x.handsFree ? 'Yes' : 'No'}</td>)}</tr>
+                  <tr><th scope="row">Annual CO₂</th>{vs.map((x) => { const c = annualCO2(x); return <td key={x.id}>{c != null ? <>{c.toFixed(1)} t {c === bestCO2 && bestTag}</> : '—'}</td>; })}</tr>
+                  <tr><th scope="row">5-yr total</th>{vs.map((x) => { const t = fiveYear(x).total; return <td key={x.id}>{t != null ? <>{money(t)} {t === bestFive && bestTag}</> : '—'}</td>; })}</tr>
+                </tbody>
+              </table></div>
+              );
+            })()}
             <p><button className="btn" onClick={() => setCmpOpen(false)}>Close</button></p>
         </Modal>
       )}
 
       {detail && (
-        <Modal label={`${detail.year} ${detail.make} ${detail.model} closer analysis`} onClose={() => setDetail(null)}>
+        <div className="dpage" ref={dpRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={`${detail.year} ${detail.make} ${detail.model} closer analysis`}>
+          <div className="dpage-bar">
+            <button className="btn ghost" onClick={closeDetail}>Back</button>
+            <strong className="dpage-title">{detail.year} {detail.make} {detail.model} <small>{detail.trim}</small></strong>
+            <button className="btn ghost" onClick={closeDetail} aria-label="Close vehicle page">Close</button>
+          </div>
+          <div className="wrap dpage-in">
           {(() => {
             const b = baseline && baseline.id !== detail.id ? baseline : null;
             const myCost = annualFuel(detail);
@@ -579,8 +685,8 @@ export default function App() {
               { label: 'Est. fuel cost / yr', mine: myCost != null ? money(myCost) : '—', base: baseCost != null ? money(baseCost) : undefined,
                 cell: myCost != null && baseCost != null && myCost !== baseCost
                   ? (myCost < baseCost
-                      ? <span className="pill good">▲ saves {money(baseCost - myCost)}/yr</span>
-                      : <span className="pill bad">▼ costs {money(myCost - baseCost)} more/yr</span>)
+                      ? <span className="pill good">saves {money(baseCost - myCost)}/yr</span>
+                      : <span className="pill bad">costs {money(myCost - baseCost)} more/yr</span>)
                   : (b ? <span className="pill same">n/a</span> : undefined) },
               { label: 'Fuel type', mine: detail.fuel, base: b?.fuel,
                 cell: b && b.fuel !== detail.fuel ? <span className="pill same">{b.fuel} → {detail.fuel}</span> : (b ? <span className="pill same">= same</span> : undefined) },
@@ -589,6 +695,8 @@ export default function App() {
                 cell: b && b.year !== detail.year ? <span className="pill same">{Math.abs(detail.year - b.year)} yr{Math.abs(detail.year - b.year) > 1 ? 's' : ''} {detail.year > b.year ? 'newer' : 'older'}</span> : (b ? <span className="pill same">= same</span> : undefined) },
               { label: 'Width, mirrors out', mine: `${detail.widthExtended}″`, base: b ? `${b.widthExtended}″` : undefined,
                 cell: b ? <Delta kind="width" v={detail.widthExtended} b={b.widthExtended} /> : undefined },
+              ...(f.garageWidth ? [{ label: `Your garage (${f.garageWidth}″ opening)`, mine: `${detail.widthExtended}″ car`,
+                cell: (() => { const gf = garageFit(detail, f.garageWidth); return gf ? (gf.ok ? <span className="pill good">{gf.clearance.toFixed(1)}″ clearance left</span> : <span className="pill bad">{(-gf.clearance).toFixed(1)}″ too wide to fit</span>) : null; })() } as Cell] : []),
               { label: 'Width, mirrors folded', mine: `${detail.widthFolded}″`, base: b ? `${b.widthFolded}″` : undefined },
               { label: 'Seats / doors', mine: `${detail.seats} / ${detail.doors}`, base: b ? `${b.seats} / ${b.doors}` : undefined,
                 cell: b ? <Delta kind="seats" v={detail.seats} b={b.seats} /> : undefined },
@@ -596,14 +704,14 @@ export default function App() {
                 cell: b ? <span className="pill same">{b.body === detail.body ? '= same' : `${b.body} → ${detail.body}`}</span> : undefined },
               { label: 'Safety', mine: detail.safety, base: b?.safety,
                 cell: b ? <Delta kind="safety" v={detail.safety} b={b.safety} /> : undefined },
-              { label: 'NHTSA rating', mine: detail.nhtsaStars ? `${'★'.repeat(detail.nhtsaStars)}${'☆'.repeat(5 - detail.nhtsaStars)} ${detail.nhtsaStars}/5` : 'Not rated',
+              { label: 'NHTSA rating', mine: detail.nhtsaStars ? `${detail.nhtsaStars}/5` : 'Not rated',
                 base: b ? (b.nhtsaStars ? `${b.nhtsaStars}/5` : 'Not rated') : undefined,
                 cell: b && detail.nhtsaStars && b.nhtsaStars
                   ? (detail.nhtsaStars === b.nhtsaStars
                       ? <span className="pill same">= same</span>
                       : detail.nhtsaStars > b.nhtsaStars
-                        ? <span className="pill good">▲ +{detail.nhtsaStars - b.nhtsaStars} star{detail.nhtsaStars - b.nhtsaStars > 1 ? 's' : ''}</span>
-                        : <span className="pill bad">▼ {detail.nhtsaStars - b.nhtsaStars} star{(detail.nhtsaStars - b.nhtsaStars) < -1 ? 's' : ''}</span>)
+                        ? <span className="pill good">+{detail.nhtsaStars - b.nhtsaStars} star{detail.nhtsaStars - b.nhtsaStars > 1 ? 's' : ''}</span>
+                        : <span className="pill bad">{detail.nhtsaStars - b.nhtsaStars} star{(detail.nhtsaStars - b.nhtsaStars) < -1 ? 's' : ''}</span>)
                   : (b ? <span className="pill same">n/a</span> : undefined) },
               { label: 'Front legroom', mine: `${detail.legroom}″`, base: b ? `${b.legroom}″` : undefined,
                 cell: b && b.legroom !== detail.legroom
@@ -611,7 +719,7 @@ export default function App() {
                   : (b ? <span className="pill same">= same</span> : undefined) },
               { label: 'Hands-free driving', mine: detail.handsFree ? 'Yes' : 'No', base: b ? (b.handsFree ? 'Yes' : 'No') : undefined,
                 cell: b && b.handsFree !== detail.handsFree
-                  ? (detail.handsFree ? <span className="pill good">▲ gains hands-free</span> : <span className="pill bad">▼ loses hands-free</span>)
+                  ? (detail.handsFree ? <span className="pill good">gains hands-free</span> : <span className="pill bad">loses hands-free</span>)
                   : (b ? <span className="pill same">= same</span> : undefined) },
             ];
             const keys: { dir: 'up' | 'dn' | 'chg'; text: string }[] = [];
@@ -641,6 +749,8 @@ export default function App() {
               if (detail.handsFree !== b.handsFree) keys.push(detail.handsFree ? { dir: 'up', text: 'Gains hands-free driving' } : { dir: 'dn', text: 'Loses hands-free driving' });
               if (detail.eff !== b.eff) keys.push(detail.eff > b.eff ? { dir: 'up', text: `+${detail.eff - b.eff} ${detail.effUnit} efficiency` } : { dir: 'dn', text: `${detail.eff - b.eff} ${detail.effUnit} efficiency` });
             }
+            const gfk = garageFit(detail, f.garageWidth);
+            if (gfk) keys.push(gfk.ok ? { dir: 'up', text: `Fits your garage with ${gfk.clearance.toFixed(1)}″ to spare` } : { dir: 'dn', text: `${(-gfk.clearance).toFixed(1)}″ too wide for your garage opening` });
             const v = verdict(detail, baseline);
             const my5 = fiveYear(detail);
             const base5 = b ? fiveYear(b) : null;
@@ -652,12 +762,13 @@ export default function App() {
             return (
               <>
                 {detail.imageUrl && (
-                  <div className="d-photo">
+                  <button type="button" className="d-photo as-btn" onClick={() => setPhotoFull(detail)} aria-label={`View full image of ${detail.year} ${detail.make} ${detail.model}`} title="Click to view full image">
                     <img src={detail.imageUrl} alt={`${detail.year} ${detail.make} ${detail.model}`} onError={(e) => e.currentTarget.closest('.d-photo')?.remove()} />
                     <span className="fuel">{detail.fuel}{detail.rangeMi ? ` · ${detail.rangeMi}mi` : ''}</span>
-                  </div>
+                    <span className="expand-badge" aria-hidden="true">Full image</span>
+                  </button>
                 )}
-                <span className="kicker">Closer analysis{detail.verified ? ' · ✓ specs verified' : ''}</span>
+                <span className="kicker">Closer analysis{detail.verified ? ' · specs verified' : ''}</span>
                 <h2>{detail.year} {detail.make} {detail.model} <small style={{ color: 'var(--muted)' }}>{detail.trim}</small></h2>
                 <p className="d-sub">{detail.body} · {detail.doors} doors · {detail.seats} seats · {detail.fuel}{detail.handsFree ? ' · hands-free driving' : ''}</p>
                 {v ? <p className="verdict" role="status">{v}</p> : <p className="verdict">{baseline ? 'This is your baseline vehicle — everything compares against it.' : 'Set a baseline to see upgrade/trade-off verdicts here.'}</p>}
@@ -665,8 +776,8 @@ export default function App() {
                   <>
                     <h3 className="keys-h">Key differences</h3>
                     <ul className="keys">
-                      {keys.slice(0, 6).map((k, i) => (
-                        <li key={i}><span className={k.dir === 'up' ? 'up' : k.dir === 'dn' ? 'dn' : 'chg'}>{k.dir === 'up' ? '▲' : k.dir === 'dn' ? '▼' : '◆'}</span> {k.text}</li>
+                      {keys.slice(0, 3).map((k, i) => (
+                        <li key={i}>{k.text}</li>
                       ))}
                     </ul>
                   </>
@@ -685,8 +796,8 @@ export default function App() {
                     <span role="cell"><b>{myCO2 != null ? `${myCO2.toFixed(1)} t` : '—'}</b>{baseCO2 != null && <small> · base {baseCO2.toFixed(1)} t</small>}</span>
                     <span role="cell">{b && myCO2 != null && baseCO2 != null && myCO2 !== baseCO2
                       ? (myCO2 < baseCO2
-                          ? <span className="pill good">▲ {(baseCO2 - myCO2).toFixed(1)} t less</span>
-                          : <span className="pill bad">▼ +{(myCO2 - baseCO2).toFixed(1)} t</span>)
+                          ? <span className="pill good">{(baseCO2 - myCO2).toFixed(1)} t less</span>
+                          : <span className="pill bad">+{(myCO2 - baseCO2).toFixed(1)} t</span>)
                       : (b ? <span className="pill same">n/a</span> : null)}</span>
                   </div>
                   {myKwh && (
@@ -695,8 +806,8 @@ export default function App() {
                       <span role="cell"><b>{Math.round(myKwh.amount).toLocaleString()} {myKwh.unit}</b></span>
                       <span role="cell">{b && (() => { const bk = annualEnergy(b); return bk && bk.unit === myKwh.unit && bk.amount !== myKwh.amount ? (
                         bk.amount > myKwh.amount
-                          ? <span className="pill good">▲ {Math.round(bk.amount - myKwh.amount).toLocaleString()} {myKwh.unit} less</span>
-                          : <span className="pill bad">▼ +{Math.round(myKwh.amount - bk.amount).toLocaleString()} {myKwh.unit}</span>
+                          ? <span className="pill good">{Math.round(bk.amount - myKwh.amount).toLocaleString()} {myKwh.unit} less</span>
+                          : <span className="pill bad">+{Math.round(myKwh.amount - bk.amount).toLocaleString()} {myKwh.unit}</span>
                       ) : <span className="pill same">=</span>; })()}</span>
                     </div>
                   )}
@@ -708,8 +819,8 @@ export default function App() {
                   <div className="arow"><span>Fuel over 5 yrs</span><span><b>{my5.fuel != null ? money(my5.fuel) : '—'}</b></span><span>{base5 && <small>base {base5.fuel != null ? money(base5.fuel) : '—'}</small>}</span></div>
                   <div className="arow"><span><b>5-yr total</b></span><span><b>{my5.total != null ? money(my5.total) : '—'}</b></span><span>{base5 && my5.total != null && base5.total != null && my5.total !== base5.total
                     ? (my5.total < base5.total
-                        ? <span className="pill good">▲ saves {money(base5.total - my5.total)}</span>
-                        : <span className="pill bad">▼ {money(my5.total - base5.total)} more</span>)
+                        ? <span className="pill good">saves {money(base5.total - my5.total)}</span>
+                        : <span className="pill bad">{money(my5.total - base5.total)} more</span>)
                     : null}</span></div>
                 </div>
 
@@ -718,6 +829,7 @@ export default function App() {
                   {[
                     { name: detail.model, f: detail.widthFolded, e: detail.widthExtended, cls: 'me' },
                     ...(b ? [{ name: `${b.model} (baseline)`, f: b.widthFolded, e: b.widthExtended, cls: 'base' }] : []),
+                    ...(f.garageWidth ? [{ name: 'Your garage opening', f: f.garageWidth, e: f.garageWidth, cls: 'garage' }] : []),
                   ].map((r) => (
                     <div className="grow" key={r.name}>
                       <span className="gname">{r.name}</span>
@@ -727,7 +839,7 @@ export default function App() {
                       <span className="gval">{r.f}″–{r.e}″</span>
                     </div>
                   ))}
-                  <p className="fnote" style={{ marginTop: 6 }}>Bar spans folded → mirrors-out width on a {WMIN}–{WMAX}″ scale. Mirror swing: {((detail.widthExtended - detail.widthFolded)).toFixed(1)}″{b && ` vs baseline ${((b.widthExtended - b.widthFolded)).toFixed(1)}″`}.</p>
+                  <p className="fnote" style={{ marginTop: 6 }}>Bar spans folded → mirrors-out width on a {WMIN}–{WMAX}″ scale. Mirror swing: {((detail.widthExtended - detail.widthFolded)).toFixed(1)}″{b && ` vs baseline ${((b.widthExtended - b.widthFolded)).toFixed(1)}″`}{f.garageWidth ? ` · your opening: ${f.garageWidth}″` : ''}.</p>
                 </div>
 
                 <h3 className="keys-h">Standing in the catalog ({VEHICLES.length} vehicles)</h3>
@@ -750,33 +862,56 @@ export default function App() {
                 <p className="fnote">Fuel-cost estimate assumes {MILES_YR.toLocaleString()} mi/yr at ${GAS_PRICE.toFixed(2)}/gal gas and ${ELEC_PRICE.toFixed(2)}/kWh electricity; CO₂ uses 8.89 kg/gal and 0.39 kg/kWh (US avg grid). 5-yr sketch = 55% depreciation + fuel, excl. insurance/maintenance. PHEV figures are blended — check EPA numbers. Snapshot pricing, not dealer quotes.</p>
                 {detail.imageCredit && <p className="credit">{detail.imageCredit}</p>}
                 <p className="d-actions">
-                  <button className="btn primary" onClick={() => { patch({ baselineId: detail.id }); setDetail(null); }}>Set as baseline</button>{' '}
-                  <button className="btn" onClick={() => { toggleCmp(detail.id); setDetail(null); }}>+ Compare tray</button>{' '}
-                  <button className="btn ghost" onClick={() => setDetail(null)}>Close</button>
+                  <button className="btn primary" onClick={() => { patch({ baselineId: detail.id }); closeDetail(); }}>Set as baseline</button>{' '}
+                  <button className="btn" onClick={() => { toggleCmp(detail.id); closeDetail(); }}>+ Compare tray</button>{' '}
+                  <button className="btn ghost" onClick={closeDetail}>Back to results</button>
                 </p>
               </>
             );
           })()}
-        </Modal>
+          </div>
+        </div>
+      )}
+      {photoFull?.imageUrl && (
+        <div className="lightbox" role="dialog" aria-modal="true" aria-label={`Full image of ${photoFull.year} ${photoFull.make} ${photoFull.model}`} onClick={() => setPhotoFull(null)}>
+          <button type="button" className="lb-close" onClick={() => setPhotoFull(null)} aria-label="Close full image">Close</button>
+          <img className="lb-img" src={photoFull.imageUrl} alt={`${photoFull.year} ${photoFull.make} ${photoFull.model} full image`} onClick={(e) => e.stopPropagation()} />
+          {photoFull.imageCredit && <p className="lb-credit" onClick={(e) => e.stopPropagation()}>{photoFull.imageCredit}</p>}
+        </div>
       )}
 
       {toast && <div className="toast show" role="status" aria-live="polite">{toast}</div>}
-      <button className={'totop' + (showTop ? ' show' : '')} onClick={() => jump('results')} aria-hidden={!showTop} tabIndex={showTop ? 0 : -1} aria-label="Back to top">↑</button>
+      <button className={'totop' + (showTop ? ' show' : '')} onClick={() => jump('results')} aria-hidden={!showTop} tabIndex={showTop ? 0 : -1} aria-label="Back to top">Top</button>
       <footer className="foot">
         <div className="wrap foot-in">
-          <div className="brand"><span className="logo" aria-hidden="true">▣</span><div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div></div>
-          <nav className="foot-nav" aria-label="Footer">
-            <a href="#baseline" onClick={(e) => { e.preventDefault(); jump('baseline'); }}>Your baseline</a>
-            <a href="#browse" onClick={(e) => { e.preventDefault(); jump('browse'); }}>Browse &amp; filter</a>
-            <a href="#results" onClick={(e) => { e.preventDefault(); jump('results'); }}>Results</a>
-            <button className="linklike" onClick={exportCSV}>Export CSV</button>
-            <button className="linklike" onClick={share}>Share view</button>
-            <button className="linklike" onClick={() => window.print()}>Print</button>
-          </nav>
-          <div className="foot-meta">
-            <span>Dataset snapshot {DATA_STAMP} · {VEHICLES.length} vehicles ({VEHICLES.filter((v) => v.verified).length} with manufacturer/EPA-verified specs)</span>
-            <span>Snapshot pricing, not live dealer pricing · MSRP USD</span>
+          <div className="foot-brand">
+            <img className="logo" src="logo.svg" alt="" aria-hidden="true" />
+            <div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div>
+            <p>Compare {VEHICLES.length} vehicles against your own car — price, efficiency, garage fit, safety and seats, side by side.</p>
           </div>
+          <nav className="foot-nav" aria-label="Footer">
+            <div className="fcol">
+              <h4>Explore</h4>
+              <a href="#baseline" onClick={(e) => { e.preventDefault(); jump('baseline'); }}>Your baseline</a>
+              <a href="#browse" onClick={(e) => { e.preventDefault(); jump('browse'); }}>Browse &amp; filter</a>
+              <a href="#results" onClick={(e) => { e.preventDefault(); jump('results'); }}>Results</a>
+            </div>
+            <div className="fcol">
+              <h4>Actions</h4>
+              <button className="linklike" onClick={share}>Share view</button>
+              <button className="linklike" onClick={() => window.print()}>Print</button>
+            </div>
+            <div className="fcol">
+              <h4>Data</h4>
+              <span>Snapshot {DATA_STAMP}</span>
+              <span>{VEHICLES.length} vehicles · {VEHICLES.filter((v) => v.verified).length} verified specs</span>
+              <span>MSRP in USD · snapshot pricing</span>
+            </div>
+          </nav>
+        </div>
+        <div className="wrap foot-base">
+          <span>© 2026 GarageFit · Specs checked against EPA, NHTSA and manufacturer data</span>
+          <span>Photos via Wikimedia Commons — full credit on each vehicle</span>
         </div>
       </footer>
     </>
