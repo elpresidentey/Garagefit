@@ -1,0 +1,201 @@
+/* ============================================================
+   GarageFit Design System v1
+   Single source of truth for tokens + primitives.
+   styles.css consumes these tokens for layout/components.
+   ------------------------------------------------------------
+   1. Color  2. Type  3. Space  4. Radius  5. Elevation
+   6. Motion 7. Utilities  8. Primitives (chip/btn/field)
+   ============================================================ */
+
+:root {
+  /* ---- 1. Color (semantic, theme-aware overrides live in styles.css) ---- */
+  --ds-bg: var(--bg);
+  --ds-card: var(--card);
+  --ds-ink: var(--ink);
+  --ds-muted: var(--muted);
+  --ds-line: var(--line);
+  --ds-line-strong: var(--line2);
+  --ds-brand: var(--gold);
+  --ds-brand-ink: var(--gold2);
+  --ds-brand-soft: var(--goldsoft);
+  --ds-accent: var(--accent);
+  --ds-ring: var(--ring, color-mix(in srgb, var(--accent) 28%, transparent));
+  --ds-good: var(--good);
+  --ds-good-bg: var(--goodbg);
+  --ds-bad: var(--bad);
+  --ds-bad-bg: var(--badbg);
+  --ds-input: var(--input, var(--card));
+
+  /* ---- 2. Type scale (tight, card-friendly) ---- */
+  --ds-fs-11: 11px;
+  --ds-fs-12: 12px;
+  --ds-fs-12-5: 12.5px;
+  --ds-fs-13: 13px;
+  --ds-fs-14: 14px;
+  --ds-fs-16: 16px;
+  --ds-fs-19: 19px;
+  --ds-fs-24: 24px;
+  --ds-lh-tight: 1.2;
+  --ds-lh-body: 1.55;
+  --ds-fw-reg: 500;
+  --ds-fw-semi: 600;
+  --ds-fw-bold: 700;
+  --ds-fw-xbold: 800;
+  --ds-track-wide: 0.09em;
+
+  /* ---- 3. Space scale (4pt) ---- */
+  --ds-s1: 4px;
+  --ds-s2: 8px;
+  --ds-s3: 12px;
+  --ds-s4: 16px;
+  --ds-s5: 20px;
+  --ds-s6: 24px;
+
+  /* ---- 4. Radius ---- */
+  --ds-r-sm: 9px;
+  --ds-r-md: 12px;
+  --ds-r-lg: 16px;
+  --ds-r-xl: 22px;
+  --ds-r-pill: 999px;
+
+  /* ---- 5. Elevation (consumed via --shadow/--lift in styles.css) ---- */
+
+  /* ---- 6. Motion ---- */
+  --ds-dur-fast: 0.12s;
+  --ds-dur-med: 0.22s;
+  --ds-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* ---------- 7. Utilities ---------- */
+.ds-eyebrow {
+  font-size: var(--ds-fs-11);
+  font-weight: var(--ds-fw-xbold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ds-brand);
+}
+.ds-meta {
+  font-size: var(--ds-fs-12-5);
+  font-weight: var(--ds-fw-reg);
+  color: var(--ds-muted);
+  line-height: var(--ds-lh-tight);
+}
+.ds-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ds-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-s2);
+}
+.ds-row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-s2);
+}
+.ds-output {
+  font-size: var(--ds-fs-12);
+  font-weight: var(--ds-fw-bold);
+  font-variant-numeric: tabular-nums;
+  background: var(--chip);
+  border: 1px solid var(--line);
+  border-radius: var(--ds-r-pill);
+  padding: 2px 10px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ---------- 8. Primitives ---------- */
+
+/* Compact pill — replaces verbose deltas. Color carries meaning,
+   text stays numeric + short. */
+.ds-pill {
+  font-size: var(--ds-fs-11);
+  font-weight: var(--ds-fw-bold);
+  border-radius: var(--ds-r-pill);
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Dismissible filter chip */
+.ds-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ds-fs-12);
+  font-weight: var(--ds-fw-semi);
+  background: var(--chip);
+  border: 1px solid var(--line);
+  border-radius: var(--ds-r-pill);
+  padding: 3px 6px 3px 11px;
+  color: var(--ink);
+  max-width: 240px;
+}
+.ds-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ds-chip button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.ds-chip button:hover {
+  color: var(--ink);
+  background: var(--line);
+}
+/* Dark: chips/outputs sit on lifted surfaces — keep borders visible. */
+[data-theme="dark"] .ds-chip {
+  border-color: var(--line2);
+}
+[data-theme="dark"] .ds-output {
+  background: var(--chip);
+  border-color: var(--line2);
+}
+
+/* Filter count badge on the Filters button */
+.ds-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--ds-r-pill);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: var(--ds-fs-11);
+  font-weight: var(--ds-fw-xbold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Field label row: label left, value badge right */
+.ds-field-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-s2);
+  margin: 10px 0 2px;
+}
+.ds-field-row label {
+  font-size: var(--ds-fs-13) !important;
+  font-weight: var(--ds-fw-semi) !important;
+  margin: 0 !important;
+}

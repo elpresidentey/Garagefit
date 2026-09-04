@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GarageFit — Find cars that actually fit your life</title>
 <meta name="description" content="Compare vehicles side-by-side against your current car. Garage fit, seats, safety, efficiency, price.">
-<meta name="theme-color" content="#7e57c2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0b0e" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="color-scheme" content="light dark">
+<script>/* Set theme before first paint: stored pref wins, else OS preference. */
+try{var __gfT=localStorage.getItem('gf-theme');if(__gfT!=='dark'&&__gfT!=='light'){__gfT=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=__gfT;}catch(e){document.documentElement.dataset.theme='light';}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="GarageFit">

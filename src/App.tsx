@@ -60,35 +60,35 @@ const DEFAULTS: FilterState = {
   topSafety: false, handsFree: false, fuels: [], bodies: [], make: '', minEff: 0,
 };
 
-function Delta({ kind, v, b }: { kind: 'msrp' | 'eff' | 'width' | 'seats' | 'safety'; v: number | string; b: number | string }) {
-  let cls = 'same', label = '= same';
+function Delta({ kind, v, b, unit }: { kind: 'msrp' | 'eff' | 'width' | 'seats' | 'safety'; v: number | string; b: number | string; unit?: string }) {
+  let cls = 'same', label = '=', title = 'Same as baseline';
   if (kind === 'msrp' && typeof v === 'number' && typeof b === 'number') {
     const d = v - b;
-    if (d === 0) label = '= same price';
-    else if (d < 0) { cls = 'good'; label = `${money(-d)} cheaper`; }
-    else { cls = 'bad'; label = `${money(d)} more`; }
+    if (d === 0) { label = 'Same price'; title = 'Same price as baseline'; }
+    else if (d < 0) { cls = 'good'; label = `−${money(-d)}`; title = `${money(-d)} cheaper than baseline`; }
+    else { cls = 'bad'; label = `+${money(d)}`; title = `${money(d)} more than baseline`; }
   } else if (kind === 'eff' && typeof v === 'number' && typeof b === 'number') {
     const d = v - b;
-    if (d === 0) label = '= same';
-    else if (d > 0) { cls = 'good'; label = `+${d} better`; }
-    else { cls = 'bad'; label = `${d} worse`; }
+    if (d === 0) { label = '='; title = 'Same efficiency'; }
+    else if (d > 0) { cls = 'good'; label = `+${d}${unit ? ` ${unit}` : ''}`; title = `${d}${unit ? ` ${unit}` : ''} more efficient`; }
+    else { cls = 'bad'; label = `${d}${unit ? ` ${unit}` : ''}`; title = `${d}${unit ? ` ${unit}` : ''} less efficient`; }
   } else if (kind === 'width' && typeof v === 'number' && typeof b === 'number') {
     const d = +(v - b).toFixed(1);
-    if (d === 0) label = '= same width';
-    else if (d < 0) { cls = 'good'; label = `${d}″ narrower`; }
-    else { cls = 'bad'; label = `+${d}″ wider`; }
+    if (d === 0) { label = 'Same width'; title = 'Same width as baseline'; }
+    else if (d < 0) { cls = 'good'; label = `${d}″`; title = `${Math.abs(d)}″ narrower than baseline`; }
+    else { cls = 'bad'; label = `+${d}″`; title = `${d}″ wider than baseline`; }
   } else if (kind === 'seats' && typeof v === 'number' && typeof b === 'number') {
     const d = v - b;
-    if (d === 0) label = '= seats';
-    else if (d > 0) { cls = 'good'; label = `+${d} seats`; }
-    else { cls = 'bad'; label = `${d} seats`; }
+    if (d === 0) { label = '='; title = 'Same seats'; }
+    else if (d > 0) { cls = 'good'; label = `+${d} seats`; title = `${d} more seats`; }
+    else { cls = 'bad'; label = `${d}`; title = `${d} fewer seats`; }
   } else if (kind === 'safety') {
     const a = SAFETY_SCORE[String(v)] ?? 0, c = SAFETY_SCORE[String(b)] ?? 0;
-    if (a === c) label = String(v) || '—';
-    else if (a > c) { cls = 'good'; label = `${v} better`; }
-    else { cls = 'bad'; label = `${v} worse`; }
+    if (a === c) { label = String(v) || '—'; title = 'Same safety rating'; }
+    else if (a > c) { cls = 'good'; label = `${v} ↑`; title = `Safer: ${v} vs ${b}`; }
+    else { cls = 'bad'; label = `${v} ↓`; title = `Less safe: ${v} vs ${b}`; }
   }
-  return <span className={`pill ${cls}`}>{label}</span>;
+  return <span className={`pill ds-pill ${cls}`} title={title}>{label}</span>;
 }
 
 function Modal({ label, onClose, children }: { label: string; onClose: () => void; children: React.ReactNode }) {
@@ -216,7 +216,14 @@ export default function App() {
   }, [splash]);
   const [cmpOpen, setCmpOpen] = useState(false);
   const [toast, setToast] = useState('');
-  const [dark, setDark] = useState(localStorage.getItem('gf-theme') === 'dark');
+  const [dark, setDark] = useState(() => {
+    try {
+      const stored = localStorage.getItem('gf-theme');
+      if (stored === 'dark') return true;
+      if (stored === 'light') return false;
+      return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+    } catch { return false; }
+  });
   const [offline, setOffline] = useState(!navigator.onLine);
   const [swUpdate, setSwUpdate] = useState(false);
   // Full-page vehicle view: browser-back/Escape support, body scroll lock, reset scroll on open
@@ -256,8 +263,35 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    localStorage.setItem('gf-theme', dark ? 'dark' : 'light');
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+    try { localStorage.setItem('gf-theme', dark ? 'dark' : 'light'); } catch { /* private mode */ }
+    // Keep the status-bar / PWA theme in sync with the manual toggle
+    // (the media-based metas in index.html only follow the OS).
+    try {
+      let m = document.querySelector<HTMLMetaElement>('meta[name="theme-color"][data-gf]');
+      if (!m) {
+        m = document.createElement('meta');
+        m.name = 'theme-color';
+        m.setAttribute('data-gf', '1');
+        document.head.appendChild(m);
+      }
+      m.content = dark ? '#0b0b0e' : '#f6f6f4';
+    } catch { /* head not writable in some embeds */ }
   }, [dark]);
+  // Follow the OS while the user hasn't picked a theme explicitly.
+  useEffect(() => {
+    let mq: MediaQueryList | null = null;
+    const onChange = (e: MediaQueryListEvent) => {
+      try { if (!localStorage.getItem('gf-theme')) setDark(e.matches); } catch { setDark(e.matches); }
+    };
+    try {
+      if (!localStorage.getItem('gf-theme')) {
+        mq = window.matchMedia('(prefers-color-scheme: dark)');
+        mq.addEventListener('change', onChange);
+      }
+    } catch { /* older browsers */ }
+    return () => { try { mq?.removeEventListener('change', onChange); } catch { /* noop */ } };
+  }, []);
   useEffect(() => {
     const on = () => setOffline(!navigator.onLine);
     window.addEventListener('online', on); window.addEventListener('offline', on);
@@ -359,21 +393,22 @@ export default function App() {
     try { await navigator.clipboard.writeText(location.href); setToast('Share link copied'); }
     catch { prompt('Copy link:', location.href); }
   };
-  const tags: string[] = [];
-  if (f.preset) tags.push(PRESETS.find((p) => p.id === f.preset)?.label ?? f.preset);
-  if (f.q) tags.push(`“${f.q}”`);
-  if (f.maxPrice < 80000) tags.push(`≤ ${money(f.maxPrice)}`);
-  if (f.minYear > 2019) tags.push(`${f.minYear}+`);
-  if (f.maxWidth < 98) tags.push(`≤ ${f.maxWidth}″`);
-  if (f.garageWidth) tags.push(`Garage opening ${f.garageWidth}″`);
-  if (f.garageFitOnly && f.garageWidth) tags.push('Fits garage');
-  if (f.topSafety) tags.push('Top safety');
-  if (f.handsFree) tags.push('Hands-free');
-  if (f.narrowOnly) tags.push('Fits baseline width');
-  if (f.minEff > 0) tags.push(`Min ${f.minEff} MPG(e)`);
-  if (f.fuels.length) tags.push(f.fuels.join(', '));
-  if (f.bodies.length) tags.push(f.bodies.join(', '));
-  if (f.make) tags.push(f.make);
+  type Tag = { key: string; label: string; clear: () => void };
+  const tags: Tag[] = [];
+  if (f.preset) { const pr = PRESETS.find((p) => p.id === f.preset); tags.push({ key: 'preset', label: pr?.label ?? f.preset, clear: () => patch({ preset: '' }) }); }
+  if (f.q) tags.push({ key: 'q', label: `“${f.q}”`, clear: () => patch({ q: '' }) });
+  if (f.maxPrice < 80000) tags.push({ key: 'maxPrice', label: `≤ ${money(f.maxPrice)}`, clear: () => patch({ maxPrice: 80000 }) });
+  if (f.minYear > 2019) tags.push({ key: 'minYear', label: `${f.minYear}+`, clear: () => patch({ minYear: 2019 }) });
+  if (f.maxWidth < 98) tags.push({ key: 'maxWidth', label: `≤ ${f.maxWidth}″ wide`, clear: () => patch({ maxWidth: 98 }) });
+  if (f.garageWidth) tags.push({ key: 'gw', label: `Garage ${f.garageWidth}″`, clear: () => patch({ garageWidth: 0, garageFitOnly: false }) });
+  if (f.garageFitOnly && f.garageWidth) tags.push({ key: 'gwOnly', label: 'Fits garage', clear: () => patch({ garageFitOnly: false }) });
+  if (f.topSafety) tags.push({ key: 'topSafety', label: 'Top safety', clear: () => patch({ topSafety: false }) });
+  if (f.handsFree) tags.push({ key: 'handsFree', label: 'Hands-free', clear: () => patch({ handsFree: false }) });
+  if (f.narrowOnly) tags.push({ key: 'narrowOnly', label: 'Fits baseline', clear: () => patch({ narrowOnly: false }) });
+  if (f.minEff > 0) tags.push({ key: 'minEff', label: `${f.minEff}+ MPG(e)`, clear: () => patch({ minEff: 0 }) });
+  if (f.fuels.length) tags.push({ key: 'fuels', label: f.fuels.join(' · '), clear: () => patch({ fuels: [] }) });
+  if (f.bodies.length) tags.push({ key: 'bodies', label: f.bodies.join(' · '), clear: () => patch({ bodies: [] }) });
+  if (f.make) tags.push({ key: 'make', label: f.make, clear: () => patch({ make: '' }) });
   const hasActive = f.preset !== '' || f.q !== '' || f.maxPrice !== 80000 || f.minYear !== 2019 || f.maxWidth !== 98
     || f.garageFitOnly || f.narrowOnly || f.topSafety || f.handsFree || f.make !== '' || f.minEff !== 0
     || f.fuels.length > 0 || f.bodies.length > 0;
@@ -504,10 +539,12 @@ export default function App() {
           <div className="presets" role="toolbar" aria-label="Quick presets">{PRESETS.map((p) => <button key={p.id} className={'preset' + (f.preset === p.id ? ' on' : '')} aria-pressed={f.preset === p.id} onClick={() => patch({ preset: f.preset === p.id ? '' : p.id })}>{p.label}</button>)}</div>
           <div className="toolbar">
             <div className="controls">
+              <button className={'btn' + (filtersOpen ? ' on' : '')} onClick={() => setFiltersOpen((o) => !o)} aria-expanded={filtersOpen} aria-controls="gf-filters">Filters{tags.length ? <span className="ds-count" aria-label={`${tags.length} active`}>{tags.length}</span> : null}</button>
               <div className="control">
+                <label className="sr-only" htmlFor="gf-sort">Sort</label>
                 <select id="gf-sort" aria-label="Sort results" value={f.sort} onChange={(e) => setF((s) => ({ ...s, sort: e.target.value as SortKey }))}>
-                  <option value="fit">Best fit</option><option value="price-asc">Price low to high</option>
-                  <option value="price-desc">Price high to low</option><option value="eff-desc">Efficiency high to low</option>
+                  <option value="fit">Best fit</option><option value="price-asc">Price ↑</option>
+                  <option value="price-desc">Price ↓</option><option value="eff-desc">Efficiency</option>
                   <option value="year-desc">Newest</option><option value="safety-desc">Safest</option>
                   <option value="width-asc">Narrowest</option>
                 </select>
@@ -516,57 +553,57 @@ export default function App() {
                 <button className={f.view === 'cards' ? 'seg-on' : ''} aria-pressed={f.view === 'cards'} title="Card view" onClick={() => setF((s) => ({ ...s, view: 'cards' }))}>Cards</button>
                 <button className={f.view === 'table' ? 'seg-on' : ''} aria-pressed={f.view === 'table'} title="Table view" onClick={() => setF((s) => ({ ...s, view: 'table' }))}>Table</button>
               </div>
-              <button className={'btn' + (filtersOpen ? ' on' : '')} onClick={() => setFiltersOpen((o) => !o)} aria-expanded={filtersOpen} aria-controls="gf-filters">Filters{tags.length ? ` (${tags.length})` : ''}</button>
-              {hasActive && <button className="btn ghost" onClick={clearFilters} title="Clear all filters" aria-label="Clear all filters">Clear</button>}
+              {hasActive && <button className="linklike" onClick={clearFilters} title="Clear all filters" aria-label="Clear all filters">Reset</button>}
               {f.view === 'table' && <button className={'btn ghost' + (colsOpen ? ' on' : '')} onClick={() => setColsOpen((o) => !o)} aria-expanded={colsOpen} aria-controls="gf-cols">Columns</button>}
             </div>
-            {tags.length > 0 && <div className="summary">{tags.map((t) => <span key={t} className="tag">{t}</span>)}</div>}
+            {tags.length > 0 && <div className="summary" aria-label="Active filters">{tags.map((t) => <span key={t.key} className="ds-chip"><span>{t.label}</span><button onClick={t.clear} aria-label={`Remove filter ${t.label}`}>×</button></span>)}</div>}
           </div>
           {filtersOpen && (
             <div className="filters" id="gf-filters">
-              <div className="fgrid">
-                <fieldset><legend>Year &amp; Price</legend>
-                  <label htmlFor="gf-maxprice">Max price ${f.maxPrice}</label><input id="gf-maxprice" type="range" min={20000} max={120000} step={1000} value={f.maxPrice} onChange={(e) => patch({ maxPrice: +e.target.value })} />
-                  <label htmlFor="gf-minyear">Min year {f.minYear}</label><input id="gf-minyear" type="range" min={2019} max={2026} value={f.minYear} onChange={(e) => patch({ minYear: +e.target.value })} />
-                </fieldset>
-                <fieldset><legend>Garage fit</legend>
-                  <label htmlFor="gf-maxwidth">Max width (out, in) {f.maxWidth}</label><input id="gf-maxwidth" type="range" min={68} max={98} step={0.5} value={f.maxWidth} onChange={(e) => patch({ maxWidth: +e.target.value })} />
-                  <label className="check"><input type="checkbox" checked={f.narrowOnly} disabled={!baseline} onChange={(e) => patch({ narrowOnly: e.target.checked })} /> Fits my baseline width</label>
-                  {!baseline && <p className="f-hint">Pick a baseline vehicle above to compare widths.</p>}
-                  <label className="check"><input type="checkbox" checked={f.garageFitOnly} disabled={!f.garageWidth} onChange={(e) => patch({ garageFitOnly: e.target.checked })} /> Only vehicles that fit my opening{f.garageWidth ? ` (${f.garageWidth}″)` : ''}</label>
-                  {!f.garageWidth && <p className="f-hint">Set your garage opening in the “Your baseline” section above.</p>}
-                </fieldset>
-                <fieldset><legend>Safety &amp; assist</legend>
-                  <label className="check"><input type="checkbox" checked={f.topSafety} onChange={(e) => patch({ topSafety: e.target.checked })} /> Top safety only</label>
-                  <label className="check"><input type="checkbox" checked={f.handsFree} onChange={(e) => patch({ handsFree: e.target.checked })} /> Hands-free driving</label>
-                </fieldset>
-                <fieldset><legend>Powertrain &amp; efficiency</legend>
-                  <div className="checks">{FUELS.map((x) => <label key={x}><input type="checkbox" checked={f.fuels.includes(x)} onChange={(e) => patch({ fuels: e.target.checked ? [...f.fuels, x] : f.fuels.filter((y) => y !== x) })} /> {x}</label>)}</div>
-                  <label htmlFor="gf-mineff">Min efficiency {f.minEff} MPG(e)</label><input id="gf-mineff" type="range" min={0} max={140} value={f.minEff} onChange={(e) => patch({ minEff: +e.target.value })} />
-                </fieldset>
-                <fieldset><legend>Type &amp; make</legend>
+              <div className="fgrid fgrid-3">
+                <fieldset><legend>Vehicle</legend>
+                  <div className="ds-field-row"><label htmlFor="gf-minyear">Year</label><output className="ds-output">{f.minYear}+</output></div>
+                  <input id="gf-minyear" type="range" min={2019} max={2026} value={f.minYear} onChange={(e) => patch({ minYear: +e.target.value })} aria-label={`Minimum year ${f.minYear}`} />
                   <div className="checks">{BODIES.map((x) => <label key={x}><input type="checkbox" checked={f.bodies.includes(x)} onChange={(e) => patch({ bodies: e.target.checked ? [...f.bodies, x] : f.bodies.filter((y) => y !== x) })} /> {x}</label>)}</div>
                   <label className="sr-only" htmlFor="gf-make">Make</label>
                   <select id="gf-make" value={f.make} onChange={(e) => patch({ make: e.target.value })}><option value="">All makes</option>{MAKES.map((m) => <option key={m}>{m}</option>)}</select>
                 </fieldset>
+                <fieldset><legend>Price &amp; efficiency</legend>
+                  <div className="ds-field-row"><label htmlFor="gf-maxprice">Max price</label><output className="ds-output">{money(f.maxPrice)}</output></div>
+                  <input id="gf-maxprice" type="range" min={20000} max={120000} step={1000} value={f.maxPrice} onChange={(e) => patch({ maxPrice: +e.target.value })} aria-label={`Max price ${money(f.maxPrice)}`} />
+                  <div className="checks">{FUELS.map((x) => <label key={x}><input type="checkbox" checked={f.fuels.includes(x)} onChange={(e) => patch({ fuels: e.target.checked ? [...f.fuels, x] : f.fuels.filter((y) => y !== x) })} /> {x}</label>)}</div>
+                  <div className="ds-field-row"><label htmlFor="gf-mineff">Efficiency</label><output className="ds-output">{f.minEff}+ MPG(e)</output></div>
+                  <input id="gf-mineff" type="range" min={0} max={140} value={f.minEff} onChange={(e) => patch({ minEff: +e.target.value })} aria-label={`Minimum efficiency ${f.minEff}`} />
+                </fieldset>
+                <fieldset><legend>Fit &amp; safety</legend>
+                  <div className="ds-field-row"><label htmlFor="gf-maxwidth">Max width</label><output className="ds-output">{f.maxWidth}″</output></div>
+                  <input id="gf-maxwidth" type="range" min={68} max={98} step={0.5} value={f.maxWidth} onChange={(e) => patch({ maxWidth: +e.target.value })} aria-label={`Max width ${f.maxWidth} inches`} />
+                  <label className="check"><input type="checkbox" checked={f.narrowOnly} disabled={!baseline} onChange={(e) => patch({ narrowOnly: e.target.checked })} /> Fits baseline</label>
+                  <label className="check"><input type="checkbox" checked={f.garageFitOnly} disabled={!f.garageWidth} onChange={(e) => patch({ garageFitOnly: e.target.checked })} /> Fits my garage{f.garageWidth ? ` (${f.garageWidth}″)` : ''}</label>
+                  {!baseline && !f.garageWidth && <p className="f-hint">Set a baseline or garage opening above to unlock fit filters.</p>}
+                  <div className="checks checks-row">
+                    <label><input type="checkbox" checked={f.topSafety} onChange={(e) => patch({ topSafety: e.target.checked })} /> Top safety</label>
+                    <label><input type="checkbox" checked={f.handsFree} onChange={(e) => patch({ handsFree: e.target.checked })} /> Hands-free</label>
+                  </div>
+                </fieldset>
               </div>
-              <div className="f-actions"><button className="btn ghost" onClick={clearFilters}>Clear all filters</button></div>
+              <div className="f-actions"><button className="btn ghost" onClick={clearFilters}>Reset all</button><button className="btn primary" onClick={() => setFiltersOpen(false)}>Show {results.length} result{results.length === 1 ? '' : 's'}</button></div>
             </div>
           )}
           {f.view === 'table' && colsOpen && <div className="cols" id="gf-cols">{(Object.keys(cols) as (keyof typeof cols)[]).map((k) => <label key={k}><input type="checkbox" checked={cols[k]} onChange={(e) => setCols((c) => ({ ...c, [k]: e.target.checked }))} /> {k}</label>)}</div>}
         </div>
 
-        <div className="count" role="status" aria-live="polite">{results.length} of {VEHICLES.length} vehicles{baseline ? ` vs your ${baseline.year} ${baseline.make} ${baseline.model}` : ''}{f.garageWidth ? ` · ${results.filter((x) => x.widthExtended <= f.garageWidth).length} fit your ${f.garageWidth}″ opening` : ''}</div>
+        <div className="count" role="status" aria-live="polite"><strong>{results.length}</strong>&nbsp;vehicle{results.length === 1 ? '' : 's'}{f.garageWidth ? ` · ${results.filter((x) => x.widthExtended <= f.garageWidth).length} fit ${f.garageWidth}″` : ''}</div>
 
         {f.view === 'cards' ? (
           <>
-            <section className="grid" id="results" aria-label="Vehicle results">
+            <section className="grid grid-lean" id="results" aria-label="Vehicle results">
               {results.slice(0, shown).map((v, i) => (
                 <article
-                  className="card card-click" key={v.id} aria-labelledby={`t-${v.id}`}
+                  className="card card-click card-lean" key={v.id} aria-labelledby={`t-${v.id}`}
                   style={{ animationDelay: `${Math.min(i, 11) * 35}ms` }}
                   tabIndex={0}
-                  aria-label={`View closer analysis of ${v.year} ${v.make} ${v.model} ${v.trim}`}
+                  aria-label={`View ${v.year} ${v.make} ${v.model} ${v.trim}`}
                   onClick={() => setDetail(v)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDetail(v); } }}
                 >
@@ -582,38 +619,35 @@ export default function App() {
                         onError={(e) => e.currentTarget.remove()}
                       />
                     )}
-                    <span className="fuel fuel-plain">{v.fuel}{v.rangeMi ? ` · ${v.rangeMi}mi` : ''}</span>
-                    {(() => { const gf = garageFit(v, f.garageWidth); return gf ? <span className={`gfit-badge ${gf.ok ? 'ok' : 'no'}`}>{gf.ok ? `Fits · ${gf.clearance.toFixed(1)}″ spare` : `${(-gf.clearance).toFixed(1)}″ too wide`}</span> : null; })()}
+                    <span className="fuel fuel-plain">{v.fuel}{v.rangeMi ? ` · ${v.rangeMi} mi` : ''}</span>
+                    {(() => { const gf = garageFit(v, f.garageWidth); if (!gf) return null; return gf.ok ? <span className="gfit-dot ok" title={`Fits with ${gf.clearance.toFixed(1)}″ to spare`} aria-label="Fits your garage" /> : <span className="gfit-dot no" title={`${(-gf.clearance).toFixed(1)}″ too wide`} aria-label="Too wide for your garage" />; })()}
                     <button className="fav" aria-label={favs.includes(v.id) ? `Remove ${v.make} ${v.model} from favorites` : `Add ${v.make} ${v.model} to favorites`} aria-pressed={favs.includes(v.id)} onClick={(e) => { e.stopPropagation(); setFavs((s) => s.includes(v.id) ? s.filter((x) => x !== v.id) : [...s, v.id]); }}>{favs.includes(v.id) ? '★' : '☆'}</button>
                   </div>
                   <div className="shade" aria-hidden="true"></div>
                   <div className="body">
-                    <h3 id={`t-${v.id}`}>{v.year} {v.make} {v.model}</h3>
-                    <div className="sub">{v.trim} · {v.body} · {v.seats} seats · {v.safety}{v.nhtsaStars ? ` · NHTSA ${v.nhtsaStars}/5` : ''}</div>
-                    <div className="price">{money(v.msrp)}<small> MSRP</small></div>
+                    <h3 id={`t-${v.id}`} className="ds-truncate">{v.year} {v.make} {v.model}</h3>
+                    <div className="sub ds-truncate">{v.trim} · {v.body}</div>
+                    <div className="price-row"><span className="price">{money(v.msrp)}</span><span className="ds-meta">{v.eff} {v.effUnit} · {v.widthExtended}″</span></div>
                     <div className="deltas">
-                      {baseline ? (<><Delta kind="msrp" v={v.msrp} b={baseline.msrp} /><Delta kind="eff" v={v.eff} b={baseline.eff} /><Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} /></>) : (<span className="pill same">{v.eff} {v.effUnit} · {v.widthExtended}″ wide</span>)}
+                      {baseline && baseline.id !== v.id ? (<><Delta kind="msrp" v={v.msrp} b={baseline.msrp} /><Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} /></>) : null}
                     </div>
-                    <div className="fitbar">
+                    <div className="fitbar slim">
                       <div className="track">
                         {baseline && <span className="tick" style={{ left: `${wPct(baseline.widthExtended)}%` }} title={`Baseline: ${baseline.widthExtended}″`} />}
-                        {f.garageWidth > 0 && <span className="tick garage" style={{ left: `${wPct(f.garageWidth)}%` }} title={`Your garage opening: ${f.garageWidth}″`} />}
+                        {f.garageWidth > 0 && <span className="tick garage" style={{ left: `${wPct(f.garageWidth)}%` }} title={`Garage: ${f.garageWidth}″`} />}
                         <span className="dot" style={{ left: `${wPct(v.widthExtended)}%` }} title={`${v.widthExtended}″ mirrors out`} />
                       </div>
-                      <div className="lbl"><span>{v.widthExtended}″ wide</span>{baseline && <span>base {baseline.widthExtended}″</span>}{f.garageWidth > 0 && <span>garage {f.garageWidth}″</span>}</div>
                     </div>
-                    <div className="specrow"><span>{v.eff} {v.effUnit}</span><span>{v.widthExtended}″</span><span>{v.safety}</span>{v.handsFree && <span>hands-free</span>}</div>
                     <div className="actions">
-                      <button className="btn" onClick={(e) => { e.stopPropagation(); patch({ baselineId: v.id }); setToast('Baseline set — table now shows comparison vs it'); }}>Set baseline</button>
-                      <button className="btn ghost" onClick={(e) => { e.stopPropagation(); setDetail(v); }}>More specs</button>
-                      <button className="btn ghost" onClick={(e) => { e.stopPropagation(); toggleCmp(v.id); }}>{compare.includes(v.id) ? 'In tray' : '+ Compare'}</button>
+                      <button className="btn details" onClick={(e) => { e.stopPropagation(); setDetail(v); }}>Details</button>
+                      <button className={'btn ghost cmp' + (compare.includes(v.id) ? ' on' : '')} aria-pressed={compare.includes(v.id)} onClick={(e) => { e.stopPropagation(); toggleCmp(v.id); }} title={compare.includes(v.id) ? 'Remove from compare' : 'Add to compare'}>{compare.includes(v.id) ? '✓' : '+'}</button>
                     </div>
                   </div>
                 </article>
               ))}
             </section>
-            {!results.length && <div className="empty">No vehicles match. <button className="btn" onClick={clearFilters}>Clear filters</button></div>}
-            <div className="morewrap">{results.length > shown && <button className="btn big" onClick={() => setShown((s) => s + 24)}>Show more</button>}</div>
+            {!results.length && <div className="empty"><strong>No matches.</strong><span className="ds-meta">Try widening price, year, or width.</span><button className="btn" onClick={clearFilters}>Reset filters</button></div>}
+            <div className="morewrap">{results.length > shown && <button className="btn big" onClick={() => setShown((s) => s + 24)}>Show more ({results.length - shown} left)</button>}</div>
           </>
         ) : (
           <section className="tablewrap" aria-label="Vehicle results table"><table><caption className="sr-only">Vehicles compared against your baseline</caption><thead><tr>
@@ -624,7 +658,7 @@ export default function App() {
               <tr key={v.id} className="row-click" onClick={() => setDetail(v)} title={`View closer analysis of ${v.year} ${v.make} ${v.model}`}>
                 <td><b>{v.year} {v.make} {v.model}</b><br /><small style={{ color: 'var(--muted)' }}>{v.trim} · {v.body}</small></td>
                 {cols.price && <td>{money(v.msrp)}<br />{baseline && <Delta kind="msrp" v={v.msrp} b={baseline.msrp} />}</td>}
-                {cols.eff && <td>{v.eff} {v.effUnit}<br />{baseline && <Delta kind="eff" v={v.eff} b={baseline.eff} />}</td>}
+                {cols.eff && <td>{v.eff} {v.effUnit}<br />{baseline && <Delta kind="eff" v={v.eff} b={baseline.eff} unit={v.effUnit} />}</td>}
                 {cols.seats && <td>{v.seats}<br />{baseline && <Delta kind="seats" v={v.seats} b={baseline.seats} />}</td>}
                 {cols.width && <td>{v.widthExtended}″<br />{baseline && <Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} />}{(() => { const gf = garageFit(v, f.garageWidth); return gf ? <span className={`pill ${gf.ok ? 'good' : 'bad'}`}>{gf.ok ? `${gf.clearance.toFixed(1)}″ spare` : `${(-gf.clearance).toFixed(1)}″ too wide`}</span> : null; })()}</td>}
                 {cols.safety && <td>{v.safety}<br />{baseline && <Delta kind="safety" v={v.safety} b={baseline.safety} />}</td>}
