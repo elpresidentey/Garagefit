@@ -30,6 +30,8 @@ export interface Vehicle {
   nhtsaStars?: number;
   /** True when MSRP, efficiency, and body width were verified against manufacturer/EPA sources. */
   verified?: boolean;
+  /** True for pre-2024 records where `msrp` is a typical used-market value, not the original sticker. */
+  used?: boolean;
 }
 
 export type SortKey = 'fit' | 'price-asc' | 'price-desc' | 'eff-desc' | 'year-desc' | 'safety-desc' | 'width-asc';

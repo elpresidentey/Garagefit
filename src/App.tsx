@@ -56,7 +56,7 @@ function readURL(): Partial<FilterState> {
 
 const DEFAULTS: FilterState = {
   baselineId: DEFAULT_BASELINE_ID, q: '', preset: '', sort: 'fit', view: 'cards',
-  maxPrice: 80000, minYear: 2019, maxWidth: 98, garageWidth: 0, garageFitOnly: false, narrowOnly: false,
+  maxPrice: 80000, minYear: 2015, maxWidth: 98, garageWidth: 0, garageFitOnly: false, narrowOnly: false,
   topSafety: false, handsFree: false, fuels: [], bodies: [], make: '', minEff: 0,
 };
 
@@ -398,7 +398,7 @@ export default function App() {
   if (f.preset) { const pr = PRESETS.find((p) => p.id === f.preset); tags.push({ key: 'preset', label: pr?.label ?? f.preset, clear: () => patch({ preset: '' }) }); }
   if (f.q) tags.push({ key: 'q', label: `“${f.q}”`, clear: () => patch({ q: '' }) });
   if (f.maxPrice < 80000) tags.push({ key: 'maxPrice', label: `≤ ${money(f.maxPrice)}`, clear: () => patch({ maxPrice: 80000 }) });
-  if (f.minYear > 2019) tags.push({ key: 'minYear', label: `${f.minYear}+`, clear: () => patch({ minYear: 2019 }) });
+  if (f.minYear > 2015) tags.push({ key: 'minYear', label: `${f.minYear}+`, clear: () => patch({ minYear: 2015 }) });
   if (f.maxWidth < 98) tags.push({ key: 'maxWidth', label: `≤ ${f.maxWidth}″ wide`, clear: () => patch({ maxWidth: 98 }) });
   if (f.garageWidth) tags.push({ key: 'gw', label: `Garage ${f.garageWidth}″`, clear: () => patch({ garageWidth: 0, garageFitOnly: false }) });
   if (f.garageFitOnly && f.garageWidth) tags.push({ key: 'gwOnly', label: 'Fits garage', clear: () => patch({ garageFitOnly: false }) });
@@ -409,11 +409,11 @@ export default function App() {
   if (f.fuels.length) tags.push({ key: 'fuels', label: f.fuels.join(' · '), clear: () => patch({ fuels: [] }) });
   if (f.bodies.length) tags.push({ key: 'bodies', label: f.bodies.join(' · '), clear: () => patch({ bodies: [] }) });
   if (f.make) tags.push({ key: 'make', label: f.make, clear: () => patch({ make: '' }) });
-  const hasActive = f.preset !== '' || f.q !== '' || f.maxPrice !== 80000 || f.minYear !== 2019 || f.maxWidth !== 98
+  const hasActive = f.preset !== '' || f.q !== '' || f.maxPrice !== 80000 || f.minYear !== 2015 || f.maxWidth !== 98
     || f.garageFitOnly || f.narrowOnly || f.topSafety || f.handsFree || f.make !== '' || f.minEff !== 0
     || f.fuels.length > 0 || f.bodies.length > 0;
 
-  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2019, maxWidth: 98, garageFitOnly: false, narrowOnly: false, topSafety: false, handsFree: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
+  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2015, maxWidth: 98, garageFitOnly: false, narrowOnly: false, topSafety: false, handsFree: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
 
   return (
     <>
@@ -561,7 +561,7 @@ export default function App() {
               <div className="fgrid fgrid-3">
                 <fieldset><legend>Vehicle</legend>
                   <div className="ds-field-row"><label htmlFor="gf-minyear">Year</label><output className="ds-output">{f.minYear}+</output></div>
-                  <input id="gf-minyear" type="range" min={2019} max={2026} value={f.minYear} onChange={(e) => patch({ minYear: +e.target.value })} aria-label={`Minimum year ${f.minYear}`} />
+                  <input id="gf-minyear" type="range" min={2015} max={2026} value={f.minYear} onChange={(e) => patch({ minYear: +e.target.value })} aria-label={`Minimum year ${f.minYear}`} />
                   <div className="checks">{BODIES.map((x) => <label key={x}><input type="checkbox" checked={f.bodies.includes(x)} onChange={(e) => patch({ bodies: e.target.checked ? [...f.bodies, x] : f.bodies.filter((y) => y !== x) })} /> {x}</label>)}</div>
                   <label className="sr-only" htmlFor="gf-make">Make</label>
                   <select id="gf-make" value={f.make} onChange={(e) => patch({ make: e.target.value })}><option value="">All makes</option>{MAKES.map((m) => <option key={m}>{m}</option>)}</select>
@@ -625,7 +625,7 @@ export default function App() {
                   <div className="body">
                     <h3 id={`t-${v.id}`} className="ds-truncate">{v.year} {v.make} {v.model}</h3>
                     <div className="sub ds-truncate">{v.trim} · {v.body}</div>
-                    <div className="price-row"><span className="price">{money(v.msrp)}</span><span className="ds-meta">{v.eff} {v.effUnit} · {v.widthExtended}″</span></div>
+                    <div className="price-row"><span className="price">{money(v.msrp)}{v.used && <small> used</small>}</span><span className="ds-meta">{v.eff} {v.effUnit} · {v.widthExtended}″</span></div>
                     <div className="deltas">
                       {baseline && baseline.id !== v.id ? (<><Delta kind="msrp" v={v.msrp} b={baseline.msrp} /><Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} /></>) : null}
                     </div>
@@ -655,7 +655,7 @@ export default function App() {
             {results.map((v) => (
               <tr key={v.id} className="row-click" onClick={() => setDetail(v)} title={`View closer analysis of ${v.year} ${v.make} ${v.model}`}>
                 <td><b>{v.year} {v.make} {v.model}</b><br /><small style={{ color: 'var(--muted)' }}>{v.trim} · {v.body}</small></td>
-                {cols.price && <td>{money(v.msrp)}<br />{baseline && <Delta kind="msrp" v={v.msrp} b={baseline.msrp} />}</td>}
+                {cols.price && <td>{money(v.msrp)}{v.used ? <small style={{ color: 'var(--muted)' }}> used</small> : null}<br />{baseline && <Delta kind="msrp" v={v.msrp} b={baseline.msrp} />}</td>}
                 {cols.eff && <td>{v.eff} {v.effUnit}<br />{baseline && <Delta kind="eff" v={v.eff} b={baseline.eff} unit={v.effUnit} />}</td>}
                 {cols.seats && <td>{v.seats}<br />{baseline && <Delta kind="seats" v={v.seats} b={baseline.seats} />}</td>}
                 {cols.width && <td>{v.widthExtended}″<br />{baseline && <Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} />}{(() => { const gf = garageFit(v, f.garageWidth); return gf ? <span className={`pill ${gf.ok ? 'good' : 'bad'}`}>{gf.ok ? `${gf.clearance.toFixed(1)}″ spare` : `${(-gf.clearance).toFixed(1)}″ too wide`}</span> : null; })()}</td>}
@@ -701,7 +701,7 @@ export default function App() {
                   ))}
                 </tr></thead>
                 <tbody>
-                  <tr><th scope="row">Price (MSRP)</th>{vs.map((x) => <td key={x.id}>{money(x.msrp)} {x.msrp === bestPrice && bestTag}<br />{baseline && <Delta kind="msrp" v={x.msrp} b={baseline.msrp} />}</td>)}</tr>
+                  <tr><th scope="row">Price</th>{vs.map((x) => <td key={x.id}>{money(x.msrp)}{x.used ? <small> used</small> : null} {x.msrp === bestPrice && bestTag}<br />{baseline && <Delta kind="msrp" v={x.msrp} b={baseline.msrp} />}</td>)}</tr>
                   <tr><th scope="row">Efficiency</th>{vs.map((x) => <td key={x.id}>{x.eff} {x.effUnit} {x.eff === bestEff && bestTag}<br />{baseline && <Delta kind="eff" v={x.eff} b={baseline.eff} />}</td>)}</tr>
                   <tr><th scope="row">Est. fuel cost / yr</th>{vs.map((x) => { const c = annualFuel(x); return <td key={x.id}>{c != null ? <>{money(c)} {c === bestFuel && bestTag}</> : '—'}</td>; })}</tr>
                   <tr><th scope="row">Fuel type</th>{vs.map((x) => <td key={x.id}>{x.fuel}</td>)}</tr>
@@ -739,7 +739,7 @@ export default function App() {
             const baseCost = b ? annualFuel(b) : null;
             type Cell = { label: string; mine: string; base?: string; cell?: React.ReactNode };
             const rows: Cell[] = [
-              { label: 'Price (MSRP)', mine: money(detail.msrp), base: b ? money(b.msrp) : undefined,
+              { label: detail.used ? 'Typical used value' : 'Price (MSRP)', mine: money(detail.msrp), base: b ? money(b.msrp) : undefined,
                 cell: b ? <><Delta kind="msrp" v={detail.msrp} b={b.msrp} />{pctDiff(detail.msrp, b.msrp) && <small> · {pctDiff(detail.msrp, b.msrp)}</small>}</> : undefined },
               { label: 'Efficiency', mine: `${detail.eff} ${detail.effUnit}`, base: b ? `${b.eff} ${b.effUnit}` : undefined,
                 cell: b ? <><Delta kind="eff" v={detail.eff} b={b.eff} />{pctDiff(detail.eff, b.eff) && <small> · {pctDiff(detail.eff, b.eff)}</small>}</> : undefined },
@@ -920,7 +920,7 @@ export default function App() {
                     </div>
                   </>
                 )}
-                <p className="fnote">Fuel-cost estimate assumes {MILES_YR.toLocaleString()} mi/yr at ${GAS_PRICE.toFixed(2)}/gal gas and ${ELEC_PRICE.toFixed(2)}/kWh electricity; CO₂ uses 8.89 kg/gal and 0.39 kg/kWh (US avg grid). 5-yr sketch = 55% depreciation + fuel, excl. insurance/maintenance. PHEV figures are blended — check EPA numbers. Snapshot pricing, not dealer quotes.</p>
+                <p className="fnote">Fuel-cost estimate assumes {MILES_YR.toLocaleString()} mi/yr at ${GAS_PRICE.toFixed(2)}/gal gas and ${ELEC_PRICE.toFixed(2)}/kWh electricity; CO₂ uses 8.89 kg/gal and 0.39 kg/kWh (US avg grid). 5-yr sketch = 55% depreciation + fuel, excl. insurance/maintenance. PHEV figures are blended — check EPA numbers. 2024+ prices are MSRP; 2015–2023 prices are typical used-market values (rounded estimates). Some mirrors-out widths for older years are estimated from body width. Snapshot pricing, not dealer quotes.</p>
                 {detail.imageCredit && <p className="credit">{detail.imageCredit}</p>}
                 <p className="d-actions">
                   <button className="btn primary" onClick={() => { patch({ baselineId: detail.id }); closeDetail(); }}>Set as baseline</button>{' '}
@@ -966,7 +966,7 @@ export default function App() {
               <h4>Data</h4>
               <span>Snapshot {DATA_STAMP}</span>
               <span>{VEHICLES.length} vehicles · {VEHICLES.filter((v) => v.verified).length} verified specs</span>
-              <span>MSRP in USD · snapshot pricing</span>
+              <span>MSRP in USD · 2015–23 values are typical used prices</span>
             </div>
           </nav>
         </div>

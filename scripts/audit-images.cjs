@@ -1,0 +1,12 @@
+const fs = require('fs');
+const t = fs.readFileSync('src/data.ts', 'utf8');
+const count = re => (t.match(re) || []).length;
+console.log('total:', count(/\{id:/g));
+console.log('local img:', count(/imageUrl:"vehicles\//g));
+console.log('remote img:', count(/imageUrl:"http/g));
+const lines = t.split('\n').filter(l => l.includes('{id:'));
+const dupe = lines.filter(l => (l.match(/imageUrl:/g) || []).length > 1);
+console.log('records with >1 imageUrl:', dupe.length);
+const noImg = lines.filter(l => !l.includes('imageUrl:')).map(l => l.match(/id:"([^"]+)"/)[1]);
+console.log('no-image count:', noImg.length);
+console.log(noImg.join('\n'));
