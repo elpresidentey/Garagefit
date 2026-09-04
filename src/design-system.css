@@ -22,6 +22,8 @@
   --ds-ring: var(--ring, color-mix(in srgb, var(--accent) 28%, transparent));
   --ds-good: var(--good);
   --ds-good-bg: var(--goodbg);
+  --ds-warn: var(--warn);
+  --ds-warn-bg: var(--warnbg);
   --ds-bad: var(--bad);
   --ds-bad-bg: var(--badbg);
   --ds-input: var(--input, var(--card));
@@ -179,8 +181,8 @@
   height: 20px;
   padding: 0 6px;
   border-radius: var(--ds-r-pill);
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--navy, #1e3a8a);
+  color: #fff;
   font-size: var(--ds-fs-11);
   font-weight: var(--ds-fw-xbold);
   font-variant-numeric: tabular-nums;
