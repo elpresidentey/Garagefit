@@ -60,7 +60,7 @@ function readURL(): Partial<FilterState> {
 }
 
 const DEFAULTS: FilterState = {
-  baselineId: DEFAULT_BASELINE_ID, q: '', preset: '', sort: 'fit', view: 'cards',
+  baselineId: DEFAULT_BASELINE_ID, q: '', preset: '', sort: 'year-desc', view: 'cards',
   maxPrice: 80000, minYear: 2015, maxWidth: 98, garageWidth: 0, garageFitOnly: false, narrowOnly: false,
   topSafety: false, handsFree: false, fuels: [], bodies: [], make: '', minEff: 0,
 };
@@ -333,7 +333,7 @@ export default function App() {
     if (f.baselineId) p.set('b', f.baselineId);
     if (f.q) p.set('q', f.q);
     if (f.preset) p.set('preset', f.preset);
-    if (f.sort !== 'fit') p.set('sort', f.sort);
+    if (f.sort !== 'year-desc') p.set('sort', f.sort);
     if (f.view !== 'cards') p.set('view', f.view);
     p.set('maxPrice', String(f.maxPrice)); p.set('minYear', String(f.minYear)); p.set('maxWidth', String(f.maxWidth));
     if (f.garageWidth) p.set('gw', String(f.garageWidth));
@@ -364,7 +364,8 @@ export default function App() {
     };
     const sorts: Record<SortKey, (a: Vehicle, b: Vehicle) => number> = {
       'price-asc': (a, b) => a.msrp - b.msrp, 'price-desc': (a, b) => b.msrp - a.msrp,
-      'eff-desc': (a, b) => b.eff - a.eff, 'year-desc': (a, b) => b.year - a.year,
+      'eff-desc': (a, b) => b.eff - a.eff, 'year-desc': (a, b) => b.year - a.year || b.msrp - a.msrp,
+      'year-asc': (a, b) => a.year - b.year || a.msrp - b.msrp,
       'safety-desc': (a, b) => (SAFETY_SCORE[b.safety] ?? 0) - (SAFETY_SCORE[a.safety] ?? 0),
       'width-asc': (a, b) => a.widthExtended - b.widthExtended, fit: (a, b) => fitScore(a) - fitScore(b),
     };
@@ -550,7 +551,7 @@ export default function App() {
                 <select id="gf-sort" aria-label="Sort results" value={f.sort} onChange={(e) => setF((s) => ({ ...s, sort: e.target.value as SortKey }))}>
                   <option value="fit">Best fit</option><option value="price-asc">Price ↑</option>
                   <option value="price-desc">Price ↓</option><option value="eff-desc">Efficiency</option>
-                  <option value="year-desc">Newest</option><option value="safety-desc">Safest</option>
+                  <option value="year-desc">Newest</option><option value="year-asc">Oldest</option><option value="safety-desc">Safest</option>
                   <option value="width-asc">Narrowest</option>
                 </select>
               </div>

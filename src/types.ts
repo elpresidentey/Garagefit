@@ -34,7 +34,7 @@ export interface Vehicle {
   used?: boolean;
 }
 
-export type SortKey = 'fit' | 'price-asc' | 'price-desc' | 'eff-desc' | 'year-desc' | 'safety-desc' | 'width-asc';
+export type SortKey = 'fit' | 'price-asc' | 'price-desc' | 'eff-desc' | 'year-desc' | 'year-asc' | 'safety-desc' | 'width-asc';
 
 export interface FilterState {
   baselineId: string | null;
