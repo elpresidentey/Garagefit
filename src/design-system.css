@@ -194,7 +194,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--ds-s2);
-  margin: 10px 0 2px;
+  margin: 12px 0 4px;
 }
 .ds-field-row label {
   font-size: var(--ds-fs-13) !important;
