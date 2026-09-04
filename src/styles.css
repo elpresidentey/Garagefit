@@ -141,14 +141,15 @@ select:focus-visible,input[type=number]:focus-visible{outline:none;border-color:
 .baseline .b-car img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}
 .baseline .b-car img.ld{opacity:1}
 .b-info{position:relative;flex:1;min-width:250px}
-.b-info .kicker{color:var(--gold)}
+.b-info .kicker{color:var(--gold);display:inline-flex;align-items:center;gap:7px}
+.baseline .kicker::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--goodfill);box-shadow:0 0 0 3px var(--goodbg)}
 .b-info h2{margin:5px 0 0;font-family:var(--disp);font-size:clamp(20px,2.6vw,26px);font-weight:800;letter-spacing:-.025em;line-height:1.2}
 .b-info h2 .sub{color:var(--muted);font-weight:600;font-size:.62em;letter-spacing:0}
 .b-info p{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.6;max-width:58ch}
 .b-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:8px 13px;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--muted)}
 .stat b{display:block;font-size:16px;color:var(--ink);font-family:var(--disp);font-weight:800;letter-spacing:-.02em}
-.b-select{position:relative;display:flex;flex-direction:column;gap:8px;margin-left:auto;min-width:250px}
+.b-select{position:relative;display:flex;flex-direction:column;gap:8px;flex:1 1 270px;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
 .b-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .b-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:var(--muted)}
 .b-select select{padding:10px 13px;border-radius:11px;border:1px solid var(--line2);background:var(--input);color:var(--ink);width:100%;max-width:320px;font-size:13.5px}
@@ -363,11 +364,13 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
 @keyframes sh{to{background-position:-200% 0}}
 
 /* ---------- garage opening & fit verdicts ---------- */
-.b-garage{position:relative;flex:1 1 100%;display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.b-garage{position:relative;flex:1 1 270px;display:flex;flex-direction:column;gap:8px;margin-top:0;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.b-garage .b-row{align-items:center}
 .b-garage .b-hint{margin:0}
 .b-garage-input{padding:10px 13px;border-radius:11px;border:1px solid var(--line2);background:var(--input);color:var(--ink);width:110px;font-size:13.5px}
 .b-garage-unit{font-size:11.5px;color:var(--muted)}
 .b-hint{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.b-hint strong{color:var(--ink);font-variant-numeric:tabular-nums}
 .f-hint{margin:8px 0 0;font-size:12px;color:var(--muted);font-weight:500}
 .gfit-badge{position:absolute;bottom:10px;right:10px;z-index:2;border-radius:999px;padding:5px 11px;font-size:11.5px;font-weight:800;letter-spacing:.02em;box-shadow:0 4px 14px -4px rgba(0,0,0,.55);pointer-events:none}
 .gfit-badge.ok{background:var(--goodbg);color:var(--good);border:1px solid color-mix(in srgb,var(--goodfill) 30%,transparent)}

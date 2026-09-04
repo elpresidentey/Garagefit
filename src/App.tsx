@@ -492,7 +492,7 @@ export default function App() {
               <div className="b-info">
                 <span className="kicker">Your baseline vehicle</span>
                 <h2>{baseline.year} {baseline.make} {baseline.model} <span className="sub">{baseline.trim}</span></h2>
-                <p>{baseline.body} · {baseline.fuel} · {baseline.seats} seats · {baseline.legroom}″ legroom</p>
+                <p>{baseline.body} · {baseline.fuel} · {baseline.seats} seats</p>
                 <div className="b-stats">
                   <span className="stat"><b>{money(baseline.msrp)}</b>MSRP</span>
                   <span className="stat"><b>{baseline.eff} {baseline.effUnit}</b>efficiency</span>
@@ -532,7 +532,7 @@ export default function App() {
               <span className="b-garage-unit">inches</span>
               {f.garageWidth > 0 && <button className="btn ghost" onClick={() => patch({ garageWidth: 0 })}>Clear</button>}
               <span className="b-hint" id="gf-garage-hint">{f.garageWidth > 0
-                ? `${VEHICLES.filter((x) => x.widthExtended <= f.garageWidth).length} of ${VEHICLES.length} vehicles fit your opening`
+                ? <><strong>{VEHICLES.filter((x) => x.widthExtended <= f.garageWidth).length} of {VEHICLES.length}</strong> vehicles fit your opening</>
                 : 'Optional — adds a fits / doesn’t-fit verdict to every vehicle'}</span>
             </div>
           </div>
