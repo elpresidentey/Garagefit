@@ -51,7 +51,7 @@ function readURL(): Partial<FilterState> {
   if (p.get('maxWidth')) out.maxWidth = +p.get('maxWidth')!;
   if (p.get('gw')) out.garageWidth = +p.get('gw')!;
   if (p.get('gwOnly') === '1') out.garageFitOnly = true;
-  (['narrowOnly', 'topSafety', 'handsFree'] as const).forEach((k) => { if (p.get(k) === '1') (out as Record<string, unknown>)[k] = true; });
+  (['narrowOnly', 'topSafety', 'handsFree', 'favsOnly'] as const).forEach((k) => { if (p.get(k) === '1') (out as Record<string, unknown>)[k] = true; });
   if (p.get('fuels')) out.fuels = p.get('fuels')!.split(',');
   if (p.get('bodies')) out.bodies = p.get('bodies')!.split(',');
   if (p.get('make')) out.make = p.get('make')!;
@@ -62,7 +62,7 @@ function readURL(): Partial<FilterState> {
 const DEFAULTS: FilterState = {
   baselineId: DEFAULT_BASELINE_ID, q: '', preset: '', sort: 'year-desc', view: 'cards',
   maxPrice: 80000, minYear: 2015, maxWidth: 98, garageWidth: 0, garageFitOnly: false, narrowOnly: false,
-  topSafety: false, handsFree: false, fuels: [], bodies: [], make: '', minEff: 0,
+  topSafety: false, handsFree: false, favsOnly: false, fuels: [], bodies: [], make: '', minEff: 0,
 };
 
 function Delta({ kind, v, b, unit }: { kind: 'msrp' | 'eff' | 'width' | 'seats' | 'safety'; v: number | string; b: number | string; unit?: string }) {
@@ -341,6 +341,7 @@ export default function App() {
     if (f.narrowOnly) p.set('narrowOnly', '1');
     if (f.topSafety) p.set('topSafety', '1');
     if (f.handsFree) p.set('handsFree', '1');
+    if (f.favsOnly) p.set('favsOnly', '1');
     if (f.fuels.length) p.set('fuels', f.fuels.join(','));
     if (f.bodies.length) p.set('bodies', f.bodies.join(','));
     if (f.make) p.set('make', f.make);
@@ -376,6 +377,7 @@ export default function App() {
       if (f.garageFitOnly && f.garageWidth && v.widthExtended > f.garageWidth) return false;
       if (f.topSafety && !(v.safety === 'TSP' || v.safety === 'TSP+')) return false;
       if (f.handsFree && !v.handsFree) return false;
+      if (f.favsOnly && !favs.includes(v.id)) return false;
       if (f.fuels.length && !f.fuels.includes(v.fuel)) return false;
       if (f.bodies.length && !f.bodies.includes(v.body)) return false;
       if (f.make && v.make !== f.make) return false;
@@ -385,7 +387,7 @@ export default function App() {
       return true;
     });
     return r.sort(sorts[f.sort]);
-  }, [f, baseline]);
+  }, [f, baseline, favs]);
 
   const patch = (p: Partial<FilterState>) => { setF((s) => ({ ...s, ...p })); setShown(24); };
   const toggleCmp = (id: string) => {
@@ -410,16 +412,17 @@ export default function App() {
   if (f.garageFitOnly && f.garageWidth) tags.push({ key: 'gwOnly', label: 'Fits garage', clear: () => patch({ garageFitOnly: false }) });
   if (f.topSafety) tags.push({ key: 'topSafety', label: 'Top safety', clear: () => patch({ topSafety: false }) });
   if (f.handsFree) tags.push({ key: 'handsFree', label: 'Hands-free', clear: () => patch({ handsFree: false }) });
+  if (f.favsOnly) tags.push({ key: 'favsOnly', label: `Saved (${favs.length})`, clear: () => patch({ favsOnly: false }) });
   if (f.narrowOnly) tags.push({ key: 'narrowOnly', label: 'Fits baseline', clear: () => patch({ narrowOnly: false }) });
   if (f.minEff > 0) tags.push({ key: 'minEff', label: `${f.minEff}+ MPG(e)`, clear: () => patch({ minEff: 0 }) });
   if (f.fuels.length) tags.push({ key: 'fuels', label: f.fuels.join(' · '), clear: () => patch({ fuels: [] }) });
   if (f.bodies.length) tags.push({ key: 'bodies', label: f.bodies.join(' · '), clear: () => patch({ bodies: [] }) });
   if (f.make) tags.push({ key: 'make', label: f.make, clear: () => patch({ make: '' }) });
   const hasActive = f.preset !== '' || f.q !== '' || f.maxPrice !== 80000 || f.minYear !== 2015 || f.maxWidth !== 98
-    || f.garageFitOnly || f.narrowOnly || f.topSafety || f.handsFree || f.make !== '' || f.minEff !== 0
+    || f.garageFitOnly || f.narrowOnly || f.topSafety || f.handsFree || f.favsOnly || f.make !== '' || f.minEff !== 0
     || f.fuels.length > 0 || f.bodies.length > 0;
 
-  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2015, maxWidth: 98, garageFitOnly: false, narrowOnly: false, topSafety: false, handsFree: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
+  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2015, maxWidth: 98, garageFitOnly: false, narrowOnly: false, topSafety: false, handsFree: false, favsOnly: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
 
   return (
     <>
@@ -577,6 +580,7 @@ export default function App() {
                 <button className={f.view === 'cards' ? 'seg-on' : ''} aria-pressed={f.view === 'cards'} title="Card view" onClick={() => setF((s) => ({ ...s, view: 'cards' }))}>Cards</button>
                 <button className={f.view === 'table' ? 'seg-on' : ''} aria-pressed={f.view === 'table'} title="Table view" onClick={() => setF((s) => ({ ...s, view: 'table' }))}>Table</button>
               </div>
+              <button className={'btn' + (f.favsOnly ? ' on' : '')} onClick={() => patch({ favsOnly: !f.favsOnly })} aria-pressed={f.favsOnly} title="Show only your saved cars">★ Saved{favs.length ? <span className="ds-count" aria-label={`${favs.length} saved`}>{favs.length}</span> : null}</button>
               {hasActive && <button className="linklike" onClick={clearFilters} title="Clear all filters" aria-label="Clear all filters">Reset</button>}
               {f.view === 'table' && <button className={'btn ghost' + (colsOpen ? ' on' : '')} onClick={() => setColsOpen((o) => !o)} aria-expanded={colsOpen} aria-controls="gf-cols">Columns</button>}
             </div>
@@ -670,7 +674,7 @@ export default function App() {
                 </article>
               ))}
             </section>
-            {!results.length && <div className="empty"><strong>No matches.</strong><span className="ds-meta">Try widening price, year, or width.</span><button className="btn" onClick={clearFilters}>Reset filters</button></div>}
+            {!results.length && <div className="empty">{f.favsOnly && !favs.length ? (<><strong>No saved cars yet.</strong><span className="ds-meta">Tap ☆ on any card to save it here.</span></>) : (<><strong>No matches.</strong><span className="ds-meta">Try widening price, year, or width.</span><button className="btn" onClick={clearFilters}>Reset filters</button></>)}</div>}
             <div className="morewrap">{results.length > shown && <button className="btn big" onClick={() => setShown((s) => s + 24)}>Show more ({results.length - shown} left)</button>}</div>
           </>
         ) : (

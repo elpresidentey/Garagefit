@@ -52,6 +52,8 @@ export interface FilterState {
   narrowOnly: boolean;
   topSafety: boolean;
   handsFree: boolean;
+  /** When true, only show starred (saved) vehicles. */
+  favsOnly: boolean;
   fuels: string[];
   bodies: string[];
   make: string;
