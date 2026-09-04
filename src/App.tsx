@@ -421,10 +421,8 @@ export default function App() {
       {splash && (
         <div className="splash" role="dialog" aria-modal="true" aria-label="Welcome to GarageFit" onClick={dismissSplash}>
           <div className="splash-in">
-            <div className="splash-medal" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="#ffffff" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="2.4"/><path d="M12 14.4V20.6M4.2 10.2l7 2.5M19.8 10.2l-7 2.5"/></svg>
-            </div>
-            <h1>GarageFit<span className="dots" aria-hidden="true" /></h1>
+            <img className="splash-logo" src="logo.svg" alt="" aria-hidden="true" />
+            <h1>GarageFit</h1>
             <p className="splash-tag">Find cars that actually fit your life</p>
           </div>
           <button ref={splashBtn} type="button" className="splash-skip" onClick={dismissSplash}>Skip</button>

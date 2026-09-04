@@ -369,26 +369,23 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
 @media(max-width:640px){.b-select{margin-left:0}.tablewrap{display:none}.baseline{padding:20px}.card{height:452px}.card-lean{height:398px}.card .actions .btn{font-size:12px;padding:8px 4px}.top-actions .btn-txt{display:none}.searchbox{flex:1 1 100%;max-width:none;order:3}.stickybar{top:124px}#baseline,#browse,#results{scroll-margin-top:275px}.foot{padding-bottom:70px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
-/* ---------- intro splash screen ---------- */
-.splash{position:fixed;inset:0;z-index:95;display:grid;place-items:center;overflow:hidden;color:#fff;
-  background:radial-gradient(700px 420px at 50% 30%,#38312a 0%,#221d17 55%,#141210 100%);animation:fade .25s ease}
+/* ---------- intro splash screen (flat) ---------- */
+.splash{position:fixed;inset:0;z-index:95;display:grid;place-items:center;overflow:hidden;color:var(--ink);
+  background:var(--bg);animation:fade .25s ease}
 .splash-in{display:flex;flex-direction:column;align-items:center;text-align:center;padding:32px 22px}
 .splash-in>*{animation:sup .55s cubic-bezier(.2,.7,.3,1) backwards}
 .splash-in>*:nth-child(1){animation-delay:.05s}.splash-in>*:nth-child(2){animation-delay:.15s}
 .splash-in>*:nth-child(3){animation-delay:.25s}
 @keyframes sup{from{opacity:0;transform:translateY(16px)}}
-.splash-medal{width:104px;height:104px;border-radius:50%;border:2px solid rgba(255,255,255,.9);
-  background:rgba(255,255,255,.08);display:grid;place-items:center;box-shadow:0 18px 50px -12px rgba(0,0,0,.6)}
-.splash h1{margin:22px 0 0;font-family:var(--disp);font-size:clamp(40px,9vw,58px);font-weight:800;
-  letter-spacing:.01em;text-transform:uppercase;line-height:1;white-space:nowrap}
-.splash .dots::after{content:"";animation:dots 1.2s steps(1) infinite}
-@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
-.splash-tag{margin:12px 0 0;font-size:12px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.85)}
-.splash-skip{position:absolute;bottom:24px;right:22px;background:none;border:0;color:rgba(255,255,255,.65);
+.splash-logo{width:76px;height:76px;border-radius:20px;box-shadow:0 4px 12px -6px rgba(0,0,0,.35)}
+.splash h1{margin:20px 0 0;font-family:var(--disp);font-size:clamp(34px,7vw,46px);font-weight:800;
+  letter-spacing:-.02em;line-height:1.05}
+.splash-tag{margin:10px 0 0;font-size:12px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.splash-skip{position:absolute;bottom:24px;right:22px;background:none;border:0;color:var(--muted);
   font-size:13px;font-weight:600;cursor:pointer;padding:8px 12px}
-.splash-skip:hover{color:#fff}
-.splash-bar{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.14)}
-.splash-bar span{display:block;height:100%;transform-origin:left;background:var(--gold2);animation:fillbar 2.8s linear}
+.splash-skip:hover{color:var(--ink)}
+.splash-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--line)}
+.splash-bar span{display:block;height:100%;transform-origin:left;background:var(--gold);animation:fillbar 2.8s linear}
 @keyframes fillbar{from{transform:scaleX(0)}}
 
 /* ---------- clickable detail photo + fullscreen lightbox ---------- */
