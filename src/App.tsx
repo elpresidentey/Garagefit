@@ -473,6 +473,7 @@ export default function App() {
       </header>
 
       <main className="wrap">
+        <h1 className="sr-only">Compare vehicles by garage fit, price, efficiency and safety</h1>
         <section className="baseline" id="baseline" aria-label="Your baseline vehicle">
           {baseline ? (
             <>
@@ -544,6 +545,7 @@ export default function App() {
             <div className="controls">
               <button className={'btn' + (filtersOpen ? ' on' : '')} onClick={() => setFiltersOpen((o) => !o)} aria-expanded={filtersOpen} aria-controls="gf-filters">Filters{tags.length ? <span className="ds-count" aria-label={`${tags.length} active`}>{tags.length}</span> : null}</button>
               <div className="control">
+                <span className="clabel" aria-hidden="true">Sort</span>
                 <label className="sr-only" htmlFor="gf-sort">Sort</label>
                 <select id="gf-sort" aria-label="Sort results" value={f.sort} onChange={(e) => setF((s) => ({ ...s, sort: e.target.value as SortKey }))}>
                   <option value="fit">Best fit</option><option value="price-asc">Price ↑</option>
