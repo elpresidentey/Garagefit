@@ -20,9 +20,14 @@ function pctDiff(v: number, base: number): string {
 }
 
 /** Fit verdict vs the user's garage opening (mirrors-out). null when no opening is set. */
-function garageFit(v: Vehicle, gw: number): { ok: boolean; clearance: number } | null {
+function garageFit(v: Vehicle, gw: number): { ok: boolean; tight: boolean; clearance: number } | null {
   if (!gw) return null;
-  return { ok: v.widthExtended <= gw, clearance: +(gw - v.widthExtended).toFixed(1) };
+  const clearance = +(gw - v.widthExtended).toFixed(1);
+  return { ok: clearance >= 0, tight: clearance >= 0 && clearance < 2, clearance };
+}
+function garageTone(gf: { ok: boolean; tight: boolean }): 'good' | 'warn' | 'bad' {
+  if (!gf.ok) return 'bad';
+  return gf.tight ? 'warn' : 'good';
 }
 
 const PRESETS: { id: string; label: string; fn: (v: Vehicle) => boolean }[] = [
@@ -275,7 +280,7 @@ export default function App() {
         m.setAttribute('data-gf', '1');
         document.head.appendChild(m);
       }
-      m.content = dark ? '#0b0b0e' : '#f6f6f4';
+      m.content = dark ? '#0b1220' : '#1e3a8a';
     } catch { /* head not writable in some embeds */ }
   }, [dark]);
   // Follow the OS while the user hasn't picked a theme explicitly.
@@ -448,7 +453,7 @@ export default function App() {
             <a href="#results" className={activeSec === 'results' ? 'on' : ''} aria-current={activeSec === 'results' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('results'); }}>Results</a>
           </nav>
           <div className="top-actions">
-            {offline && <span className="pill same">offline — cached</span>}
+            {offline && <span className="pill warn">offline — cached</span>}
             <div className="searchbox"><label className="sr-only" htmlFor="gf-search">Search make, model, or trim</label><input id="gf-search" value={f.q} onChange={(e) => patch({ q: e.target.value })} type="search" placeholder="Search make, model, trim…" /></div>
             <button className="btn ghost icon-btn" onClick={() => setDark((d) => !d)} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-pressed={dark} title={dark ? 'Light mode' : 'Dark mode'}>
               {dark ? (
@@ -618,7 +623,7 @@ export default function App() {
                       />
                     )}
                     <span className="fuel fuel-plain">{v.fuel}{v.rangeMi ? ` · ${v.rangeMi} mi` : ''}</span>
-                    {(() => { const gf = garageFit(v, f.garageWidth); if (!gf) return null; return gf.ok ? <span className="gfit-dot ok" title={`Fits with ${gf.clearance.toFixed(1)}″ to spare`} aria-label="Fits your garage" /> : <span className="gfit-dot no" title={`${(-gf.clearance).toFixed(1)}″ too wide`} aria-label="Too wide for your garage" />; })()}
+                    {(() => { const gf = garageFit(v, f.garageWidth); if (!gf) return null; const tone = garageTone(gf); return <span className={`gfit-dot ${tone === 'good' ? 'ok' : tone === 'warn' ? 'warn' : 'no'}`} title={gf.ok ? (gf.tight ? `Tight fit — ${gf.clearance.toFixed(1)}″ to spare` : `Fits with ${gf.clearance.toFixed(1)}″ to spare`) : `${(-gf.clearance).toFixed(1)}″ too wide`} aria-label={gf.ok ? (gf.tight ? 'Tight garage fit' : 'Fits your garage') : 'Too wide for your garage'} />; })()}
                     <button className="fav" aria-label={favs.includes(v.id) ? `Remove ${v.make} ${v.model} from favorites` : `Add ${v.make} ${v.model} to favorites`} aria-pressed={favs.includes(v.id)} onClick={(e) => { e.stopPropagation(); setFavs((s) => s.includes(v.id) ? s.filter((x) => x !== v.id) : [...s, v.id]); }}>{favs.includes(v.id) ? '★' : '☆'}</button>
                   </div>
                   <div className="shade" aria-hidden="true"></div>
@@ -658,7 +663,7 @@ export default function App() {
                 {cols.price && <td>{money(v.msrp)}{v.used ? <small style={{ color: 'var(--muted)' }}> used</small> : null}<br />{baseline && <Delta kind="msrp" v={v.msrp} b={baseline.msrp} />}</td>}
                 {cols.eff && <td>{v.eff} {v.effUnit}<br />{baseline && <Delta kind="eff" v={v.eff} b={baseline.eff} unit={v.effUnit} />}</td>}
                 {cols.seats && <td>{v.seats}<br />{baseline && <Delta kind="seats" v={v.seats} b={baseline.seats} />}</td>}
-                {cols.width && <td>{v.widthExtended}″<br />{baseline && <Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} />}{(() => { const gf = garageFit(v, f.garageWidth); return gf ? <span className={`pill ${gf.ok ? 'good' : 'bad'}`}>{gf.ok ? `${gf.clearance.toFixed(1)}″ spare` : `${(-gf.clearance).toFixed(1)}″ too wide`}</span> : null; })()}</td>}
+                {cols.width && <td>{v.widthExtended}″<br />{baseline && <Delta kind="width" v={v.widthExtended} b={baseline.widthExtended} />}{(() => { const gf = garageFit(v, f.garageWidth); return gf ? <span className={`pill ${garageTone(gf)}`}>{gf.ok ? (gf.tight ? `${gf.clearance.toFixed(1)}″ tight` : `${gf.clearance.toFixed(1)}″ spare`) : `${(-gf.clearance).toFixed(1)}″ too wide`}</span> : null; })()}</td>}
                 {cols.safety && <td>{v.safety}<br />{baseline && <Delta kind="safety" v={v.safety} b={baseline.safety} />}</td>}
                 {cols.fuel && <td>{v.fuel}</td>}
                 <td><button className="btn" onClick={(e) => { e.stopPropagation(); patch({ baselineId: v.id }); }}>Baseline</button> <button className="btn ghost" onClick={(e) => { e.stopPropagation(); setDetail(v); }}>Specs</button></td>
@@ -708,7 +713,7 @@ export default function App() {
                   <tr><th scope="row">Range</th>{vs.map((x) => <td key={x.id}>{x.rangeMi ? `${x.rangeMi} mi` : '—'}</td>)}</tr>
                   <tr><th scope="row">Width, mirrors out</th>{vs.map((x) => <td key={x.id}>{x.widthExtended}″ {x.widthExtended === bestWidth && bestTag}<br />{baseline && <Delta kind="width" v={x.widthExtended} b={baseline.widthExtended} />}</td>)}</tr>
                   <tr><th scope="row">Width, folded</th>{vs.map((x) => <td key={x.id}>{x.widthFolded}″</td>)}</tr>
-                  {f.garageWidth > 0 && <tr><th scope="row">Your garage ({f.garageWidth}″)</th>{vs.map((x) => { const g = garageFit(x, f.garageWidth); return <td key={x.id}>{g ? (g.ok ? <span className="pill good">{g.clearance.toFixed(1)}″ spare</span> : <span className="pill bad">{(-g.clearance).toFixed(1)}″ too wide</span>) : '—'}</td>; })}</tr>}
+                  {f.garageWidth > 0 && <tr><th scope="row">Your garage ({f.garageWidth}″)</th>{vs.map((x) => { const g = garageFit(x, f.garageWidth); return <td key={x.id}>{g ? <span className={`pill ${garageTone(g)}`}>{g.ok ? (g.tight ? `${g.clearance.toFixed(1)}″ tight` : `${g.clearance.toFixed(1)}″ spare`) : `${(-g.clearance).toFixed(1)}″ too wide`}</span> : '—'}</td>; })}</tr>}
                   <tr><th scope="row">Seats / doors</th>{vs.map((x) => <td key={x.id}>{x.seats} / {x.doors}<br />{baseline && <Delta kind="seats" v={x.seats} b={baseline.seats} />}</td>)}</tr>
                   <tr><th scope="row">Body type</th>{vs.map((x) => <td key={x.id}>{x.body}</td>)}</tr>
                   <tr><th scope="row">IIHS safety</th>{vs.map((x) => <td key={x.id}>{x.safety}<br />{baseline && <Delta kind="safety" v={x.safety} b={baseline.safety} />}</td>)}</tr>
@@ -838,7 +843,7 @@ export default function App() {
                     <h3 className="keys-h">Key differences</h3>
                     <ul className="keys">
                       {keys.slice(0, 3).map((k, i) => (
-                        <li key={i}>{k.text}</li>
+                        <li key={i} className={k.dir}>{k.text}</li>
                       ))}
                     </ul>
                   </>
