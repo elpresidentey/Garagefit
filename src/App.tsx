@@ -446,7 +446,7 @@ export default function App() {
         <div className="wrap topbar-in">
           <a className="brand" href="#results" onClick={(e) => { e.preventDefault(); jump('results'); }} style={{ textDecoration: 'none', color: 'inherit' }}>
             <img className="logo" src="logo.svg" alt="" aria-hidden="true" />
-            <div><strong>GarageFit</strong></div>
+            <div><strong>GarageFit</strong><small>Fit before you buy</small></div>
           </a>
           <nav className="topnav" aria-label="Section navigation">
             <a href="#baseline" className={activeSec === 'baseline' ? 'on' : ''} aria-current={activeSec === 'baseline' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('baseline'); }}>Your baseline</a>
@@ -973,7 +973,7 @@ export default function App() {
           <div className="foot-brand">
             <img className="logo" src="logo.svg" alt="" aria-hidden="true" />
             <div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div>
-            <p>Compare {VEHICLES.length} vehicles against your own car — price, efficiency, garage fit, safety and seats, side by side.</p>
+            <p>Compare {VEHICLES.length} vehicles ({Math.min(...VEHICLES.map((v) => v.year))}–{Math.max(...VEHICLES.map((v) => v.year))}) against your own car — price, efficiency, garage fit, safety and seats, side by side.</p>
           </div>
           <nav className="foot-nav" aria-label="Footer">
             <div className="fcol">
@@ -986,14 +986,21 @@ export default function App() {
               <h4>Actions</h4>
               <button className="linklike" onClick={share}>Share view</button>
               <button className="linklike" onClick={() => window.print()}>Print</button>
+              <button className="linklike" onClick={clearFilters}>Reset filters</button>
             </div>
             <div className="fcol">
               <h4>Data</h4>
               <span>Snapshot {DATA_STAMP}</span>
               <span>{VEHICLES.length} vehicles · {VEHICLES.filter((v) => v.verified).length} verified specs</span>
-              <span>MSRP in USD · 2015–23 values are typical used prices</span>
+              <span>MSRP in USD · 2015–2023 values are typical used prices</span>
             </div>
           </nav>
+        </div>
+        <div className="wrap foot-makes" aria-label="Popular makes">
+          <span className="foot-makes-label">Popular:</span>
+          {['Toyota', 'Honda', 'Ford', 'Chevrolet', 'BMW', 'Mercedes-Benz', 'Lexus'].map((m) => (
+            <button key={m} className="linklike" onClick={() => { patch({ make: m }); jump('results'); }}>{m}</button>
+          ))}
         </div>
         <div className="wrap foot-base">
           <span>© 2026 GarageFit · Specs checked against EPA, NHTSA and manufacturer data</span>
