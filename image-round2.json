@@ -1,20 +1,146 @@
 [
   {
-    "id": "rivian-r1t-2024",
-    "score": 3,
-    "title": "File:2022 Rivian R1T with Optima Power Station Petersen Automotive Museum.jpg",
+    "id": "toyota-camry-2015-le-25",
+    "score": 11,
+    "title": "File:2015 Toyota Camry (ASV50R) XLE sedan (2015-12-31) 02.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/2015_Toyota_Camry_%28ASV50R%29_XLE_sedan_%282015-12-31%29_02.jpg/960px-2015_Toyota_Camry_%28ASV50R%29_XLE_sedan_%282015-12-31%29_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "EurovisionNim",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
+  },
+  {
+    "id": "ford-f-150-2017-supercrew-27",
+    "score": 10,
+    "title": "File:2017 Ford F150 Raptor.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/2017_Ford_F150_Raptor.jpg/960px-2017_Ford_F150_Raptor.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "MrWalkr",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
+  },
+  {
+    "id": "honda-civic-2017-lx-20",
+    "score": 10,
+    "title": "File:Honda Civic VI sedan 02 China 2017-03-31.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Honda_Civic_VI_sedan_02_China_2017-03-31.jpg/960px-Honda_Civic_VI_sedan_02_China_2017-03-31.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "Navigator84",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
+  },
+  {
+    "id": "toyota-corolla-2017-le-18",
+    "score": 10,
+    "title": "File:2017 Toyota Corolla, Front Left, 01-07-2021.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/43/2017_Toyota_Corolla%2C_Front_Left%2C_01-07-2021.jpg/960px-2017_Toyota_Corolla%2C_Front_Left%2C_01-07-2021.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "SsmIntrigue",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
+  },
+  {
+    "id": "chevrolet-silverado-1500-2018-crew-53l",
+    "score": -1,
+    "title": "File:'14-'15 Chevrolet Silverado Z71 Crew Cab.jpg",
     "url": null,
     "artist": null,
     "license": null,
     "status": "MISS"
   },
   {
-    "id": "kia-sportage-phev-2024",
+    "id": "nissan-rogue-2018-sv-awd",
+    "score": -3,
+    "title": "File:From the Q113 td (2018-08-03) 014 - York College.jpg",
+    "url": null,
+    "artist": null,
+    "license": null,
+    "status": "MISS"
+  },
+  {
+    "id": "nissan-rogue-2019-sv-awd",
     "score": null,
     "title": null,
     "url": null,
     "artist": null,
     "license": null,
     "status": "MISS"
+  },
+  {
+    "id": "toyota-corolla-2020-le",
+    "score": 12,
+    "title": "File:2020 Toyota Corolla LE standard front, 5.25.19.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/2020_Toyota_Corolla_LE_standard_front%2C_5.25.19.jpg/960px-2020_Toyota_Corolla_LE_standard_front%2C_5.25.19.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "Kevauto",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
+  },
+  {
+    "id": "chevrolet-silverado-2021-53",
+    "score": 9,
+    "title": "File:Chevrolet Silverado GMTK2CC 3500HD LTZ Crew Cab.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Chevrolet_Silverado_GMTK2CC_3500HD_LTZ_Crew_Cab.jpg/960px-Chevrolet_Silverado_GMTK2CC_3500HD_LTZ_Crew_Cab.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "Bull-Doser",
+    "license": "Public domain",
+    "status": "match"
+  },
+  {
+    "id": "toyota-corolla-2021-le",
+    "score": 10,
+    "title": "File:Toyota Corolla E150 sedan facelift Shishi 01 2021-12-24.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/87/Toyota_Corolla_E150_sedan_facelift_Shishi_01_2021-12-24.jpg/960px-Toyota_Corolla_E150_sedan_facelift_Shishi_01_2021-12-24.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "JamesYoung8167",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
+  },
+  {
+    "id": "chevrolet-silverado-2022-53",
+    "score": 9,
+    "title": "File:Chevrolet Silverado GMTT1XX 2500HD High Country Crew Cab.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Chevrolet_Silverado_GMTT1XX_2500HD_High_Country_Crew_Cab.jpg/960px-Chevrolet_Silverado_GMTT1XX_2500HD_High_Country_Crew_Cab.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "Bull-Doser",
+    "license": "Public domain",
+    "status": "match"
+  },
+  {
+    "id": "toyota-corolla-2022-le",
+    "score": 10,
+    "title": "File:Toyota Corolla E150 sedan facelift Sanming 02 2022-02-14.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Toyota_Corolla_E150_sedan_facelift_Sanming_02_2022-02-14.jpg/960px-Toyota_Corolla_E150_sedan_facelift_Sanming_02_2022-02-14.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "JamesYoung8167",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
+  },
+  {
+    "id": "toyota-rav4-2022-xle",
+    "score": 10,
+    "title": "File:Toyota RAV4 XA30 Shishi 01 2022-06-27.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/Toyota_RAV4_XA30_Shishi_01_2022-06-27.jpg/960px-Toyota_RAV4_XA30_Shishi_01_2022-06-27.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "JamesYoung8167",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
+  },
+  {
+    "id": "chevrolet-silverado-2023-53",
+    "score": 9,
+    "title": "File:Chevrolet Silverado Crew Cab HD GMTT1XX.jpeg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/Chevrolet_Silverado_Crew_Cab_HD_GMTT1XX.jpeg/960px-Chevrolet_Silverado_Crew_Cab_HD_GMTT1XX.jpeg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "Bull-Doser",
+    "license": "Public domain",
+    "status": "match"
+  },
+  {
+    "id": "ford-f-150-2023-27",
+    "score": 10,
+    "title": "File:Ford Shelby F-150 au SIAM 2023.jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Ford_Shelby_F-150_au_SIAM_2023.jpg/960px-Ford_Shelby_F-150_au_SIAM_2023.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "Bull-Doser",
+    "license": "Public domain",
+    "status": "match"
+  },
+  {
+    "id": "toyota-corolla-2023-le",
+    "score": 9,
+    "title": "File:TOYOTA COROLLA SEDAN (E210) China (9).jpg",
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/17/TOYOTA_COROLLA_SEDAN_%28E210%29_China_%289%29.jpg/960px-TOYOTA_COROLLA_SEDAN_%28E210%29_China_%289%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "artist": "Dinkun Chen",
+    "license": "CC BY-SA 4.0",
+    "status": "match"
   }
 ]
