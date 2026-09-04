@@ -502,6 +502,7 @@ export default function App() {
                   <span className="stat"><b>{baseline.safety === '—' ? 'Not rated' : baseline.safety}</b>IIHS safety</span>
                 </div>
               </div>
+              <div className="b-controls">
               <div className="b-select">
                 <label className="b-label" htmlFor="gf-baseline">Comparing against</label>
                 <div className="b-row">
@@ -511,10 +512,26 @@ export default function App() {
                   <button className="btn ghost" onClick={() => patch({ baselineId: null })}>Clear</button>
                 </div>
               </div>
+              <div className="b-garage">
+                <label className="b-label" htmlFor="gf-garage">Your garage opening (mirrors-out)</label>
+                <div className="b-row">
+                  <input id="gf-garage" className="b-garage-input" type="number" inputMode="decimal" min={60} max={140} step={0.5}
+                    placeholder="e.g. 88" value={f.garageWidth || ''}
+                    onChange={(e) => patch({ garageWidth: e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)) })}
+                    aria-describedby="gf-garage-hint" />
+                  <span className="b-garage-unit">inches</span>
+                  {f.garageWidth > 0 && <button className="btn ghost" onClick={() => patch({ garageWidth: 0 })}>Clear</button>}
+                  <span className="b-hint" id="gf-garage-hint">{f.garageWidth > 0
+                    ? <><strong>{VEHICLES.filter((x) => x.widthExtended <= f.garageWidth).length} of {VEHICLES.length}</strong> vehicles fit your opening</>
+                    : 'Optional — adds a fits / doesn’t-fit verdict to every vehicle'}</span>
+                </div>
+              </div>
+              </div>
             </>
           ) : (
             <>
               <div className="b-info"><span className="kicker">Comparison mode</span><h2>No baseline — showing absolute values</h2><p>Pick a car you own so every row shows better / worse relative to it.</p></div>
+              <div className="b-controls">
               <div className="b-select">
                 <label className="b-label" htmlFor="gf-baseline-new">Choose your baseline</label>
                 <select id="gf-baseline-new" defaultValue="" onChange={(e) => e.target.value && patch({ baselineId: e.target.value })}>
@@ -522,22 +539,23 @@ export default function App() {
                   {VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.year} {v.make} {v.model} {v.trim}</option>)}
                 </select>
               </div>
+              <div className="b-garage">
+                <label className="b-label" htmlFor="gf-garage">Your garage opening (mirrors-out)</label>
+                <div className="b-row">
+                  <input id="gf-garage" className="b-garage-input" type="number" inputMode="decimal" min={60} max={140} step={0.5}
+                    placeholder="e.g. 88" value={f.garageWidth || ''}
+                    onChange={(e) => patch({ garageWidth: e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)) })}
+                    aria-describedby="gf-garage-hint" />
+                  <span className="b-garage-unit">inches</span>
+                  {f.garageWidth > 0 && <button className="btn ghost" onClick={() => patch({ garageWidth: 0 })}>Clear</button>}
+                  <span className="b-hint" id="gf-garage-hint">{f.garageWidth > 0
+                    ? <><strong>{VEHICLES.filter((x) => x.widthExtended <= f.garageWidth).length} of {VEHICLES.length}</strong> vehicles fit your opening</>
+                    : 'Optional — adds a fits / doesn’t-fit verdict to every vehicle'}</span>
+                </div>
+              </div>
+              </div>
             </>
           )}
-          <div className="b-garage">
-            <label className="b-label" htmlFor="gf-garage">Your garage opening (mirrors-out)</label>
-            <div className="b-row">
-              <input id="gf-garage" className="b-garage-input" type="number" inputMode="decimal" min={60} max={140} step={0.5}
-                placeholder="e.g. 88" value={f.garageWidth || ''}
-                onChange={(e) => patch({ garageWidth: e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)) })}
-                aria-describedby="gf-garage-hint" />
-              <span className="b-garage-unit">inches</span>
-              {f.garageWidth > 0 && <button className="btn ghost" onClick={() => patch({ garageWidth: 0 })}>Clear</button>}
-              <span className="b-hint" id="gf-garage-hint">{f.garageWidth > 0
-                ? <><strong>{VEHICLES.filter((x) => x.widthExtended <= f.garageWidth).length} of {VEHICLES.length}</strong> vehicles fit your opening</>
-                : 'Optional — adds a fits / doesn’t-fit verdict to every vehicle'}</span>
-            </div>
-          </div>
         </section>
 
         <div className="stickybar" id="browse">
@@ -736,9 +754,8 @@ export default function App() {
       {detail && (
         <div className="dpage" ref={dpRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={`${detail.year} ${detail.make} ${detail.model} closer analysis`}>
           <div className="dpage-bar">
-            <button className="btn ghost" onClick={closeDetail}>Back</button>
+            <button className="btn ghost" onClick={closeDetail}>← Back</button>
             <strong className="dpage-title">{detail.year} {detail.make} {detail.model} <small>{detail.trim}</small></strong>
-            <button className="btn ghost" onClick={closeDetail} aria-label="Close vehicle page">Close</button>
           </div>
           <div className="wrap dpage-in">
           {(() => {
@@ -943,14 +960,14 @@ export default function App() {
       )}
       {photoFull?.imageUrl && (
         <div className="lightbox" role="dialog" aria-modal="true" aria-label={`Full image of ${photoFull.year} ${photoFull.make} ${photoFull.model}`} onClick={() => setPhotoFull(null)}>
-          <button type="button" className="lb-close" onClick={() => setPhotoFull(null)} aria-label="Close full image">Close</button>
+          <button type="button" className="lb-close" onClick={() => setPhotoFull(null)} aria-label="Close full image">×</button>
           <img className="lb-img" src={photoFull.imageUrl} alt={`${photoFull.year} ${photoFull.make} ${photoFull.model} full image`} onClick={(e) => e.stopPropagation()} />
           {photoFull.imageCredit && <p className="lb-credit" onClick={(e) => e.stopPropagation()}>{photoFull.imageCredit}</p>}
         </div>
       )}
 
       {toast && <div className="toast show" role="status" aria-live="polite">{toast}</div>}
-      <button className={'totop' + (showTop ? ' show' : '')} onClick={() => jump('results')} aria-hidden={!showTop} tabIndex={showTop ? 0 : -1} aria-label="Back to top">Top</button>
+      <button className={'totop' + (showTop ? ' show' : '')} onClick={() => jump('results')} aria-hidden={!showTop} tabIndex={showTop ? 0 : -1} aria-label="Back to top"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
       <footer className="foot">
         <div className="wrap foot-in">
           <div className="foot-brand">
