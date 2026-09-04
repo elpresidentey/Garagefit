@@ -3,9 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const BG = [28, 27, 26, 255];
-const TEAL = [15, 118, 110, 255];
-const PAPER = [250, 249, 247, 255];
+const BG = [11, 18, 32, 255];
+const TEAL = [30, 58, 138, 255];
+const PAPER = [248, 250, 252, 255];
 
 const crcTable = (() => {
   const t = new Int32Array(256);
