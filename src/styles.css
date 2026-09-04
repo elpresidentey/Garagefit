@@ -133,7 +133,7 @@ select:focus-visible,input[type=number]:focus-visible{outline:none;border-color:
 /* ---------- baseline banner (flat status tint) ---------- */
 .baseline{position:relative;margin:24px 0;border-radius:20px;padding:22px 24px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;
   color:var(--ink);background:color-mix(in srgb,var(--goldsoft) 55%,var(--card));
-  border:1px solid var(--line2);border-left:3px solid var(--gold);box-shadow:var(--shadow)}
+  border:1px solid var(--line2);box-shadow:var(--shadow)}
 .baseline .b-car{position:relative;width:112px;height:112px;border-radius:16px;display:grid;place-items:center;font-size:56px;flex:none;overflow:hidden;
   color:var(--ink);background:var(--card);border:1px solid var(--line2);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
 [data-theme=dark] .baseline .b-car{box-shadow:none}
