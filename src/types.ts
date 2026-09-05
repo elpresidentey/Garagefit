@@ -26,6 +26,14 @@ export interface Vehicle {
   imageUrl?: string;
   /** Required if imageUrl is set and the license needs it (e.g. Wikimedia Commons). */
   imageCredit?: string;
+  /** Overall length in inches (optional — backfilled for popular trims). */
+  lengthIn?: number;
+  /** Overall height in inches (optional). */
+  heightIn?: number;
+  /** DC fast-charge peak in kW (EVs, where known). */
+  chargeKwMax?: number;
+  /** True for user-added custom vehicles stored locally. */
+  custom?: boolean;
   /** NHTSA 5-star overall rating (1-5) from api.nhtsa.gov, where rated. */
   nhtsaStars?: number;
   /** True when MSRP, efficiency, and body width were verified against manufacturer/EPA sources. */
@@ -58,4 +66,22 @@ export interface FilterState {
   bodies: string[];
   make: string;
   minEff: number;
+  /** Garage depth (length) in inches. 0 = not set. */
+  garageLength: number;
+  /** Garage door height in inches. 0 = not set. */
+  garageHeight: number;
+  /** Minimum EV/PHEV electric range in miles. 0 = no minimum. */
+  minRange: number;
+}
+
+export interface CostPrefs {
+  milesYr: number;
+  gasPrice: number;
+  elecPrice: number;
+  /** APR percent for monthly payment estimate. */
+  apr: number;
+  /** Loan term in months. */
+  termMo: number;
+  /** Down payment percent. */
+  downPct: number;
 }

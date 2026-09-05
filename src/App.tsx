@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { VEHICLES, DATA_STAMP, DEFAULT_BASELINE_ID } from './data';
 import { CarGlyph } from './icons';
-import type { FilterState, SortKey, Vehicle } from './types';
+import type { CostPrefs, FilterState, SortKey, Vehicle } from './types';
 
 const FUELS = ['Gasoline', 'Hybrid', 'PHEV', 'EV', 'Hydrogen'];
 const BODIES = [...new Set(VEHICLES.map((v) => v.body))];
@@ -24,6 +24,25 @@ function garageFit(v: Vehicle, gw: number): { ok: boolean; tight: boolean; clear
   if (!gw) return null;
   const clearance = +(gw - v.widthExtended).toFixed(1);
   return { ok: clearance >= 0, tight: clearance >= 0 && clearance < 2, clearance };
+}
+/** Length fit vs garage depth. null when either is unset/unknown. */
+function lengthFit(v: Vehicle, gl: number): { ok: boolean; clearance: number } | null {
+  if (!gl || v.lengthIn == null) return null;
+  const clearance = +(gl - v.lengthIn).toFixed(1);
+  return { ok: clearance >= 0, clearance };
+}
+/** Height fit vs garage door height. null when either is unset/unknown. */
+function heightFit(v: Vehicle, gh: number): { ok: boolean; clearance: number } | null {
+  if (!gh || v.heightIn == null) return null;
+  const clearance = +(gh - v.heightIn).toFixed(1);
+  return { ok: clearance >= 0, clearance };
+}
+/** Standard amortized monthly payment from MSRP after down payment. */
+function monthlyPayment(msrp: number, cost: CostPrefs): number {
+  const principal = msrp * (1 - cost.downPct / 100);
+  const r = cost.apr / 100 / 12;
+  if (r <= 0) return principal / cost.termMo;
+  return (principal * r) / (1 - Math.pow(1 + r, -cost.termMo));
 }
 function garageTone(gf: { ok: boolean; tight: boolean }): 'good' | 'warn' | 'bad' {
   if (!gf.ok) return 'bad';
@@ -50,6 +69,9 @@ function readURL(): Partial<FilterState> {
   if (p.get('minYear')) out.minYear = +p.get('minYear')!;
   if (p.get('maxWidth')) out.maxWidth = +p.get('maxWidth')!;
   if (p.get('gw')) out.garageWidth = +p.get('gw')!;
+  if (p.get('gl')) out.garageLength = +p.get('gl')!;
+  if (p.get('gh')) out.garageHeight = +p.get('gh')!;
+  if (p.get('minRange')) out.minRange = +p.get('minRange')!;
   if (p.get('gwOnly') === '1') out.garageFitOnly = true;
   (['narrowOnly', 'topSafety', 'handsFree', 'favsOnly'] as const).forEach((k) => { if (p.get(k) === '1') (out as Record<string, unknown>)[k] = true; });
   if (p.get('fuels')) out.fuels = p.get('fuels')!.split(',');
@@ -61,9 +83,11 @@ function readURL(): Partial<FilterState> {
 
 const DEFAULTS: FilterState = {
   baselineId: DEFAULT_BASELINE_ID, q: '', preset: '', sort: 'year-desc', view: 'cards',
-  maxPrice: 80000, minYear: 2015, maxWidth: 98, garageWidth: 0, garageFitOnly: false, narrowOnly: false,
+  maxPrice: 80000, minYear: 2015, maxWidth: 98, garageWidth: 0, garageLength: 0, garageHeight: 0, minRange: 0, garageFitOnly: false, narrowOnly: false,
   topSafety: false, handsFree: false, favsOnly: false, fuels: [], bodies: [], make: '', minEff: 0,
 };
+
+const DEFAULT_COST: CostPrefs = { milesYr: 12000, gasPrice: 3.5, elecPrice: 0.17, apr: 6.9, termMo: 60, downPct: 10 };
 
 function Delta({ kind, v, b, unit }: { kind: 'msrp' | 'eff' | 'width' | 'seats' | 'safety'; v: number | string; b: number | string; unit?: string }) {
   let cls = 'same', label = '=', title = 'Same as baseline';
@@ -132,33 +156,33 @@ function Modal({ label, onClose, children }: { label: string; onClose: () => voi
   );
 }
 
-// Cost assumptions for the fuel-cost estimate (shown as a footnote in the UI).
-const MILES_YR = 12000, GAS_PRICE = 3.5, ELEC_PRICE = 0.17, KWH_PER_GAL = 33.7;
+// Cost assumptions for the fuel-cost estimate (user-adjustable in Filters → Ownership costs).
+const KWH_PER_GAL = 33.7;
 /** Estimated annual fuel/charging cost, or null when it can't be fairly computed (H2, blended PHEV). */
-function annualFuel(v: Vehicle): number | null {
+function annualFuel(v: Vehicle, cost: CostPrefs = DEFAULT_COST): number | null {
   if (!v.eff) return null;
-  if (v.fuel === 'EV') return ((MILES_YR / v.eff) * KWH_PER_GAL * ELEC_PRICE);
+  if (v.fuel === 'EV') return ((cost.milesYr / v.eff) * KWH_PER_GAL * cost.elecPrice);
   if (v.fuel === 'Hydrogen' || v.fuel === 'PHEV') return null;
   if (v.effUnit === 'MPGe') return null;
-  return (MILES_YR / v.eff) * GAS_PRICE;
+  return (cost.milesYr / v.eff) * cost.gasPrice;
 }
 /** Annual fuel volume: gallons for MPG vehicles, kWh for EVs, else null. */
-function annualEnergy(v: Vehicle): { amount: number; unit: string } | null {
+function annualEnergy(v: Vehicle, milesYr: number = DEFAULT_COST.milesYr): { amount: number; unit: string } | null {
   if (!v.eff) return null;
-  if (v.fuel === 'EV') return { amount: (MILES_YR / v.eff) * KWH_PER_GAL, unit: 'kWh' };
+  if (v.fuel === 'EV') return { amount: (milesYr / v.eff) * KWH_PER_GAL, unit: 'kWh' };
   if (v.fuel === 'Hydrogen' || v.fuel === 'PHEV' || v.effUnit === 'MPGe') return null;
-  return { amount: MILES_YR / v.eff, unit: 'gal' };
+  return { amount: milesYr / v.eff, unit: 'gal' };
 }
 /** Annual tailpipe+charging CO₂ in metric tons (US avg grid for EVs), else null. */
-function annualCO2(v: Vehicle): number | null {
-  const e = annualEnergy(v);
+function annualCO2(v: Vehicle, milesYr: number = DEFAULT_COST.milesYr): number | null {
+  const e = annualEnergy(v, milesYr);
   if (!e) return null;
   return e.unit === 'gal' ? (e.amount * 8.89) / 1000 : (e.amount * 0.39) / 1000;
 }
 /** 5-yr ownership sketch: depreciation (55% of MSRP) + 5× fuel, when computable. */
-function fiveYear(v: Vehicle): { depr: number; fuel: number | null; total: number | null } {
+function fiveYear(v: Vehicle, cost: CostPrefs = DEFAULT_COST): { depr: number; fuel: number | null; total: number | null } {
   const depr = v.msrp * 0.55;
-  const f = annualFuel(v);
+  const f = annualFuel(v, cost);
   return { depr, fuel: f == null ? null : f * 5, total: f == null ? null : depr + f * 5 };
 }
 /** Percentile context across the catalog (same-unit peers for efficiency). */
@@ -197,6 +221,15 @@ export default function App() {
   });
   const [favs, setFavs] = useState<string[]>(() => JSON.parse(localStorage.getItem('gf-favs') || '[]'));
   const [compare, setCompare] = useState<string[]>([]);
+  const [cost, setCost] = useState<CostPrefs>(() => {
+    try { return { ...DEFAULT_COST, ...JSON.parse(localStorage.getItem('gf-cost-v1') || '{}') }; }
+    catch { return DEFAULT_COST; }
+  });
+  const [customCars, setCustomCars] = useState<Vehicle[]>(() => {
+    try { return JSON.parse(localStorage.getItem('gf-custom-v1') || '[]'); }
+    catch { return []; }
+  });
+  const [customOpen, setCustomOpen] = useState(false);
   const [shown, setShown] = useState(24);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [colsOpen, setColsOpen] = useState(false);
@@ -325,9 +358,13 @@ export default function App() {
     return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
   }, []);
   const jump = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const ALL = useMemo(() => [...VEHICLES, ...customCars], [customCars]);
+  const byIdAll = (id: string | null) => ALL.find((v) => v.id === id) ?? null;
   useEffect(() => {
     localStorage.setItem('gf-state-v1', JSON.stringify(f));
     localStorage.setItem('gf-favs', JSON.stringify(favs));
+    localStorage.setItem('gf-cost-v1', JSON.stringify(cost));
+    localStorage.setItem('gf-custom-v1', JSON.stringify(customCars));
     if (f.baselineId) localStorage.setItem('gf-base', f.baselineId);
     const p = new URLSearchParams();
     if (f.baselineId) p.set('b', f.baselineId);
@@ -337,7 +374,10 @@ export default function App() {
     if (f.view !== 'cards') p.set('view', f.view);
     p.set('maxPrice', String(f.maxPrice)); p.set('minYear', String(f.minYear)); p.set('maxWidth', String(f.maxWidth));
     if (f.garageWidth) p.set('gw', String(f.garageWidth));
-    if (f.garageFitOnly && f.garageWidth) p.set('gwOnly', '1');
+    if (f.garageLength) p.set('gl', String(f.garageLength));
+    if (f.garageHeight) p.set('gh', String(f.garageHeight));
+    if (f.minRange) p.set('minRange', String(f.minRange));
+    if (f.garageFitOnly && (f.garageWidth || f.garageLength)) p.set('gwOnly', '1');
     if (f.narrowOnly) p.set('narrowOnly', '1');
     if (f.topSafety) p.set('topSafety', '1');
     if (f.handsFree) p.set('handsFree', '1');
@@ -347,11 +387,11 @@ export default function App() {
     if (f.make) p.set('make', f.make);
     if (f.minEff) p.set('minEff', String(f.minEff));
     history.replaceState(null, '', '?' + p.toString());
-  }, [f, favs]);
+  }, [f, favs, cost, customCars]);
 
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(''), 2200); return () => clearTimeout(t); } }, [toast]);
 
-  const baseline = byId(f.baselineId);
+  const baseline = byIdAll(f.baselineId);
 
   const results = useMemo(() => {
     const fitScore = (v: Vehicle) => {
@@ -370,11 +410,16 @@ export default function App() {
       'safety-desc': (a, b) => (SAFETY_SCORE[b.safety] ?? 0) - (SAFETY_SCORE[a.safety] ?? 0),
       'width-asc': (a, b) => a.widthExtended - b.widthExtended, fit: (a, b) => fitScore(a) - fitScore(b),
     };
-    const r = VEHICLES.filter((v) => {
+    const r = ALL.filter((v) => {
       if (f.q && !(v.make + ' ' + v.model + ' ' + v.trim + ' ' + v.year).toLowerCase().includes(f.q.toLowerCase())) return false;
       if (v.msrp > f.maxPrice || v.year < f.minYear || v.widthExtended > f.maxWidth) return false;
       if (f.narrowOnly && baseline && v.widthExtended > baseline.widthExtended) return false;
       if (f.garageFitOnly && f.garageWidth && v.widthExtended > f.garageWidth) return false;
+      if (f.garageFitOnly && f.garageLength && v.lengthIn != null && v.lengthIn > f.garageLength) return false;
+      if (f.minRange > 0) {
+        if (v.rangeMi != null) { if (v.rangeMi < f.minRange) return false; }
+        else if (v.fuel === 'EV') return false;
+      }
       if (f.topSafety && !(v.safety === 'TSP' || v.safety === 'TSP+')) return false;
       if (f.handsFree && !v.handsFree) return false;
       if (f.favsOnly && !favs.includes(v.id)) return false;
@@ -387,7 +432,7 @@ export default function App() {
       return true;
     });
     return r.sort(sorts[f.sort]);
-  }, [f, baseline, favs]);
+  }, [f, baseline, favs, ALL]);
 
   const patch = (p: Partial<FilterState>) => { setF((s) => ({ ...s, ...p })); setShown(24); };
   const toggleCmp = (id: string) => {
@@ -408,8 +453,11 @@ export default function App() {
   if (f.maxPrice < 80000) tags.push({ key: 'maxPrice', label: `≤ ${money(f.maxPrice)}`, clear: () => patch({ maxPrice: 80000 }) });
   if (f.minYear > 2015) tags.push({ key: 'minYear', label: `${f.minYear}+`, clear: () => patch({ minYear: 2015 }) });
   if (f.maxWidth < 98) tags.push({ key: 'maxWidth', label: `≤ ${f.maxWidth}″ wide`, clear: () => patch({ maxWidth: 98 }) });
-  if (f.garageWidth) tags.push({ key: 'gw', label: `Garage ${f.garageWidth}″`, clear: () => patch({ garageWidth: 0, garageFitOnly: false }) });
-  if (f.garageFitOnly && f.garageWidth) tags.push({ key: 'gwOnly', label: 'Fits garage', clear: () => patch({ garageFitOnly: false }) });
+  if (f.garageWidth) tags.push({ key: 'gw', label: `Garage ${f.garageWidth}″ wide`, clear: () => patch({ garageWidth: 0, garageFitOnly: false }) });
+  if (f.garageLength) tags.push({ key: 'gl', label: `Garage ${f.garageLength}″ deep`, clear: () => patch({ garageLength: 0 }) });
+  if (f.garageHeight) tags.push({ key: 'gh', label: `Door ${f.garageHeight}″ high`, clear: () => patch({ garageHeight: 0 }) });
+  if (f.garageFitOnly && (f.garageWidth || f.garageLength)) tags.push({ key: 'gwOnly', label: 'Fits garage', clear: () => patch({ garageFitOnly: false }) });
+  if (f.minRange > 0) tags.push({ key: 'minRange', label: `${f.minRange}+ mi range`, clear: () => patch({ minRange: 0 }) });
   if (f.topSafety) tags.push({ key: 'topSafety', label: 'Top safety', clear: () => patch({ topSafety: false }) });
   if (f.handsFree) tags.push({ key: 'handsFree', label: 'Hands-free', clear: () => patch({ handsFree: false }) });
   if (f.favsOnly) tags.push({ key: 'favsOnly', label: `Saved (${favs.length})`, clear: () => patch({ favsOnly: false }) });
@@ -420,9 +468,10 @@ export default function App() {
   if (f.make) tags.push({ key: 'make', label: f.make, clear: () => patch({ make: '' }) });
   const hasActive = f.preset !== '' || f.q !== '' || f.maxPrice !== 80000 || f.minYear !== 2015 || f.maxWidth !== 98
     || f.garageFitOnly || f.narrowOnly || f.topSafety || f.handsFree || f.favsOnly || f.make !== '' || f.minEff !== 0
+    || f.garageLength !== 0 || f.garageHeight !== 0 || f.minRange !== 0
     || f.fuels.length > 0 || f.bodies.length > 0;
 
-  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2015, maxWidth: 98, garageFitOnly: false, narrowOnly: false, topSafety: false, handsFree: false, favsOnly: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
+  const clearFilters = () => patch({ preset: '', maxPrice: 80000, minYear: 2015, maxWidth: 98, garageLength: 0, garageHeight: 0, minRange: 0, garageFitOnly: false, narrowOnly: false, topSafety: false, handsFree: false, favsOnly: false, make: '', minEff: 0, q: '', fuels: [], bodies: [] });
 
   return (
     <>
@@ -510,22 +559,28 @@ export default function App() {
                 <label className="b-label" htmlFor="gf-baseline">Comparing against</label>
                 <div className="b-row">
                   <select id="gf-baseline" value={baseline.id} onChange={(e) => patch({ baselineId: e.target.value })}>
-                    {VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.year} {v.make} {v.model} {v.trim}</option>)}
+                    {ALL.map((v) => <option key={v.id} value={v.id}>{v.year} {v.make} {v.model} {v.trim}</option>)}
                   </select>
                   <button className="btn ghost" onClick={() => patch({ baselineId: null })}>Clear</button>
+                  <button className="btn ghost" onClick={() => setCustomOpen(true)} title="Add your own car when it's not listed">+ My car</button>
                 </div>
               </div>
               <div className="b-garage">
-                <label className="b-label" htmlFor="gf-garage">Your garage opening (mirrors-out)</label>
+                <label className="b-label" htmlFor="gf-garage">Your garage — width, depth &amp; door height</label>
                 <div className="b-row">
                   <input id="gf-garage" className="b-garage-input" type="number" inputMode="decimal" min={60} max={140} step={0.5}
-                    placeholder="e.g. 88" value={f.garageWidth || ''}
+                    placeholder="88″ wide" value={f.garageWidth || ''}
                     onChange={(e) => patch({ garageWidth: e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)) })}
                     aria-describedby="gf-garage-hint" />
-                  <span className="b-garage-unit">inches</span>
-                  {f.garageWidth > 0 && <button className="btn ghost" onClick={() => patch({ garageWidth: 0 })}>Clear</button>}
+                  <input className="b-garage-input" type="number" inputMode="decimal" min={120} max={300} step={1}
+                    placeholder="240″ deep" value={f.garageLength || ''} aria-label="Garage depth in inches"
+                    onChange={(e) => patch({ garageLength: e.target.value === '' ? 0 : Math.min(400, Math.max(0, +e.target.value)) })} />
+                  <input className="b-garage-input" type="number" inputMode="decimal" min={60} max={120} step={0.5}
+                    placeholder="84″ high" value={f.garageHeight || ''} aria-label="Garage door height in inches"
+                    onChange={(e) => patch({ garageHeight: e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)) })} />
+                  {(f.garageWidth > 0 || f.garageLength > 0 || f.garageHeight > 0) && <button className="btn ghost" onClick={() => patch({ garageWidth: 0, garageLength: 0, garageHeight: 0, garageFitOnly: false })}>Clear</button>}
                   <span className="b-hint" id="gf-garage-hint">{f.garageWidth > 0
-                    ? <><strong>{VEHICLES.filter((x) => x.widthExtended <= f.garageWidth).length} of {VEHICLES.length}</strong> vehicles fit your opening</>
+                    ? <><strong>{ALL.filter((x) => x.widthExtended <= f.garageWidth).length} of {ALL.length}</strong> vehicles fit your opening</>
                     : 'Optional — adds a fits / doesn’t-fit verdict to every vehicle'}</span>
                 </div>
               </div>
@@ -539,20 +594,28 @@ export default function App() {
                 <label className="b-label" htmlFor="gf-baseline-new">Choose your baseline</label>
                 <select id="gf-baseline-new" defaultValue="" onChange={(e) => e.target.value && patch({ baselineId: e.target.value })}>
                   <option value="">Choose baseline…</option>
-                  {VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.year} {v.make} {v.model} {v.trim}</option>)}
+                  {ALL.map((v) => <option key={v.id} value={v.id}>{v.year} {v.make} {v.model} {v.trim}</option>)}
                 </select>
+                <div className="b-row" style={{ marginTop: 8 }}>
+                  <button className="btn ghost" onClick={() => setCustomOpen(true)}>+ Add my car (not listed)</button>
+                </div>
               </div>
               <div className="b-garage">
-                <label className="b-label" htmlFor="gf-garage">Your garage opening (mirrors-out)</label>
+                <label className="b-label" htmlFor="gf-garage">Your garage — width, depth &amp; door height</label>
                 <div className="b-row">
                   <input id="gf-garage" className="b-garage-input" type="number" inputMode="decimal" min={60} max={140} step={0.5}
-                    placeholder="e.g. 88" value={f.garageWidth || ''}
+                    placeholder="88″ wide" value={f.garageWidth || ''}
                     onChange={(e) => patch({ garageWidth: e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)) })}
                     aria-describedby="gf-garage-hint" />
-                  <span className="b-garage-unit">inches</span>
-                  {f.garageWidth > 0 && <button className="btn ghost" onClick={() => patch({ garageWidth: 0 })}>Clear</button>}
+                  <input className="b-garage-input" type="number" inputMode="decimal" min={120} max={300} step={1}
+                    placeholder="240″ deep" value={f.garageLength || ''} aria-label="Garage depth in inches"
+                    onChange={(e) => patch({ garageLength: e.target.value === '' ? 0 : Math.min(400, Math.max(0, +e.target.value)) })} />
+                  <input className="b-garage-input" type="number" inputMode="decimal" min={60} max={120} step={0.5}
+                    placeholder="84″ high" value={f.garageHeight || ''} aria-label="Garage door height in inches"
+                    onChange={(e) => patch({ garageHeight: e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)) })} />
+                  {(f.garageWidth > 0 || f.garageLength > 0 || f.garageHeight > 0) && <button className="btn ghost" onClick={() => patch({ garageWidth: 0, garageLength: 0, garageHeight: 0, garageFitOnly: false })}>Clear</button>}
                   <span className="b-hint" id="gf-garage-hint">{f.garageWidth > 0
-                    ? <><strong>{VEHICLES.filter((x) => x.widthExtended <= f.garageWidth).length} of {VEHICLES.length}</strong> vehicles fit your opening</>
+                    ? <><strong>{ALL.filter((x) => x.widthExtended <= f.garageWidth).length} of {ALL.length}</strong> vehicles fit your opening</>
                     : 'Optional — adds a fits / doesn’t-fit verdict to every vehicle'}</span>
                 </div>
               </div>
@@ -602,20 +665,32 @@ export default function App() {
                   <div className="checks">{FUELS.map((x) => <label key={x}><input type="checkbox" checked={f.fuels.includes(x)} onChange={(e) => patch({ fuels: e.target.checked ? [...f.fuels, x] : f.fuels.filter((y) => y !== x) })} /> {x}</label>)}</div>
                   <div className="ds-field-row"><label htmlFor="gf-mineff">Efficiency</label><output className="ds-output">{f.minEff}+ MPG(e)</output></div>
                   <input id="gf-mineff" type="range" min={0} max={140} value={f.minEff} onChange={(e) => patch({ minEff: +e.target.value })} aria-label={`Minimum efficiency ${f.minEff}`} />
+                  <div className="ds-field-row"><label htmlFor="gf-minrange">Min EV range</label><output className="ds-output">{f.minRange ? `${f.minRange} mi` : 'Any'}</output></div>
+                  <input id="gf-minrange" type="range" min={0} max={400} step={10} value={f.minRange} onChange={(e) => patch({ minRange: +e.target.value })} aria-label={`Minimum EV range ${f.minRange} miles`} />
                 </fieldset>
                 <fieldset><legend>Fit &amp; safety</legend>
                   <div className="ds-field-row"><label htmlFor="gf-maxwidth">Max width</label><output className="ds-output">{f.maxWidth}″</output></div>
                   <input id="gf-maxwidth" type="range" min={68} max={98} step={0.5} value={f.maxWidth} onChange={(e) => patch({ maxWidth: +e.target.value })} aria-label={`Max width ${f.maxWidth} inches`} />
                   <label className="check"><input type="checkbox" checked={f.narrowOnly} disabled={!baseline} onChange={(e) => patch({ narrowOnly: e.target.checked })} /> Fits baseline</label>
-                  <label className="check"><input type="checkbox" checked={f.garageFitOnly} disabled={!f.garageWidth} onChange={(e) => patch({ garageFitOnly: e.target.checked })} /> Fits my garage{f.garageWidth ? ` (${f.garageWidth}″)` : ''}</label>
-                  {!baseline && !f.garageWidth && <p className="f-hint">Set a baseline or garage opening above to unlock fit filters.</p>}
+                  <label className="check"><input type="checkbox" checked={f.garageFitOnly} disabled={!f.garageWidth && !f.garageLength} onChange={(e) => patch({ garageFitOnly: e.target.checked })} /> Fits my garage{f.garageWidth ? ` (${f.garageWidth}″)` : ''}{f.garageLength ? ` · ${f.garageLength}″ deep` : ''}</label>
+                  {!baseline && !f.garageWidth && !f.garageLength && <p className="f-hint">Set a baseline or garage size above to unlock fit filters.</p>}
                   <div className="checks checks-row">
                     <label><input type="checkbox" checked={f.topSafety} onChange={(e) => patch({ topSafety: e.target.checked })} /> Top safety</label>
                     <label><input type="checkbox" checked={f.handsFree} onChange={(e) => patch({ handsFree: e.target.checked })} /> Hands-free</label>
                   </div>
                 </fieldset>
+                <fieldset><legend>Ownership costs</legend>
+                  <div className="ds-field-row"><label htmlFor="gf-miles">Miles / yr</label><output className="ds-output">{cost.milesYr.toLocaleString()}</output></div>
+                  <input id="gf-miles" type="range" min={5000} max={25000} step={1000} value={cost.milesYr} onChange={(e) => setCost((c) => ({ ...c, milesYr: +e.target.value }))} aria-label={`Miles per year ${cost.milesYr}`} />
+                  <div className="ds-field-row"><label htmlFor="gf-gas">Gas $/gal</label><output className="ds-output">${cost.gasPrice.toFixed(2)}</output></div>
+                  <input id="gf-gas" type="range" min={2.5} max={6} step={0.05} value={cost.gasPrice} onChange={(e) => setCost((c) => ({ ...c, gasPrice: +e.target.value }))} aria-label={`Gas price ${cost.gasPrice}`} />
+                  <div className="ds-field-row"><label htmlFor="gf-elec">Electric $/kWh</label><output className="ds-output">${cost.elecPrice.toFixed(2)}</output></div>
+                  <input id="gf-elec" type="range" min={0.08} max={0.45} step={0.01} value={cost.elecPrice} onChange={(e) => setCost((c) => ({ ...c, elecPrice: +e.target.value }))} aria-label={`Electricity price ${cost.elecPrice}`} />
+                  <div className="ds-field-row"><label htmlFor="gf-apr">APR %</label><output className="ds-output">{cost.apr.toFixed(1)}% · {cost.termMo}mo</output></div>
+                  <input id="gf-apr" type="range" min={0} max={12} step={0.1} value={cost.apr} onChange={(e) => setCost((c) => ({ ...c, apr: +e.target.value }))} aria-label={`APR ${cost.apr}`} />
+                </fieldset>
               </div>
-              <div className="f-actions"><button className="btn ghost" onClick={clearFilters}>Reset all</button><button className="btn primary" onClick={() => setFiltersOpen(false)}>Show {results.length} result{results.length === 1 ? '' : 's'}</button></div>
+              <div className="f-actions"><button className="btn ghost" onClick={clearFilters}>Reset all</button><button className="btn ghost" onClick={() => setCustomOpen(true)}>+ My car</button><button className="btn primary" onClick={() => setFiltersOpen(false)}>Show {results.length} result{results.length === 1 ? '' : 's'}</button></div>
             </div>
           )}
           {f.view === 'table' && colsOpen && <div className="cols" id="gf-cols">{(Object.keys(cols) as (keyof typeof cols)[]).map((k) => <label key={k}><input type="checkbox" checked={cols[k]} onChange={(e) => setCols((c) => ({ ...c, [k]: e.target.checked }))} /> {k}</label>)}</div>}
@@ -700,7 +775,7 @@ export default function App() {
 
       {!!compare.length && (
         <div className="tray">
-          <span>{compare.map((id) => { const v = byId(id)!; return `${v.make} ${v.model}`; }).join(' · ')}</span>
+          <span>{compare.map((id) => { const v = byIdAll(id)!; return v ? `${v.make} ${v.model}` : id; }).join(' · ')}</span>
           <button className="go" onClick={() => setCmpOpen(true)}>Compare ({compare.length})</button>
           <button onClick={() => setCompare([])}>Clear</button>
         </div>
@@ -710,13 +785,13 @@ export default function App() {
         <Modal label={`Side-by-side comparison of ${compare.length} vehicles`} onClose={() => setCmpOpen(false)}>
             <h2>Side-by-side ({compare.length})</h2>
             {(() => {
-              const vs = compare.map((id) => byId(id)!).filter(Boolean);
+              const vs = compare.map((id) => byIdAll(id)!).filter(Boolean);
               const bestPrice = Math.min(...vs.map((x) => x.msrp));
               const bestEff = Math.max(...vs.map((x) => x.eff));
               const bestWidth = Math.min(...vs.map((x) => x.widthExtended));
-              const bestFuel = Math.min(...vs.map(annualFuel).filter((x): x is number => x != null));
-              const bestCO2 = Math.min(...vs.map(annualCO2).filter((x): x is number => x != null));
-              const bestFive = Math.min(...vs.map((x) => fiveYear(x).total).filter((x): x is number => x != null));
+              const bestFuel = Math.min(...vs.map((x) => annualFuel(x, cost)).filter((x): x is number => x != null));
+              const bestCO2 = Math.min(...vs.map((x) => annualCO2(x, cost.milesYr)).filter((x): x is number => x != null));
+              const bestFive = Math.min(...vs.map((x) => fiveYear(x, cost).total).filter((x): x is number => x != null));
               const bestTag = <span className="pill good">Best</span>;
               return (
               <div className="tablewrap"><table className="cmp-table">
@@ -733,9 +808,12 @@ export default function App() {
                 <tbody>
                   <tr><th scope="row">Price</th>{vs.map((x) => <td key={x.id}>{money(x.msrp)}{x.used ? <small> used</small> : null} {x.msrp === bestPrice && bestTag}<br />{baseline && <Delta kind="msrp" v={x.msrp} b={baseline.msrp} />}</td>)}</tr>
                   <tr><th scope="row">Efficiency</th>{vs.map((x) => <td key={x.id}>{x.eff} {x.effUnit} {x.eff === bestEff && bestTag}<br />{baseline && <Delta kind="eff" v={x.eff} b={baseline.eff} />}</td>)}</tr>
-                  <tr><th scope="row">Est. fuel cost / yr</th>{vs.map((x) => { const c = annualFuel(x); return <td key={x.id}>{c != null ? <>{money(c)} {c === bestFuel && bestTag}</> : '—'}</td>; })}</tr>
+                  <tr><th scope="row">Est. fuel cost / yr</th>{vs.map((x) => { const c = annualFuel(x, cost); return <td key={x.id}>{c != null ? <>{money(c)} {c === bestFuel && bestTag}</> : '—'}</td>; })}</tr>
                   <tr><th scope="row">Fuel type</th>{vs.map((x) => <td key={x.id}>{x.fuel}</td>)}</tr>
                   <tr><th scope="row">Range</th>{vs.map((x) => <td key={x.id}>{x.rangeMi ? `${x.rangeMi} mi` : '—'}</td>)}</tr>
+                  <tr><th scope="row">Fast charge</th>{vs.map((x) => <td key={x.id}>{x.chargeKwMax ? `${x.chargeKwMax} kW` : '—'}</td>)}</tr>
+                  <tr><th scope="row">Length</th>{vs.map((x) => <td key={x.id}>{x.lengthIn ? `${x.lengthIn}″` : '—'}</td>)}</tr>
+                  <tr><th scope="row">Est. monthly</th>{vs.map((x) => <td key={x.id}>{money(monthlyPayment(x.msrp, cost))}/mo</td>)}</tr>
                   <tr><th scope="row">Width, mirrors out</th>{vs.map((x) => <td key={x.id}>{x.widthExtended}″ {x.widthExtended === bestWidth && bestTag}<br />{baseline && <Delta kind="width" v={x.widthExtended} b={baseline.widthExtended} />}</td>)}</tr>
                   <tr><th scope="row">Width, folded</th>{vs.map((x) => <td key={x.id}>{x.widthFolded}″</td>)}</tr>
                   {f.garageWidth > 0 && <tr><th scope="row">Your garage ({f.garageWidth}″)</th>{vs.map((x) => { const g = garageFit(x, f.garageWidth); return <td key={x.id}>{g ? <span className={`pill ${garageTone(g)}`}>{g.ok ? (g.tight ? `${g.clearance.toFixed(1)}″ tight` : `${g.clearance.toFixed(1)}″ spare`) : `${(-g.clearance).toFixed(1)}″ too wide`}</span> : '—'}</td>; })}</tr>}
@@ -745,8 +823,8 @@ export default function App() {
                   <tr><th scope="row">NHTSA rating</th>{vs.map((x) => <td key={x.id}>{x.nhtsaStars ? `${x.nhtsaStars}/5` : 'Not rated'}</td>)}</tr>
                   <tr><th scope="row">Front legroom</th>{vs.map((x) => <td key={x.id}>{x.legroom}″</td>)}</tr>
                   <tr><th scope="row">Hands-free</th>{vs.map((x) => <td key={x.id}>{x.handsFree ? 'Yes' : 'No'}</td>)}</tr>
-                  <tr><th scope="row">Annual CO₂</th>{vs.map((x) => { const c = annualCO2(x); return <td key={x.id}>{c != null ? <>{c.toFixed(1)} t {c === bestCO2 && bestTag}</> : '—'}</td>; })}</tr>
-                  <tr><th scope="row">5-yr total</th>{vs.map((x) => { const t = fiveYear(x).total; return <td key={x.id}>{t != null ? <>{money(t)} {t === bestFive && bestTag}</> : '—'}</td>; })}</tr>
+                  <tr><th scope="row">Annual CO₂</th>{vs.map((x) => { const c = annualCO2(x, cost.milesYr); return <td key={x.id}>{c != null ? <>{c.toFixed(1)} t {c === bestCO2 && bestTag}</> : '—'}</td>; })}</tr>
+                  <tr><th scope="row">5-yr total</th>{vs.map((x) => { const t = fiveYear(x, cost).total; return <td key={x.id}>{t != null ? <>{money(t)} {t === bestFive && bestTag}</> : '—'}</td>; })}</tr>
                 </tbody>
               </table></div>
               );
@@ -764,12 +842,14 @@ export default function App() {
           <div className="wrap dpage-in">
           {(() => {
             const b = baseline && baseline.id !== detail.id ? baseline : null;
-            const myCost = annualFuel(detail);
-            const baseCost = b ? annualFuel(b) : null;
+            const myCost = annualFuel(detail, cost);
+            const baseCost = b ? annualFuel(b, cost) : null;
+            const myMonthly = monthlyPayment(detail.msrp, cost);
             type Cell = { label: string; mine: string; base?: string; cell?: React.ReactNode };
             const rows: Cell[] = [
               { label: detail.used ? 'Typical used value' : 'Price (MSRP)', mine: money(detail.msrp), base: b ? money(b.msrp) : undefined,
                 cell: b ? <><Delta kind="msrp" v={detail.msrp} b={b.msrp} />{pctDiff(detail.msrp, b.msrp) && <small> · {pctDiff(detail.msrp, b.msrp)}</small>}</> : undefined },
+              { label: `Est. monthly (${cost.downPct}% down, ${cost.apr.toFixed(1)}%/${cost.termMo}mo)`, mine: `${money(myMonthly)}/mo` },
               { label: 'Efficiency', mine: `${detail.eff} ${detail.effUnit}`, base: b ? `${b.eff} ${b.effUnit}` : undefined,
                 cell: b ? <><Delta kind="eff" v={detail.eff} b={b.eff} />{pctDiff(detail.eff, b.eff) && <small> · {pctDiff(detail.eff, b.eff)}</small>}</> : undefined },
               { label: 'Est. fuel cost / yr', mine: myCost != null ? money(myCost) : '—', base: baseCost != null ? money(baseCost) : undefined,
@@ -781,12 +861,19 @@ export default function App() {
               { label: 'Fuel type', mine: detail.fuel, base: b?.fuel,
                 cell: b && b.fuel !== detail.fuel ? <span className="pill same">{b.fuel} → {detail.fuel}</span> : (b ? <span className="pill same">= same</span> : undefined) },
               ...(detail.rangeMi ? [{ label: 'EV range', mine: `${detail.rangeMi} mi` } as Cell] : []),
+              ...(detail.chargeKwMax ? [{ label: 'DC fast charge', mine: `${detail.chargeKwMax} kW` } as Cell] : []),
               { label: 'Model year', mine: `${detail.year}`, base: b ? `${b.year}` : undefined,
                 cell: b && b.year !== detail.year ? <span className="pill same">{Math.abs(detail.year - b.year)} yr{Math.abs(detail.year - b.year) > 1 ? 's' : ''} {detail.year > b.year ? 'newer' : 'older'}</span> : (b ? <span className="pill same">= same</span> : undefined) },
               { label: 'Width, mirrors out', mine: `${detail.widthExtended}″`, base: b ? `${b.widthExtended}″` : undefined,
                 cell: b ? <Delta kind="width" v={detail.widthExtended} b={b.widthExtended} /> : undefined },
               ...(f.garageWidth ? [{ label: `Your garage (${f.garageWidth}″ opening)`, mine: `${detail.widthExtended}″ car`,
                 cell: (() => { const gf = garageFit(detail, f.garageWidth); return gf ? (gf.ok ? <span className="pill good">{gf.clearance.toFixed(1)}″ clearance left</span> : <span className="pill bad">{(-gf.clearance).toFixed(1)}″ too wide to fit</span>) : null; })() } as Cell] : []),
+              { label: 'Length', mine: detail.lengthIn ? `${detail.lengthIn}″` : '—', base: b?.lengthIn ? `${b.lengthIn}″` : undefined },
+              ...(f.garageLength ? [{ label: `Garage depth (${f.garageLength}″)`, mine: detail.lengthIn ? `${detail.lengthIn}″ car` : 'Length unknown',
+                cell: (() => { const lf = lengthFit(detail, f.garageLength); if (!lf) return <span className="pill same">n/a</span>; return lf.ok ? <span className="pill good">{lf.clearance.toFixed(1)}″ to spare</span> : <span className="pill bad">{(-lf.clearance).toFixed(1)}″ too long</span>; })() } as Cell] : []),
+              { label: 'Height', mine: detail.heightIn ? `${detail.heightIn}″` : '—' },
+              ...(f.garageHeight ? [{ label: `Door height (${f.garageHeight}″)`, mine: detail.heightIn ? `${detail.heightIn}″ car` : 'Height unknown',
+                cell: (() => { const hf = heightFit(detail, f.garageHeight); if (!hf) return <span className="pill same">n/a</span>; return hf.ok ? <span className="pill good">{hf.clearance.toFixed(1)}″ to spare</span> : <span className="pill bad">{(-hf.clearance).toFixed(1)}″ too tall</span>; })() } as Cell] : []),
               { label: 'Width, mirrors folded', mine: `${detail.widthFolded}″`, base: b ? `${b.widthFolded}″` : undefined },
               { label: 'Seats / doors', mine: `${detail.seats} / ${detail.doors}`, base: b ? `${b.seats} / ${b.doors}` : undefined,
                 cell: b ? <Delta kind="seats" v={detail.seats} b={b.seats} /> : undefined },
@@ -818,7 +905,7 @@ export default function App() {
               if (myCost != null && baseCost != null && myCost !== baseCost) {
                 const d = Math.abs(Math.round(myCost - baseCost));
                 keys.push(myCost < baseCost
-                  ? { dir: 'up', text: `Saves ≈ $${d.toLocaleString()}/yr in fuel (${MILES_YR.toLocaleString()} mi/yr)` }
+                  ? { dir: 'up', text: `Saves ≈ $${d.toLocaleString()}/yr in fuel (${cost.milesYr.toLocaleString()} mi/yr)` }
                   : { dir: 'dn', text: `Costs ≈ $${d.toLocaleString()}/yr more in fuel` });
               }
               if (detail.msrp !== b.msrp) {
@@ -841,14 +928,16 @@ export default function App() {
             }
             const gfk = garageFit(detail, f.garageWidth);
             if (gfk) keys.push(gfk.ok ? { dir: 'up', text: `Fits your garage with ${gfk.clearance.toFixed(1)}″ to spare` } : { dir: 'dn', text: `${(-gfk.clearance).toFixed(1)}″ too wide for your garage opening` });
+            const lfk = lengthFit(detail, f.garageLength);
+            if (lfk && detail.lengthIn != null) keys.push(lfk.ok ? { dir: 'up', text: `Fits garage depth with ${lfk.clearance.toFixed(1)}″ to spare` } : { dir: 'dn', text: `${(-lfk.clearance).toFixed(1)}″ too long for your garage` });
             const v = verdict(detail, baseline);
-            const my5 = fiveYear(detail);
-            const base5 = b ? fiveYear(b) : null;
-            const myCO2 = annualCO2(detail);
-            const baseCO2 = b ? annualCO2(b) : null;
-            const myKwh = annualEnergy(detail);
+            const my5 = fiveYear(detail, cost);
+            const base5 = b ? fiveYear(b, cost) : null;
+            const myCO2 = annualCO2(detail, cost.milesYr);
+            const baseCO2 = b ? annualCO2(b, cost.milesYr) : null;
+            const myKwh = annualEnergy(detail, cost.milesYr);
             const pct = percentiles(detail);
-            const sibs = VEHICLES.filter((x) => x.make === detail.make && x.model === detail.model && x.id !== detail.id).slice(0, 6);
+            const sibs = ALL.filter((x) => x.make === detail.make && x.model === detail.model && x.id !== detail.id).slice(0, 6);
             return (
               <>
                 {detail.imageUrl && (
@@ -894,7 +983,7 @@ export default function App() {
                     <div className="arow" role="row">
                       <span role="cell">Annual consumption</span>
                       <span role="cell"><b>{Math.round(myKwh.amount).toLocaleString()} {myKwh.unit}</b></span>
-                      <span role="cell">{b && (() => { const bk = annualEnergy(b); return bk && bk.unit === myKwh.unit && bk.amount !== myKwh.amount ? (
+                      <span role="cell">{b && (() => { const bk = annualEnergy(b, cost.milesYr); return bk && bk.unit === myKwh.unit && bk.amount !== myKwh.amount ? (
                         bk.amount > myKwh.amount
                           ? <span className="pill good">{Math.round(bk.amount - myKwh.amount).toLocaleString()} {myKwh.unit} less</span>
                           : <span className="pill bad">+{Math.round(myKwh.amount - bk.amount).toLocaleString()} {myKwh.unit}</span>
@@ -949,7 +1038,7 @@ export default function App() {
                     </div>
                   </>
                 )}
-                <p className="fnote">Fuel-cost estimate assumes {MILES_YR.toLocaleString()} mi/yr at ${GAS_PRICE.toFixed(2)}/gal gas and ${ELEC_PRICE.toFixed(2)}/kWh electricity; CO₂ uses 8.89 kg/gal and 0.39 kg/kWh (US avg grid). 5-yr sketch = 55% depreciation + fuel, excl. insurance/maintenance. PHEV figures are blended — check EPA numbers. 2024+ prices are MSRP; 2015–2023 prices are typical used-market values (rounded estimates). Some mirrors-out widths for older years are estimated from body width. Snapshot pricing, not dealer quotes.</p>
+                <p className="fnote">Fuel-cost estimate assumes {cost.milesYr.toLocaleString()} mi/yr at ${cost.gasPrice.toFixed(2)}/gal gas and ${cost.elecPrice.toFixed(2)}/kWh electricity (adjustable in Filters → Ownership costs); CO₂ uses 8.89 kg/gal and 0.39 kg/kWh (US avg grid). 5-yr sketch = 55% depreciation + fuel, excl. insurance/maintenance. Monthly ≈ {cost.downPct}% down, {cost.apr.toFixed(1)}% APR / {cost.termMo}mo. PHEV figures are blended — check EPA numbers. 2024+ prices are MSRP; 2015–2023 prices are typical used-market values (rounded estimates). Some mirrors-out widths for older years are estimated from body width. Length/height backfilled for popular trims; missing values show “—”. Snapshot pricing, not dealer quotes.</p>
                 {detail.imageCredit && <p className="credit">{detail.imageCredit}</p>}
                 <p className="d-actions">
                   <button className="btn primary" onClick={() => { patch({ baselineId: detail.id }); closeDetail(); }}>Set as baseline</button>{' '}
@@ -970,6 +1059,68 @@ export default function App() {
         </div>
       )}
 
+      {customOpen && (
+        <Modal label="Add your own car" onClose={() => setCustomOpen(false)}>
+          <h2>Add my car</h2>
+          <p className="ds-meta">Not listed? Enter your car’s basics — it’s saved in this browser and works as a baseline, in filters, and in comparisons.</p>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            const str = (k: string) => String(fd.get(k) || '').trim();
+            const num = (k: string, dflt: number) => { const n = +String(fd.get(k) || ''); return Number.isFinite(n) && n > 0 ? n : dflt; };
+            const make = str('make') || 'My';
+            const model = str('model') || 'Car';
+            const id = `custom-${Date.now().toString(36)}`;
+            const v: Vehicle = {
+              id, year: Math.round(num('year', 2020)), make, model, trim: str('trim') || 'My trim',
+              body: str('body') || 'Sedan', seats: Math.round(num('seats', 5)), doors: 4,
+              fuel: str('fuel') || 'Gasoline', eff: num('eff', 28), effUnit: (str('fuel') === 'EV' ? 'MPGe' : 'MPG'),
+              msrp: num('msrp', 30000), widthFolded: num('widthFolded', 72), widthExtended: num('widthExtended', 80),
+              lengthIn: str('length') ? +str('length') : undefined, heightIn: str('height') ? +str('height') : undefined,
+              legroom: 41, safety: '—', handsFree: false, rangeMi: str('range') ? +str('range') : null,
+              custom: true, tag: 'Your car',
+            };
+            setCustomCars((c) => [...c, v]);
+            patch({ baselineId: id });
+            setCustomOpen(false);
+            setToast('Your car added as baseline');
+          }}>
+            <div className="fgrid" style={{ marginBottom: 12 }}>
+              <label>Make<br /><input name="make" required placeholder="Toyota" style={{ width: '100%' }} /></label>
+              <label>Model<br /><input name="model" required placeholder="RAV4" style={{ width: '100%' }} /></label>
+              <label>Trim<br /><input name="trim" placeholder="LE AWD" style={{ width: '100%' }} /></label>
+              <label>Year<br /><input name="year" type="number" min={1990} max={2027} defaultValue={2020} style={{ width: '100%' }} /></label>
+              <label>Fuel<br /><select name="fuel" defaultValue="Gasoline" style={{ width: '100%' }}>{FUELS.map((x) => <option key={x}>{x}</option>)}</select></label>
+              <label>Body<br /><select name="body" defaultValue="SUV" style={{ width: '100%' }}>{BODIES.map((x) => <option key={x}>{x}</option>)}</select></label>
+              <label>Price $ (MSRP or value)<br /><input name="msrp" type="number" min={1000} defaultValue={30000} style={{ width: '100%' }} /></label>
+              <label>Efficiency (MPG/MPGe)<br /><input name="eff" type="number" min={5} step={0.5} defaultValue={28} style={{ width: '100%' }} /></label>
+              <label>Width mirrors-out ″<br /><input name="widthExtended" type="number" step={0.1} defaultValue={80} style={{ width: '100%' }} /></label>
+              <label>Width folded ″<br /><input name="widthFolded" type="number" step={0.1} defaultValue={72} style={{ width: '100%' }} /></label>
+              <label>Length ″ (optional)<br /><input name="length" type="number" step={0.1} placeholder="e.g. 181" style={{ width: '100%' }} /></label>
+              <label>Height ″ (optional)<br /><input name="height" type="number" step={0.1} placeholder="e.g. 68" style={{ width: '100%' }} /></label>
+              <label>Seats<br /><input name="seats" type="number" min={2} max={9} defaultValue={5} style={{ width: '100%' }} /></label>
+              <label>EV range mi (if any)<br /><input name="range" type="number" min={0} placeholder="—" style={{ width: '100%' }} /></label>
+            </div>
+            <p>
+              <button className="btn primary" type="submit">Save as baseline</button>{' '}
+              <button className="btn ghost" type="button" onClick={() => setCustomOpen(false)}>Cancel</button>
+            </p>
+          </form>
+          {!!customCars.length && (
+            <>
+              <h3 className="keys-h">Your cars ({customCars.length})</h3>
+              <div className="sibs">
+                {customCars.map((c) => (
+                  <span key={c.id} className="ds-chip"><span>{c.year} {c.make} {c.model}</span>
+                    <button onClick={() => { setCustomCars((s) => s.filter((x) => x.id !== c.id)); if (f.baselineId === c.id) patch({ baselineId: null }); }} aria-label={`Remove ${c.make} ${c.model}`}>×</button>
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </Modal>
+      )}
+
       {toast && <div className="toast show" role="status" aria-live="polite">{toast}</div>}
       <button className={'totop' + (showTop ? ' show' : '')} onClick={() => jump('results')} aria-hidden={!showTop} tabIndex={showTop ? 0 : -1} aria-label="Back to top"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
       <footer className="foot">
@@ -977,7 +1128,7 @@ export default function App() {
           <div className="foot-brand">
             <img className="logo" src="logo.svg" alt="" aria-hidden="true" />
             <div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div>
-            <p>Compare {VEHICLES.length} vehicles ({Math.min(...VEHICLES.map((v) => v.year))}–{Math.max(...VEHICLES.map((v) => v.year))}) against your own car — price, efficiency, garage fit, safety and seats, side by side.</p>
+            <p>Compare {ALL.length} vehicles ({Math.min(...ALL.map((v) => v.year))}–{Math.max(...ALL.map((v) => v.year))}) against your own car — price, efficiency, garage fit, safety and seats, side by side.</p>
           </div>
           <nav className="foot-nav" aria-label="Footer">
             <div className="fcol">
@@ -995,7 +1146,7 @@ export default function App() {
             <div className="fcol">
               <h4>Data</h4>
               <span>Snapshot {DATA_STAMP}</span>
-              <span>{VEHICLES.length} vehicles · {VEHICLES.filter((v) => v.verified).length} verified specs</span>
+              <span>{ALL.length} vehicles · {VEHICLES.filter((v) => v.verified).length} verified specs{customCars.length ? ` · ${customCars.length} yours` : ''}</span>
               <span>MSRP in USD · 2015–2023 values are typical used prices</span>
             </div>
           </nav>
