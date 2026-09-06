@@ -56,8 +56,17 @@ const PRESETS: { id: string; label: string; fn: (v: Vehicle) => boolean }[] = [
   { id: 'fueleff', label: '40+ MPG(e)', fn: (v) => v.eff >= 40 },
 ];
 
+function appQuery(): string {
+  const h = location.hash;
+  if (h.startsWith('#/app')) {
+    const qi = h.indexOf('?');
+    return qi === -1 ? '' : h.slice(qi);
+  }
+  return location.search;
+}
+
 function readURL(): Partial<FilterState> {
-  const p = new URLSearchParams(location.search);
+  const p = new URLSearchParams(appQuery());
   const out: Partial<FilterState> = {};
   const b = p.get('b');
   if (b && byId(b)) out.baselineId = b;
@@ -386,7 +395,7 @@ export default function App() {
     if (f.bodies.length) p.set('bodies', f.bodies.join(','));
     if (f.make) p.set('make', f.make);
     if (f.minEff) p.set('minEff', String(f.minEff));
-    history.replaceState(null, '', '?' + p.toString());
+    history.replaceState(null, '', '?' + p.toString() + '#/app');
   }, [f, favs, cost, customCars]);
 
   useEffect(() => { if (toast) { const t = setTimeout(() => setToast(''), 2200); return () => clearTimeout(t); } }, [toast]);
@@ -501,6 +510,7 @@ export default function App() {
             <div><strong>GarageFit</strong><small>Fit before you buy</small></div>
           </a>
           <nav className="topnav" aria-label="Section navigation">
+            <a href="#/">Home</a>
             <a href="#baseline" className={activeSec === 'baseline' ? 'on' : ''} aria-current={activeSec === 'baseline' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('baseline'); }}>Your baseline</a>
             <a href="#browse" className={activeSec === 'browse' ? 'on' : ''} aria-current={activeSec === 'browse' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('browse'); }}>Browse &amp; filter</a>
             <a href="#results" className={activeSec === 'results' ? 'on' : ''} aria-current={activeSec === 'results' ? 'true' : undefined} onClick={(e) => { e.preventDefault(); jump('results'); }}>Results</a>

@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import Site from './site';
 import './design-system.css';
 import './styles.css';
+import './landing.css';
 import { registerSW } from 'virtual:pwa-register';
 
 const updateSW = registerSW({
@@ -16,6 +17,6 @@ const updateSW = registerSW({
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <Site />
   </React.StrictMode>
 );

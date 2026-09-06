@@ -1,0 +1,103 @@
+/* GarageFit landing — Amperos-style marketing page on the app's design tokens. */
+.lp{background:var(--bg);color:var(--ink)}
+.lp .wrap{max-width:1120px}
+.lp h1,.lp h2{font-family:var(--disp);letter-spacing:-.02em;line-height:1.08;margin:0 0 12px}
+.lp h1{font-size:clamp(38px,6vw,64px)}
+.lp h2{font-size:clamp(26px,3.6vw,38px);max-width:22em}
+.lp .kicker{color:var(--gold)}
+.lp-sub{font-size:18px;color:var(--muted);max-width:34em}
+.lp-note{font-size:13px;color:var(--muted)}
+.lp-eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+
+/* Reveal on scroll */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.rv.vis{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+/* Announcement bar */
+.lp-news{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;background:var(--navy);color:#fff;font-size:13.5px;padding:9px 16px}
+[data-theme=dark] .lp-news{background:#172554}
+.lp-news-dot{width:8px;height:8px;border-radius:99px;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.25)}
+.lp-news a{color:#bfdbfe;font-weight:700}
+
+/* Nav */
+.lp-nav{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.lp-nav-in{display:flex;align-items:center;gap:20px;padding-top:12px;padding-bottom:12px}
+.lp-links{display:flex;gap:18px;margin-left:auto;font-size:14px;font-weight:600}
+.lp-links a{color:var(--muted);text-decoration:none}
+.lp-links a:hover{color:var(--ink)}
+.lp-nav .btn{margin-left:4px}
+@media(max-width:760px){.lp-links{display:none}.lp-nav .btn{margin-left:auto}}
+
+/* Hero */
+.lp-hero{padding:72px 0 56px;background:radial-gradient(900px 320px at 70% -80px,rgba(59,130,246,.14),transparent 70%)}
+.lp-hero-in{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.lp-cta{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0 12px}
+.lp-hero-art{position:relative;min-height:380px}
+.lp-ph{position:absolute;margin:0;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--lift);overflow:hidden;width:min(300px,62%)}
+.lp-ph img{display:block;width:100%;height:170px;object-fit:cover}
+.lp-ph figcaption{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;font-size:13px}
+.lp-ph1{top:0;left:4%;transform:rotate(-3deg)}
+.lp-ph2{top:120px;right:0;transform:rotate(2.5deg)}
+.lp-ph3{bottom:-8px;left:14%;transform:rotate(-1.5deg)}
+@media(max-width:900px){.lp-hero-in{grid-template-columns:1fr}.lp-hero-art{min-height:340px}}
+
+/* Logo marquee */
+.lp-marquee{padding:26px 0 8px;overflow:hidden}
+.lp-track{display:flex;gap:44px;white-space:nowrap;width:max-content;animation:lp-scroll 32s linear infinite;font-weight:800;font-size:19px;color:var(--muted);opacity:.85;padding:6px 0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.lp-marquee:hover .lp-track{animation-play-state:paused}
+@keyframes lp-scroll{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.lp-track{animation:none;flex-wrap:wrap;width:auto}}
+
+/* Pillars */
+.lp-pillars{padding:64px 0 8px}
+.lp-grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:26px}
+@media(max-width:900px){.lp-grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.lp-grid4{grid-template-columns:1fr}}
+.lp-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px}
+.lp-card h3{margin:0 0 8px;font-size:18px}
+.lp-card p{margin:0 0 12px;color:var(--muted);font-size:14.5px}
+
+/* Stats band */
+.lp-stats{margin:56px 0 0;background:var(--navy);color:#fff}
+[data-theme=dark] .lp-stats{background:#172554}
+.lp-stats-in{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding-top:34px;padding-bottom:34px}
+.lp-stat b{display:block;font-size:clamp(28px,4vw,42px);font-family:var(--disp);letter-spacing:-.02em}
+.lp-stat span{color:#bfdbfe;font-size:14px}
+@media(max-width:700px){.lp-stats-in{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* How it works */
+.lp-how{padding:64px 0}
+.lp-steps{list-style:none;margin:26px 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;counter-reset:step}
+@media(max-width:900px){.lp-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.lp-steps{grid-template-columns:1fr}}
+.lp-steps li{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.lp-stepn{display:inline-block;font-weight:800;font-size:13px;color:var(--gold);background:var(--goldsoft);border-radius:999px;padding:3px 12px;margin-bottom:10px}
+.lp-steps h3{margin:0 0 6px;font-size:16.5px}
+.lp-steps p{margin:0;color:var(--muted);font-size:14px}
+
+/* Showcase */
+.lp-cars{padding:8px 0 64px}
+.lp-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+@media(max-width:800px){.lp-grid3{grid-template-columns:1fr}}
+.lp-shot{display:block;background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);text-decoration:none;color:inherit;transition:transform .2s ease,box-shadow .2s ease}
+.lp-shot:hover{transform:translateY(-3px);box-shadow:var(--lift)}
+.lp-shot img{display:block;width:100%;height:190px;object-fit:cover}
+.lp-shot-body{display:block;padding:16px 18px}
+.lp-shot-body b{display:block;font-size:16px;margin-bottom:4px}
+.lp-shot-body small{display:block;color:var(--muted);font-size:13.5px;margin-bottom:8px}
+
+/* FAQ */
+.lp-faq{padding:8px 0 64px}
+.lp-faq-in{max-width:760px}
+.lp-qa{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-top:10px;padding:4px 18px}
+.lp-qa summary{cursor:pointer;font-weight:700;padding:14px 0;font-size:15.5px}
+.lp-qa p{color:var(--muted);margin:0 0 16px;font-size:14.5px}
+
+/* Final CTA */
+.lp-final{margin:0 0 64px}
+.lp-final .wrap{background:linear-gradient(135deg,var(--navy),#3b82f6);color:#fff;border-radius:24px;padding:56px clamp(24px,5vw,64px);text-align:center;box-shadow:var(--lift)}
+.lp-final h2{color:#fff}
+.lp-final p{color:#dbeafe;max-width:36em;margin:0 auto 20px}
+.lp-final .btn.ghost{border-color:rgba(255,255,255,.5);color:#fff}
