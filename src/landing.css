@@ -22,12 +22,14 @@
 .t-logo img{width:26px;height:26px}
 .t-logo strong{font-size:13px;letter-spacing:.22em;font-weight:700}
 .t-links{display:flex;gap:28px;margin:0 auto}
-.t-links a{color:#171a20;text-decoration:none;font-size:14px;font-weight:500}
-.t-links a:hover{color:#5c5e62}
+.t-links a{color:#171a20;text-decoration:none;font-size:14px;font-weight:500;position:relative;padding:4px 0}
+.t-links a::after{content:"";position:absolute;left:0;bottom:0;height:1.5px;width:100%;background:#171a20;transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+.t-links a:hover{color:#171a20}
+.t-links a:hover::after{transform:scaleX(1)}
 @media(max-width:760px){.t-links{display:none}.t-nav .t-btn{margin-left:auto}}
 
 /* Tesla-style buttons */
-.t-btn{display:inline-flex;align-items:center;justify-content:center;min-width:200px;min-height:44px;padding:12px 32px;border-radius:999px;font-size:14px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.t-btn{display:inline-flex;align-items:center;justify-content:center;min-width:200px;min-height:44px;padding:12px 32px;border-radius:0;font-size:14px;font-weight:600;letter-spacing:.02em;text-decoration:none;border:none;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
 .t-btn:hover{transform:translateY(-1px)}
 .t-btn:active{transform:none}
 .t-btn-dark{background:#171a20;color:#fff}
@@ -67,11 +69,11 @@
 .t-fit{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap}
 .t-fit-field{display:grid;gap:8px;text-align:left;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#5c5e62}
 .t-fit-input{display:flex;align-items:center;gap:10px}
-.t-fit-input input{width:110px;font-size:24px;font-weight:600;color:#171a20;background:#f4f4f5;border:1px solid transparent;border-radius:12px;padding:12px 16px}
+.t-fit-input input{width:110px;font-size:24px;font-weight:600;color:#171a20;background:#f4f4f5;border:1px solid transparent;border-radius:0;padding:12px 16px}
 .t-fit-input input:focus{outline:none;border-color:#171a20}
 .t-fit-input em{font-style:normal;font-size:15px;color:#5c5e62;font-weight:500;text-transform:none;letter-spacing:0}
 .t-fit-presets{display:flex;gap:8px}
-.t-fit-presets button{min-height:44px;min-width:56px;border-radius:999px;border:1px solid #d0d1d2;background:#fff;color:#393c41;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s ease}
+.t-fit-presets button{min-height:44px;min-width:56px;border-radius:0;border:1px solid #d0d1d2;background:#fff;color:#393c41;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s ease}
 .t-fit-presets button:hover{border-color:#171a20}
 .t-fit-presets button.on{background:#171a20;border-color:#171a20;color:#fff}
 .t-fit-count{font-size:19px;color:#393c41;margin:0}
@@ -87,12 +89,12 @@
 /* Feature rows */
 .t-feat{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:clamp(24px,6vw,96px);padding:88px clamp(16px,6vw,96px);max-width:1440px;margin:0 auto}
 .t-feat.flip .t-feat-img{order:2}
-.t-feat-img img{display:block;width:100%;height:min(58vh,480px);object-fit:cover;border-radius:12px}
+.t-feat-img img{display:block;width:100%;height:min(58vh,480px);object-fit:cover;border-radius:0}
 .t-feat-copy .t-kicker{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#5c5e62;margin:0 0 12px}
 .t-feat-copy h2{margin-bottom:14px}
 .t-feat-copy p{color:#393c41;font-size:17px;line-height:1.6;max-width:26em;margin:0 0 20px}
 .t-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 26px !important}
-.t-chips span{font-size:12.5px;font-weight:600;color:#393c41;background:#f4f4f5;border-radius:999px;padding:6px 14px}
+.t-chips span{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#393c41;background:#f4f4f5;border-left:2px solid #171a20;padding:7px 14px 7px 12px}
 @media(max-width:800px){.t-feat{grid-template-columns:1fr;padding-top:56px;padding-bottom:56px}.t-feat.flip .t-feat-img{order:0}}
 
 /* Table */
@@ -106,7 +108,7 @@
 .t-table-wrap thead small{display:block;color:#5c5e62;font-weight:400;font-size:13px}
 .t-table-wrap tbody tr{transition:background .15s ease}
 .t-table-wrap tbody tr:hover{background:#fafafa}
-.t-best{display:inline-block;font-style:normal;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#12a37e;border-radius:999px;padding:2px 10px;margin-left:10px;vertical-align:2px}
+.t-best{display:inline-block;font-style:normal;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:#12a37e;border-radius:0;padding:2px 10px;margin-left:10px;vertical-align:2px}
 .t-table-wrap tbody th[scope=row]{color:#5c5e62;font-weight:500;font-size:14px}
 
 /* How */
@@ -142,4 +144,5 @@
 
 /* Focus */
 .t :focus{outline:none}
-.t :focus-visible{outline:3px solid #3e6ae1;outline-offset:3px;border-radius:6px}
+.t :focus-visible{outline:2px solid #3e6ae1;outline-offset:3px;border-radius:2px}
+.t-eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.85);border-bottom:1px solid rgba(255,255,255,.5);padding-bottom:10px;margin:0 0 20px;text-shadow:0 1px 12px rgba(0,0,0,.6)}

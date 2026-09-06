@@ -176,6 +176,7 @@ export default function Landing() {
           <img className="t-hero-img" src="vehicles/tesla-model-y-2024.jpg" alt="Tesla Model Y on the road" fetchPriority="high" />
           <div className="t-hero-scrim" aria-hidden="true" />
           <div className="t-hero-copy">
+            <p className="t-eyebrow rv">Fit before you buy</p>
             <h1 className="rv">Cars that fit your life</h1>
             <p className="rv">Compare {VEHICLES.length} vehicles ({lo}–{hi}) against your car, your garage and your budget. Free.</p>
             <div className="t-hero-cta rv">
