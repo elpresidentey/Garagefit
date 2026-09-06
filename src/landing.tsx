@@ -47,42 +47,63 @@ function Count({ to, suffix = '' }: { to: number; suffix?: string }) {
   return <span ref={ref}>{n.toLocaleString()}{suffix}</span>;
 }
 
-/** Live mini-demo: type a garage width, see what fits. */
-function FitWidget() {
+/** Configurator-style hero: pick a car, type your garage, get a verdict. */
+const CONFIG_IDS = ['toyota-rav4-2024-le', 'tesla-model-y-2024', 'ford-f150-2024', 'honda-civic-2024'];
+function Configurator() {
+  const [id, setId] = useState(CONFIG_IDS[0]);
   const [gw, setGw] = useState(88);
-  const fit = VEHICLES.filter((v) => v.widthExtended <= (gw || 0));
-  const examples = [...fit].sort((a, b) => b.year - a.year || a.widthExtended - b.widthExtended).slice(0, 3);
+  const v = VEHICLES.find((x) => x.id === id) ?? VEHICLES[0];
+  const cl = gw > 0 ? +((gw - v.widthExtended).toFixed(1)) : null;
+  const verdict =
+    cl == null ? null :
+    cl < 0 ? { cls: 'bad', text: `${(-cl).toFixed(1)}″ too wide for your garage` } :
+    cl < 2 ? { cls: 'warn', text: `Tight fit — ${cl.toFixed(1)}″ to spare` } :
+    { cls: 'good', text: `Fits with ${cl.toFixed(1)}″ to spare` };
   return (
-    <div className="lp-widget" role="group" aria-label="Try it: check your garage width">
-      <p className="lp-widget-k">Try it live — your garage opening</p>
-      <div className="lp-widget-row">
-        <input
-          type="number" inputMode="decimal" min={60} max={140} step={0.5} value={gw || ''}
-          placeholder="88" aria-label="Garage opening width in inches"
-          onChange={(e) => setGw(e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)))}
-        />
-        <span className="lp-widget-unit">inches</span>
-        <strong className="lp-widget-count">
-          {gw > 0 ? <><Count to={fit.length} /> <small>of {VEHICLES.length} fit</small></> : <small>type a width</small>}
-        </strong>
+    <div className="lp-config" role="group" aria-label="Try it: pick a car and check your garage">
+      <div className="lp-tabs" role="tablist" aria-label="Choose a car">
+        {CONFIG_IDS.map((cid) => {
+          const c = VEHICLES.find((x) => x.id === cid)!;
+          return (
+            <button
+              key={cid} role="tab" aria-selected={cid === id}
+              className={'lp-tab' + (cid === id ? ' on' : '')}
+              onClick={() => setId(cid)}
+            >
+              {c.model}
+            </button>
+          );
+        })}
       </div>
-      {gw > 0 && (
-        <ul className="lp-widget-list">
-          {examples.map((v) => (
-            <li key={v.id}>
-              <a className="lp-widget-link" href={appLink(`?b=${v.id}`)} aria-label={`Compare the ${v.year} ${v.make} ${v.model}`}>
-                {v.imageUrl
-                  ? <img src={v.imageUrl} alt="" loading="lazy" />
-                  : <span className="lp-widget-glyph" aria-hidden="true">▦</span>}
-                <span className="lp-widget-name">{v.year} {v.make} {v.model}</span>
-                <span className="pill good">+{(gw - v.widthExtended).toFixed(1)}″</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-      <a className="btn primary" href={gw > 0 ? appLink(`?gw=${gw}&gwOnly=1`) : appLink()}>
-        Compare all {gw > 0 ? fit.length : ''} →
+      <div className="lp-stage">
+        {v.imageUrl && <img key={v.id} className="lp-stage-img" src={v.imageUrl} alt={`${v.year} ${v.make} ${v.model}`} />}
+        <div className="lp-stage-name">
+          <b>{v.year} {v.make} {v.model}</b>
+          <small>{v.trim} · {money(v.msrp)}</small>
+        </div>
+      </div>
+      <div className="lp-chips">
+        <span><b>{v.eff}</b> {v.effUnit}</span>
+        <span><b>{v.widthExtended}″</b> wide</span>
+        <span><b>{v.seats}</b> seats</span>
+        <span><b>{v.safety === '—' ? 'NR' : v.safety}</b> IIHS</span>
+      </div>
+      <div className="lp-garage-row">
+        <label>
+          <span>My garage opening</span>
+          <span className="lp-garage-input">
+            <input
+              type="number" inputMode="decimal" min={60} max={140} step={0.5} value={gw || ''}
+              placeholder="88" aria-label="Garage opening width in inches"
+              onChange={(e) => setGw(e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)))}
+            />
+            <em>in</em>
+          </span>
+        </label>
+        {verdict && <span className={`pill ${verdict.cls}`}>{verdict.text}</span>}
+      </div>
+      <a className="btn primary big lp-config-cta" href={appLink(`?b=${v.id}${gw > 0 ? `&gw=${gw}` : ''}`)}>
+        Compare this car →
       </a>
     </div>
   );
@@ -245,21 +266,20 @@ export default function Landing() {
         <section className="lp-hero">
           <div className="wrap lp-hero-in">
             <div className="lp-hero-copy">
-              <span className="lp-badge rv">● {VEHICLES.length} vehicles · {lo}–{hi} · free</span>
+              <span className="lp-badge rv">{VEHICLES.length} vehicles · {lo}–{hi} · free</span>
               <h1 className="rv">Will it fit in your garage?</h1>
               <p className="lp-sub rv">
-                Answer that <em>before</em> you fall in love. GarageFit measures every car against
-                your garage, your current car and your budget — width, depth, price, efficiency, safety.
+                Answer that <em>before</em> you fall in love. Pick a car, type your garage —
+                GarageFit measures all {VEHICLES.length} vehicles against your space, your current car and your budget.
               </p>
               <div className="lp-cta rv">
-                <a className="btn primary big" href={appLink()}>Compare cars</a>
-                <a className="btn big lp-ghost" href="#lp-how">How it works</a>
+                <a className="btn primary big" href={appLink()}>Compare all cars</a>
+                <a className="btn ghost big" href="#lp-how">How it works</a>
               </div>
               <p className="lp-note rv">No account · Works offline · Shareable links</p>
             </div>
-            <div className="rv"><FitWidget /></div>
+            <div className="rv"><Configurator /></div>
           </div>
-          <div className="lp-hero-glow" aria-hidden="true" />
         </section>
 
         <section className="lp-marquee" aria-label="Popular vehicles">
@@ -370,7 +390,7 @@ export default function Landing() {
             <p>Your garage, your car, your costs — {VEHICLES.length} vehicles measured against all three, starting at {money(Math.min(...VEHICLES.map((v) => v.msrp)))}.</p>
             <p>
               <a className="btn primary big" href={appLink()}>Open the app</a>{' '}
-              <a className="btn big lp-ghost" href={appLink('?preset=fam')}>Family SUVs</a>
+              <a className="btn big ghost" href={appLink('?preset=fam')}>Family SUVs</a>
             </p>
           </div>
         </section>
