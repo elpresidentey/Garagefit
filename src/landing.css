@@ -39,11 +39,12 @@
 /* Hero */
 .t-hero{position:relative;height:calc(100svh - 56px);min-height:560px;display:grid;place-items:center;overflow:hidden;background:#000}
 .t-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.t-hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.34) 0%,transparent 32%,transparent 62%,rgba(0,0,0,.42) 100%)}
+.t-hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,20,.48) 0%,rgba(8,12,20,.22) 30%,rgba(8,12,20,.16) 55%,rgba(8,12,20,.58) 100%)}
 .t-hero-copy{position:relative;z-index:1;text-align:center;color:#fff;padding:0 20px;max-width:900px}
-.t-hero-copy p{font-size:clamp(16px,2.2vw,21px);color:rgba(255,255,255,.92);margin:16px auto 0;max-width:34em}
+.t-hero-copy h1{text-shadow:0 2px 24px rgba(0,0,0,.5)}
+.t-hero-copy p{font-size:clamp(16px,2.2vw,21px);color:#fff;margin:16px auto 0;max-width:34em;text-shadow:0 1px 14px rgba(0,0,0,.55)}
 .t-hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:32px}
-.t-hero-specs{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin:30px 0 0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.75)}
+.t-hero-specs{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;margin:30px 0 0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.6)}
 .t-hero-specs b{display:block;font-size:22px;letter-spacing:-.01em;color:#fff;text-transform:none}
 .t-scroll{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:1;color:#fff;font-size:22px;text-decoration:none;animation:t-bob 2s ease-in-out infinite}
 @keyframes t-bob{50%{transform:translate(-50%,6px)}}
@@ -54,10 +55,10 @@
 .t-panel>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:t-kenburns 26s ease-in-out infinite alternate}
 @keyframes t-kenburns{from{transform:scale(1)}to{transform:scale(1.08)}}
 @media (prefers-reduced-motion:reduce){.t-panel>img{animation:none}}
-.t-panel-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.30),transparent 30%,transparent 58%,rgba(0,0,0,.45))}
-.t-panel-copy{position:relative;z-index:1;text-align:center;color:#fff;padding:0 20px 64px}
+.t-panel-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,20,.38),transparent 30%,transparent 52%,rgba(8,12,20,.62))}
+.t-panel-copy{position:relative;z-index:1;text-align:center;color:#fff;padding:0 20px 64px;text-shadow:0 1px 16px rgba(0,0,0,.5)}
 .t-panel-copy h2{color:#fff}
-.t-panel-copy p{font-size:17px;color:rgba(255,255,255,.9);margin:10px 0 26px}
+.t-panel-copy p{font-size:17px;color:#fff;margin:10px 0 26px}
 .t-panel-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
 
 /* Fit strip */
