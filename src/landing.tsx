@@ -177,8 +177,8 @@ export default function Landing() {
           <div className="t-hero-scrim" aria-hidden="true" />
           <div className="t-hero-copy">
             <p className="t-eyebrow rv">Fit before you buy</p>
-            <h1 className="rv">Cars that fit your life</h1>
-            <p className="rv">Compare {VEHICLES.length} vehicles ({lo}–{hi}) against your car, your garage and your budget. Free.</p>
+            <h1 className="rv">Cars that fit<br/>your life</h1>
+            <p className="rv">Compare {VEHICLES.length} vehicles ({lo}–{hi}) against your car, your garage and your budget.</p>
             <div className="t-hero-cta rv">
               <a className="t-btn t-btn-dark" href={appLink()}>Compare Cars</a>
               <a className="t-btn t-btn-light" href="#t-how">How It Works</a>
@@ -198,6 +198,7 @@ export default function Landing() {
               <img src={c.img} alt={`${c.name} vehicle photo`} loading="lazy" />
               <div className="t-panel-scrim" aria-hidden="true" />
               <div className="t-panel-copy rv">
+                <span className="t-pill">Featured</span>
                 <h2>{c.name}</h2>
                 <p>{c.line}</p>
                 <div className="t-panel-cta">
@@ -308,7 +309,7 @@ export default function Landing() {
           <div className="wrap rv">
             <h2>Stop guessing.<br/>Start fitting.</h2>
             <div>
-              <a className="t-btn t-btn-light" href={appLink()}>Compare Cars</a>{' '}
+              <a className="t-btn t-btn-light" href={appLink()}>Compare Cars</a>
               <a className="t-btn t-btn-light" href={appLink('?preset=fam')}>Family SUVs</a>
             </div>
           </div>
