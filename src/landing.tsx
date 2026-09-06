@@ -61,6 +61,7 @@ function Configurator() {
     { cls: 'good', text: `Fits with ${cl.toFixed(1)}″ to spare` };
   return (
     <div className="lp-config" role="group" aria-label="Try it: pick a car and check your garage">
+      <p className="lp-config-live"><i aria-hidden="true" />Live demo · real data</p>
       <div className="lp-tabs" role="tablist" aria-label="Choose a car">
         {CONFIG_IDS.map((cid) => {
           const c = VEHICLES.find((x) => x.id === cid)!;
@@ -276,7 +277,14 @@ export default function Landing() {
                 <a className="btn primary big" href={appLink()}>Compare all cars</a>
                 <a className="btn ghost big" href="#lp-how">How it works</a>
               </div>
-              <p className="lp-note rv">No account · Works offline · Shareable links</p>
+              <p className="lp-note rv">
+                {['No account', 'Works offline', 'Shareable links'].map((t) => (
+                  <span key={t}>
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 12.5 9.5 18 20 6.5" /></svg>
+                    {t}
+                  </span>
+                ))}
+              </p>
             </div>
             <div className="rv"><Configurator /></div>
           </div>
