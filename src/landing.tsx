@@ -16,7 +16,11 @@ function useReveal() {
       { threshold: 0.1 }
     );
     els.forEach((e) => io.observe(e));
-    return () => io.disconnect();
+    const nav = document.querySelector('.t-nav');
+    const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { io.disconnect(); window.removeEventListener('scroll', onScroll); };
   }, []);
 }
 
@@ -63,6 +67,13 @@ function FitStrip() {
           />
           <em>in</em>
         </span>
+        <span className="t-fit-presets" role="group" aria-label="Common openings">
+          {[84, 96, 108].map((w) => (
+            <button key={w} type="button" className={gw === w ? 'on' : ''} onClick={() => setGw(w)} aria-pressed={gw === w}>
+              {w}″
+            </button>
+          ))}
+        </span>
       </label>
       <p className="t-fit-count">
         {gw > 0 ? <><strong><Count to={n} /></strong> of {VEHICLES.length} vehicles fit</> : 'Type a width to see what fits'}
@@ -91,14 +102,17 @@ const FEATURES = [
   {
     img: 'vehicles/honda-pilot-2024.jpg', k: 'Garage fit',
     t: 'Measured against your actual garage', d: 'Width, depth and door height — every car gets a fits or doesn’t-fit verdict with inches to spare. No tape measure required twice.',
+    chips: ['Width', 'Depth', 'Door height'],
   },
   {
     img: 'vehicles/toyota-prius-2024.jpg', k: 'True cost',
     t: 'Five years of ownership, honestly', d: 'Fuel at your mileage and prices, depreciation, CO₂ and monthly payments. Assumptions adjustable, never hardcoded.',
+    chips: ['Fuel', 'Depreciation', 'Monthly'],
   },
   {
     img: 'vehicles/hyundai-ioniq-5-2024.jpg', k: 'EV ready',
     t: 'Gas to electric, apples to apples', d: 'Range minimums, MPGe on equal footing, DC fast-charge rates and charging-cost math across all 21 EVs.',
+    chips: ['Range', 'MPGe', 'Fast charge'],
   },
 ];
 
@@ -132,6 +146,7 @@ export default function Landing() {
   const evs = VEHICLES.filter((v) => v.fuel === 'EV').length;
   const cars = PREVIEW_IDS.map((id) => VEHICLES.find((v) => v.id === id)!).filter(Boolean);
   const gw = 88;
+  const best = Math.min(...cars.map((c) => c.msrp));
 
   return (
     <div className="lp t">
@@ -167,6 +182,11 @@ export default function Landing() {
               <a className="t-btn t-btn-dark" href={appLink()}>Compare Cars</a>
               <a className="t-btn t-btn-light" href="#t-how">How It Works</a>
             </div>
+            <p className="t-hero-specs rv" aria-label="Highlights">
+              <span><b>{VEHICLES.length}</b> vehicles</span>
+              <span><b>3D</b> garage fit</span>
+              <span><b>5-yr</b> true cost</span>
+            </p>
           </div>
           <a className="t-scroll" href="#t-models" aria-label="Scroll to vehicles">↓</a>
         </section>
@@ -215,6 +235,9 @@ export default function Landing() {
               <p className="t-kicker">{f.k}</p>
               <h2>{f.t}</h2>
               <p>{f.d}</p>
+              <p className="t-chips" aria-label="Includes">
+                {f.chips.map((c) => <span key={c}>{c}</span>)}
+              </p>
               <a className="t-btn t-btn-dark" href={appLink()}>Try It</a>
             </div>
           </section>
@@ -234,7 +257,7 @@ export default function Landing() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><th scope="row">Price</th>{cars.map((c) => <td key={c.id}>{money(c.msrp)}</td>)}</tr>
+                  <tr><th scope="row">Price</th>{cars.map((c) => <td key={c.id}>{money(c.msrp)}{c.msrp === best && <em className="t-best">Best</em>}</td>)}</tr>
                   <tr><th scope="row">Efficiency</th>{cars.map((c) => <td key={c.id}>{c.eff} {c.effUnit}</td>)}</tr>
                   <tr><th scope="row">Width</th>{cars.map((c) => <td key={c.id}>{c.widthExtended}″</td>)}</tr>
                   <tr>
@@ -293,6 +316,7 @@ export default function Landing() {
 
       <footer className="t-foot">
         <div className="wrap">
+          <p className="t-mark" aria-hidden="true">GARAGEFIT</p>
           <small>© 2026 GarageFit · EPA, NHTSA and manufacturer data · Photos via Wikimedia Commons</small>
           <nav aria-label="Footer">
             <a href={appLink()}>App</a>
