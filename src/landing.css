@@ -66,16 +66,21 @@
 
 /* ---- Photo marquee ---- */
 .lp-marquee{padding:34px 0 6px;overflow:hidden}
-.lp-track{display:flex;gap:14px;width:max-content;padding:10px 4px 16px;animation:lp-scroll 46s linear infinite;
+.lp-track{display:flex;gap:16px;width:max-content;padding:10px 4px 18px;animation:lp-scroll 60s linear infinite;
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
 .lp-marquee:hover .lp-track{animation-play-state:paused}
 @keyframes lp-scroll{to{transform:translateX(-50%)}}
-.lp-mcard{flex:0 0 auto;width:220px;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:var(--shadow);transition:transform .2s ease}
-.lp-mcard:hover{transform:translateY(-3px)}
-.lp-mcard img{display:block;width:100%;height:120px;object-fit:cover}
-.lp-mcard span{display:block;padding:10px 12px}
-.lp-mcard b{display:block;font-size:13.5px}
-.lp-mcard small{color:var(--muted);font-size:12px}
+.lp-mcard{flex:0 0 auto;width:264px;background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:var(--shadow);transition:transform .2s ease,box-shadow .2s ease}
+.lp-mcard:hover{transform:translateY(-4px);box-shadow:var(--lift)}
+.lp-mcard-img{position:relative;display:block;height:150px;overflow:hidden;background:var(--bg2)}
+.lp-mcard-img img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.lp-mcard:hover .lp-mcard-img img{transform:scale(1.05)}
+.lp-mcard-img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(11,18,32,.78))}
+.lp-mcard-img b{position:absolute;left:14px;bottom:10px;z-index:1;color:#fff;font-size:15px;letter-spacing:-.01em}
+.lp-mcard-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 14px}
+.lp-mcard-meta small{color:var(--muted);font-size:12.5px;font-weight:600}
+.lp-mcard-meta em{font-style:normal;font-size:12.5px;font-weight:800;color:var(--accent);opacity:0;transform:translateX(-4px);transition:opacity .2s ease,transform .2s ease}
+.lp-mcard:hover .lp-mcard-meta em{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.lp-track{animation:none;flex-wrap:wrap;width:auto}}
 
 /* ---- Pillars ---- */
@@ -126,12 +131,16 @@
 .lp-cars{padding:8px 0 72px}
 .lp-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
 @media(max-width:800px){.lp-grid3{grid-template-columns:1fr}}
-.lp-shot{display:block;background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);text-decoration:none;color:inherit;transition:transform .2s ease,box-shadow .2s ease}
+.lp-shot{display:block;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);text-decoration:none;color:inherit;transition:transform .2s ease,box-shadow .2s ease}
 .lp-shot:hover{transform:translateY(-4px);box-shadow:var(--lift)}
-.lp-shot img{display:block;width:100%;height:200px;object-fit:cover}
-.lp-shot-body{display:block;padding:16px 18px}
-.lp-shot-body b{display:block;font-size:16px;margin-bottom:4px}
-.lp-shot-body small{display:block;color:var(--muted);font-size:13.5px;margin-bottom:8px}
+.lp-shot-img{position:relative;display:block;height:220px;overflow:hidden;background:var(--bg2)}
+.lp-shot-img img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.lp-shot:hover .lp-shot-img img{transform:scale(1.04)}
+.lp-shot-img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(11,18,32,.8))}
+.lp-shot-img b{position:absolute;left:18px;bottom:12px;z-index:1;color:#fff;font-size:21px;letter-spacing:-.01em}
+.lp-shot-img em{position:absolute;top:12px;left:12px;z-index:1;font-style:normal;font-size:12px;font-weight:800;color:#fff;background:rgba(11,18,32,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 12px}
+.lp-shot-body{display:block;padding:16px 20px 20px}
+.lp-shot-body small{display:block;color:var(--muted);font-size:14px;margin-bottom:10px}
 
 /* ---- FAQ ---- */
 .lp-faq{padding:8px 0 72px}

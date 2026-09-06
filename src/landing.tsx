@@ -287,8 +287,14 @@ export default function Landing() {
           <div className="lp-track">
             {[...MARQUEE, ...MARQUEE].map((v, i) => (
               <a key={v.id + i} className="lp-mcard" href={appLink(`?b=${v.id}`)} aria-hidden={i >= MARQUEE.length} tabIndex={i >= MARQUEE.length ? -1 : 0}>
-                <img src={v.imageUrl} alt="" loading="lazy" />
-                <span><b>{v.year} {v.make} {v.model}</b><small>{money(v.msrp)} · {v.eff} {v.effUnit}</small></span>
+                <span className="lp-mcard-img">
+                  <img src={v.imageUrl} alt="" loading="lazy" />
+                  <b>{v.year} {v.make} {v.model}</b>
+                </span>
+                <span className="lp-mcard-meta">
+                  <small>{money(v.msrp)} · {v.eff} {v.effUnit}</small>
+                  <em>Compare →</em>
+                </span>
               </a>
             ))}
           </div>
@@ -358,9 +364,12 @@ export default function Landing() {
                   : v.eff >= 40).length;
                 return (
                   <a className="lp-shot rv" key={c.preset} href={appLink(`?preset=${c.preset}`)}>
-                    <img src={c.img} alt="" loading="lazy" />
+                    <span className="lp-shot-img">
+                      <img src={c.img} alt="" loading="lazy" />
+                      <b>{c.label}</b>
+                      <em>{n} cars</em>
+                    </span>
                     <span className="lp-shot-body">
-                      <b>{c.label} · {n} cars</b>
                       <small>{c.d}</small>
                       <span className="linklike">Open comparison →</span>
                     </span>
