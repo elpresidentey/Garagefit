@@ -20,7 +20,13 @@ function useReveal() {
     const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => { io.disconnect(); window.removeEventListener('scroll', onScroll); };
+    const root = document.documentElement;
+    root.classList.add('gf-smooth');
+    return () => {
+      io.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      root.classList.remove('gf-smooth');
+    };
   }, []);
 }
 
@@ -153,7 +159,7 @@ export default function Landing() {
       <a className="skip" href="#t-models">Skip to content</a>
 
       <div className="t-banner" role="note">
-        <span>2026 models are live — RAV4, Model Y Juniper, Palisade + 16 more</span>
+        <span>2026 models are live — RAV4, Model Y Juniper, Palisade + 16 more<sup><a href="#t-fine" aria-label="See footnote about 2026 model coverage">1</a></sup></span>
         <a href={appLink()}>Open the app</a>
       </div>
 
@@ -168,7 +174,10 @@ export default function Landing() {
           <a href="#t-how">How It Works</a>
           <a href="#t-faq">FAQ</a>
         </nav>
-        <a className="t-btn t-btn-dark t-btn-sm" href={appLink()}>Compare Cars</a>
+        <span className="t-nav-ctas">
+          <a className="t-btn t-btn-ghost t-btn-sm" href="#t-how">How It Works</a>
+          <a className="t-btn t-btn-dark t-btn-sm" href={appLink()}>Compare Cars</a>
+        </span>
       </header>
 
       <main id="top">
@@ -212,6 +221,7 @@ export default function Landing() {
 
         <section className="t-strip" aria-label="Garage fit checker">
           <div className="wrap">
+            <p className="t-kicker rv">Fit checker</p>
             <h2 className="rv">Will it fit in your garage?</h2>
             <FitStrip />
           </div>
@@ -308,23 +318,42 @@ export default function Landing() {
         <section className="t-final" aria-label="Get started">
           <div className="wrap rv">
             <h2>Stop guessing.<br/>Start fitting.</h2>
-            <div>
-              <a className="t-btn t-btn-light" href={appLink()}>Compare Cars</a>
-              <a className="t-btn t-btn-light" href={appLink('?preset=fam')}>Family SUVs</a>
+            <div className="t-final-side">
+              <p>{VEHICLES.length} vehicles measured against your garage, your budget and five years of true cost — before you ever set foot in a dealership.</p>
+              <div>
+                <a className="t-btn t-btn-light" href={appLink()}>Compare Cars</a>
+                <a className="t-arrow-link" href={appLink('?preset=fam')}>Family SUVs <span aria-hidden="true">→</span></a>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
       <footer className="t-foot">
-        <div className="wrap">
-          <p className="t-mark" aria-hidden="true">GARAGEFIT</p>
-          <small>© 2026 GarageFit · EPA, NHTSA and manufacturer data · Photos via Wikimedia Commons</small>
-          <nav aria-label="Footer">
-            <a href={appLink()}>App</a>
-            <a href={appLink('?preset=ev50')}>EVs</a>
-            <a href="#t-faq">FAQ</a>
+        <div className="wrap t-foot-top">
+          <div className="t-foot-brand">
+            <p className="t-foot-state">Find the car that fits your life.</p>
+            <p className="t-foot-sub">Free, works offline after first load, no account. Built for the decision everyone actually makes in the driveway.</p>
+          </div>
+          <nav className="t-foot-cols" aria-label="Footer">
+            <div>
+              <h3>Product</h3>
+              <a href={appLink()}>Open the app</a>
+              <a href={appLink('?preset=ev50')}>EVs under $50k</a>
+              <a href="#t-compare">Compare</a>
+            </div>
+            <div>
+              <h3>Learn</h3>
+              <a href="#t-how">How it works</a>
+              <a href="#t-faq">FAQ</a>
+              <a href="#t-models">Vehicles</a>
+            </div>
           </nav>
+        </div>
+        <p className="t-mark" aria-hidden="true">GARAGEFIT</p>
+        <div className="wrap t-foot-bottom">
+          <small id="t-fine">© 2026 GarageFit · Specs from manufacturer data, EPA fuel economy and NHTSA/IIHS ratings<sup>1</sup> · Photos via Wikimedia Commons</small>
+          <small className="t-fine-note"><sup>1</sup> Model-year coverage reflects published manufacturer specifications; prices are MSRP including destination where noted, or typical used-market estimates for 2015–2023.</small>
         </div>
       </footer>
     </div>

@@ -17,6 +17,8 @@
 .t-banner{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;background:#151515;color:#fff;font-size:13px;font-weight:500;letter-spacing:.01em;padding:10px 16px;position:relative;z-index:60}
 .t-banner a{color:#fff;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.5);padding-bottom:1px;transition:border-color .2s}
 .t-banner a:hover{border-color:#fff}
+.t-banner sup a{border-bottom:none;font-weight:500;padding:0 0 0 2px;font-size:10px}
+@media (prefers-reduced-motion:no-preference){.gf-smooth{scroll-behavior:smooth}}
 
 /* Nav — Rivian pill-style */
 .t-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:24px;padding:0 clamp(16px,4vw,48px);height:56px;background:rgba(255,255,255,.92);backdrop-filter:blur(24px) saturate(1.4);transition:box-shadow .3s ease,border-color .3s ease;border-bottom:1px solid transparent}
@@ -27,7 +29,8 @@
 .t-links{display:flex;gap:4px;margin:0 auto}
 .t-links a{color:#151515;text-decoration:none;font-size:14px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .2s}
 .t-links a:hover{background:rgba(0,0,0,.05)}
-@media(max-width:760px){.t-links{display:none}.t-nav .t-btn{margin-left:auto}}
+.t-nav-ctas{display:flex;gap:8px;align-items:center;margin-left:auto}
+@media(max-width:760px){.t-links{display:none}.t-nav-ctas .t-btn-ghost{display:none}.t-nav-ctas{margin-left:auto}}
 
 /* Buttons — Rivian pill style */
 .t-btn{display:inline-flex;align-items:center;justify-content:center;min-width:160px;min-height:48px;padding:14px 32px;border-radius:999px;font-size:15px;font-weight:500;letter-spacing:-.01em;text-decoration:none;border:none;cursor:pointer;transition:all .25s cubic-bezier(.25,.1,.25,1)}
@@ -35,6 +38,8 @@
 .t-btn:active{transform:none;box-shadow:none}
 .t-btn-dark{background:#151515;color:#fff}
 .t-btn-dark:hover{background:#2a2a2a}
+.t-btn-ghost{background:transparent;color:#151515;border:1px solid rgba(0,0,0,.22)}
+.t-btn-ghost:hover{border-color:#151515;background:rgba(0,0,0,.04)}
 .t-btn-light{background:rgba(255,255,255,.15);color:#fff;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.35)}
 .t-btn-light:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
 .t-btn-sm{min-width:0;min-height:40px;padding:10px 24px;font-size:13px}
@@ -72,6 +77,7 @@
 
 /* Fit strip */
 .t-strip{padding:104px 0;text-align:center}
+.t-strip .t-kicker{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#5c5e62;margin:0 0 14px}
 .t-strip h2{margin-bottom:40px}
 .t-fit{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
 .t-fit-field{display:grid;gap:10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#5c5e62}
@@ -142,19 +148,34 @@
 .t-faq details[open] summary::after{content:"–"}
 .t-faq details p{color:#393c41;margin:0 0 24px;font-size:16px;line-height:1.7;font-weight:400}
 
-/* Final CTA — dark full-bleed */
-.t-final{padding:160px 0;text-align:center;background:#0a0a0a;color:#fff;position:relative;overflow:hidden}
-.t-final::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(255,255,255,.04),transparent 70%)}
-.t-final h2{color:#fff;margin-bottom:40px;position:relative}
-.t-final div{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
+/* Final CTA — Rivian split statement, dark full-bleed */
+.t-final{padding:140px 0;text-align:left;background:#0a0a0a;color:#fff;position:relative;overflow:hidden}
+.t-final::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 20% 90%,rgba(255,255,255,.05),transparent 70%)}
+.t-final .wrap{display:grid;grid-template-columns:1.15fr 1fr;gap:clamp(40px,6vw,96px);align-items:end;position:relative}
+.t-final h2{color:#fff;margin:0;position:relative}
+.t-final-side p{color:rgba(255,255,255,.7);font-size:17px;line-height:1.6;max-width:26em;margin:0 0 28px}
+.t-final-side div{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.t-arrow-link{color:#fff;font-size:15px;font-weight:500;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4);padding-bottom:2px;transition:border-color .2s;white-space:nowrap}
+.t-arrow-link:hover{border-color:#fff}
+.t-arrow-link span{display:inline-block;transition:transform .25s cubic-bezier(.25,.1,.25,1)}
+.t-arrow-link:hover span{transform:translateX(3px)}
+@media(max-width:800px){.t-final{padding:96px 0}.t-final .wrap{grid-template-columns:1fr;gap:32px;align-items:start}}
 
-/* Footer */
-.t-foot{padding:16px 0 56px;font-size:13px;color:#5c5e62;overflow:hidden}
-.t-mark{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(64px,14vw,200px);letter-spacing:-.04em;line-height:1;color:transparent;-webkit-text-stroke:1.5px #d8d8d8;user-select:none;text-align:center}
-.t-foot .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.t-foot nav{display:flex;gap:24px}
-.t-foot a{color:#5c5e62;text-decoration:none;transition:color .2s}
-.t-foot a:hover{color:#151515}
+/* Footer — Rivian statement + columns + fine print */
+.t-foot{padding:0 0 32px;font-size:13px;color:#5c5e62;overflow:hidden;border-top:1px solid #ebebeb}
+.t-foot-top{display:grid;grid-template-columns:1.2fr auto;gap:clamp(40px,6vw,96px);align-items:start;padding:72px 0 56px}
+.t-foot-state{font-family:var(--disp);font-weight:500;font-size:clamp(26px,3.2vw,38px);letter-spacing:-.03em;line-height:1.1;color:#151515;margin:0;max-width:13em}
+.t-foot-sub{color:#5c5e62;font-size:15px;line-height:1.6;max-width:30em;margin:16px 0 0}
+.t-foot-cols{display:flex;gap:clamp(40px,5vw,80px)}
+.t-foot h3{font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#5c5e62;margin:0 0 18px;line-height:1}
+.t-foot-cols a{display:block;color:#393c41;text-decoration:none;font-size:14px;font-weight:500;padding:5px 0;transition:color .2s}
+.t-foot-cols a:hover{color:#151515}
+.t-mark{margin:0;font-family:var(--disp);font-weight:700;font-size:clamp(64px,14vw,200px);letter-spacing:-.04em;line-height:.9;color:transparent;-webkit-text-stroke:1.5px #d8d8d8;user-select:none;text-align:center}
+.t-foot-bottom{display:flex;justify-content:space-between;gap:12px 32px;flex-wrap:wrap;border-top:1px solid #ebebeb;padding-top:20px;margin-top:32px}
+.t-foot-bottom small{font-size:12px;line-height:1.6;max-width:64em}
+.t-foot-bottom sup{font-size:9px}
+.t-fine-note{color:#8a8b8f}
+@media(max-width:800px){.t-foot-top{grid-template-columns:1fr;gap:40px;padding:56px 0 40px}}
 
 /* Focus */
 .t :focus{outline:none}
