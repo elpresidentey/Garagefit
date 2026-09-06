@@ -189,8 +189,8 @@ export default function Landing() {
             <h1 className="rv">Cars that fit<br/>your life</h1>
             <p className="rv">Compare {VEHICLES.length} vehicles ({lo}–{hi}) against your car, your garage and your budget.</p>
             <div className="t-hero-cta rv">
-              <a className="t-btn t-btn-dark" href={appLink()}>Compare Cars</a>
-              <a className="t-btn t-btn-light" href="#t-how">How It Works</a>
+              <a className="t-btn t-btn-solid" href={appLink()}>Compare Cars</a>
+              <a className="t-btn t-btn-outline" href="#t-how">How It Works</a>
             </div>
             <p className="t-hero-specs rv" aria-label="Highlights">
               <span><b>{VEHICLES.length}</b> vehicles</span>
@@ -211,8 +211,8 @@ export default function Landing() {
                 <h2>{c.name}</h2>
                 <p>{c.line}</p>
                 <div className="t-panel-cta">
-                  <a className="t-btn t-btn-dark" href={appLink(`?b=${c.id}`)}>Compare</a>
-                  <a className="t-btn t-btn-light" href={appLink()}>All Cars</a>
+                  <a className="t-btn t-btn-solid" href={appLink(`?b=${c.id}`)}>Compare</a>
+                  <a className="t-btn t-btn-outline" href={appLink()}>All Cars</a>
                 </div>
               </div>
             </article>
@@ -240,20 +240,21 @@ export default function Landing() {
           </div>
         </section>
 
-        {FEATURES.map((f, i) => (
-          <section className={'t-feat' + (i % 2 ? ' flip' : '')} key={f.k} aria-label={f.t}>
-            <div className="t-feat-img rv"><img src={f.img} alt={`${f.t} — vehicle photo`} loading="lazy" /></div>
-            <div className="t-feat-copy rv">
-              <p className="t-kicker">{f.k}</p>
-              <h2>{f.t}</h2>
-              <p>{f.d}</p>
-              <p className="t-chips" aria-label="Includes">
-                {f.chips.map((c) => <span key={c}>{c}</span>)}
-              </p>
-              <a className="t-btn t-btn-dark" href={appLink()}>Try It</a>
+        <section className="t-editorial" aria-label="What GarageFit does">
+          <div className="wrap">
+            <h2 className="rv">Comparison built for the way you actually decide</h2>
+            <div className="t-editorial-grid">
+              {FEATURES.map((f) => (
+                <div className="t-editorial-col rv" key={f.k}>
+                  <p className="t-editorial-k">{f.k}</p>
+                  <h3>{f.t}</h3>
+                  <p>{f.d}</p>
+                  <a className="t-arrow-link t-arrow-dark" href={appLink()}>Explore in the app <span aria-hidden="true">→</span></a>
+                </div>
+              ))}
             </div>
-          </section>
-        ))}
+          </div>
+        </section>
 
         <section id="t-compare" className="t-table-sec" aria-label="Comparison preview">
           <div className="wrap">
@@ -303,6 +304,13 @@ export default function Landing() {
           </div>
         </section>
 
+        <section className="t-band" aria-label="Open the app">
+          <div className="wrap rv">
+            <h3>Get behind the numbers</h3>
+            <a className="t-btn t-btn-dark" href={appLink()}>Open the app</a>
+          </div>
+        </section>
+
         <section id="t-faq" className="t-faq" aria-label="Frequently asked questions">
           <div className="wrap t-faq-in">
             <h2 className="rv">Questions</h2>
@@ -315,13 +323,25 @@ export default function Landing() {
           </div>
         </section>
 
+        <section className="t-explore" aria-label="Keep exploring">
+          <div className="wrap rv">
+            <p>Keep exploring</p>
+            <div>
+              <a href={appLink()}>Compare cars</a>
+              <a href={appLink('?preset=ev50')}>EVs under $50k</a>
+              <a href="#t-compare">Fit table</a>
+              <a href="#t-faq">FAQ</a>
+            </div>
+          </div>
+        </section>
+
         <section className="t-final" aria-label="Get started">
           <div className="wrap rv">
             <h2>Stop guessing.<br/>Start fitting.</h2>
             <div className="t-final-side">
               <p>{VEHICLES.length} vehicles measured against your garage, your budget and five years of true cost — before you ever set foot in a dealership.</p>
               <div>
-                <a className="t-btn t-btn-light" href={appLink()}>Compare Cars</a>
+                <a className="t-btn t-btn-solid" href={appLink()}>Compare Cars</a>
                 <a className="t-arrow-link" href={appLink('?preset=fam')}>Family SUVs <span aria-hidden="true">→</span></a>
               </div>
             </div>
