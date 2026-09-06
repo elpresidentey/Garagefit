@@ -306,9 +306,9 @@ export default function Landing() {
 
         <section className="t-final" aria-label="Get started">
           <div className="wrap rv">
-            <h2>Stop guessing. Start fitting.</h2>
+            <h2>Stop guessing.<br/>Start fitting.</h2>
             <div>
-              <a className="t-btn t-btn-dark" href={appLink()}>Compare Cars</a>{' '}
+              <a className="t-btn t-btn-light" href={appLink()}>Compare Cars</a>{' '}
               <a className="t-btn t-btn-light" href={appLink('?preset=fam')}>Family SUVs</a>
             </div>
           </div>
