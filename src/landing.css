@@ -55,9 +55,11 @@
 .lp-widget-unit{color:#c7d7f8;font-size:14px}
 .lp-widget-count{margin-left:auto;font-size:30px;font-weight:800;font-family:var(--disp)}
 .lp-widget-count small{font-size:13px;font-weight:600;color:#c7d7f8;font-family:var(--font)}
-.lp-widget-list{list-style:none;margin:16px 0;padding:0;display:grid;gap:8px}
-.lp-widget-list li{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(191,219,254,.2);border-radius:12px;padding:7px 12px 7px 7px;font-size:13.5px}
-.lp-widget-list img{width:56px;height:38px;object-fit:cover;border-radius:8px}
+.lp-widget-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:8px}
+.lp-widget-list li{margin:0;padding:0}
+.lp-widget-link{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(191,219,254,.2);border-radius:12px;padding:7px 12px 7px 7px;font-size:13.5px;text-decoration:none;color:inherit;transition:background .15s ease}
+.lp-widget-link:hover{background:rgba(255,255,255,.14)}
+.lp-widget-link img{width:56px;height:38px;object-fit:cover;border-radius:8px}
 .lp-widget-glyph{width:56px;height:38px;display:grid;place-items:center;background:rgba(255,255,255,.12);border-radius:8px;color:#bfdbfe}
 .lp-widget-name{flex:1;font-weight:600}
 .lp-widget .pill{font-size:12px}
@@ -96,6 +98,19 @@
 .lp-stat b{display:block;font-size:clamp(32px,4.4vw,48px);font-family:var(--disp);letter-spacing:-.02em}
 .lp-stat span{color:#bfdbfe;font-size:14px}
 @media(max-width:700px){.lp-stats-in{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ---- Comparison preview ---- */
+.lp-preview{padding:8px 0 72px}
+.lp-preview h2{margin-bottom:20px}
+.lp-preview-scroll{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:20px}
+.lp-preview-table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+.lp-preview-table th,.lp-preview-table td{padding:13px 18px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.lp-preview-table thead th{background:var(--bg2)}
+.lp-preview-table thead a{text-decoration:none;color:inherit}
+.lp-preview-table thead b{display:block;font-size:15px}
+.lp-preview-table thead small{color:var(--muted);font-weight:500}
+.lp-preview-table tbody th[scope=row]{color:var(--muted);font-weight:600;font-size:13.5px}
+.lp-preview-table tbody tr:last-child th,.lp-preview-table tbody tr:last-child td{border-bottom:none}
 
 /* ---- How it works ---- */
 .lp-how{padding:72px 0}

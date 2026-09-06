@@ -70,11 +70,13 @@ function FitWidget() {
         <ul className="lp-widget-list">
           {examples.map((v) => (
             <li key={v.id}>
-              {v.imageUrl
-                ? <img src={v.imageUrl} alt="" loading="lazy" />
-                : <span className="lp-widget-glyph" aria-hidden="true">▦</span>}
-              <span className="lp-widget-name">{v.year} {v.make} {v.model}</span>
-              <span className="pill good">+{(gw - v.widthExtended).toFixed(1)}″</span>
+              <a className="lp-widget-link" href={appLink(`?b=${v.id}`)} aria-label={`Compare the ${v.year} ${v.make} ${v.model}`}>
+                {v.imageUrl
+                  ? <img src={v.imageUrl} alt="" loading="lazy" />
+                  : <span className="lp-widget-glyph" aria-hidden="true">▦</span>}
+                <span className="lp-widget-name">{v.year} {v.make} {v.model}</span>
+                <span className="pill good">+{(gw - v.widthExtended).toFixed(1)}″</span>
+              </a>
             </li>
           ))}
         </ul>
@@ -144,6 +146,67 @@ const FAQS = [
 ];
 
 const MARQUEE = VEHICLES.filter((v) => v.imageUrl && v.year >= 2024).slice(0, 14);
+
+/** A real slice of the app: 3 headline cars, real numbers, 88″ garage verdicts. */
+const PREVIEW_IDS = ['toyota-rav4-2026-le-awd', 'tesla-model-y-2026-long-range-awd', 'honda-civic-2025-sport-hybrid'];
+function ComparePreview() {
+  const gw = 88;
+  const cars = PREVIEW_IDS.map((id) => VEHICLES.find((v) => v.id === id)!).filter(Boolean);
+  if (!cars.length) return null;
+  return (
+    <section className="lp-preview" aria-label="Comparison preview">
+      <div className="wrap">
+        <p className="lp-eyebrow rv">A taste of the app</p>
+        <h2 className="rv">Three 2026 headliners, one {gw}″ garage</h2>
+        <div className="lp-preview-scroll rv">
+          <table className="lp-preview-table">
+            <thead>
+              <tr>
+                <th scope="col"><span className="sr-only">Dimension</span></th>
+                {cars.map((c) => (
+                  <th scope="col" key={c.id}>
+                    <a href={appLink(`?b=${c.id}`)}>
+                      <b>{c.year} {c.make} {c.model}</b>
+                      <small>{c.trim}</small>
+                    </a>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Price</th>
+                {cars.map((c) => <td key={c.id}>{money(c.msrp)}</td>)}
+              </tr>
+              <tr>
+                <th scope="row">Efficiency</th>
+                {cars.map((c) => <td key={c.id}>{c.eff} {c.effUnit}</td>)}
+              </tr>
+              <tr>
+                <th scope="row">Width, mirrors out</th>
+                {cars.map((c) => <td key={c.id}>{c.widthExtended}″</td>)}
+              </tr>
+              <tr>
+                <th scope="row">Your {gw}″ garage</th>
+                {cars.map((c) => {
+                  const cl = +(gw - c.widthExtended).toFixed(1);
+                  return (
+                    <td key={c.id}>
+                      {cl >= 0
+                        ? <span className="pill good">{cl.toFixed(1)}″ to spare</span>
+                        : <span className="pill bad">{(-cl).toFixed(1)}″ too wide</span>}
+                    </td>
+                  );
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="rv"><a className="btn primary" href={appLink()}>Open the full comparison →</a></p>
+      </div>
+    </section>
+  );
+}
 
 export default function Landing() {
   useReveal();
@@ -239,6 +302,8 @@ export default function Landing() {
             ))}
           </div>
         </section>
+
+        <ComparePreview />
 
         <section className="lp-how" id="lp-how" aria-label="How it works">
           <div className="wrap">
