@@ -139,11 +139,11 @@
 .t-hero-copy h1{color:#fff;margin:0;font-size:clamp(68px,9vw,140px);line-height:.82;font-weight:500;
   filter:drop-shadow(0 4px 20px rgba(0,0,0,.55)) drop-shadow(0 2px 6px rgba(0,0,0,.35))}
 .t-hero-copy h1 span,.t-hero-copy h1 i{display:block}
-.t-hero-copy h1 span{margin-bottom:8px}
+.t-hero-copy h1 span{margin-bottom:4px}
 .t-hero-copy h1 i{font-family:Georgia,serif;font-size:.9em;font-weight:400;letter-spacing:-.085em;
-  padding-left:.05em;margin-top:4px}
+  padding-left:.05em;margin-top:2px}
 .t-hero-bottom{max-width:520px;display:flex;flex-direction:column;gap:0}
-.t-hero-bottom>div:first-child{margin-bottom:24px}
+.t-hero-bottom>div:first-child{margin-bottom:16px}
 .t-hero-bottom>div:first-child>p{font-size:18px;color:rgba(255,255,255,.92);margin:0;
   max-width:32em;font-weight:400;line-height:1.65;letter-spacing:-.005em;
   filter:drop-shadow(0 2px 12px rgba(0,0,0,.45)) drop-shadow(0 1px 3px rgba(0,0,0,.25))}
@@ -227,12 +227,12 @@
   .t-hero{height:calc(100vh - 108px);height:calc(100svh - 108px);min-height:560px}
   /* Group the headline, sub text and CTAs together instead of stretching them
      across the full hero — on phones the space-between gap read as broken. */
-  .t-hero-copy{justify-content:center;gap:28px;padding:56px 20px 84px;text-align:left}
+  .t-hero-copy{justify-content:center;gap:24px;padding:56px 20px 84px;text-align:left}
   .t-hero-title{margin-bottom:0}
   .t-hero-copy h1{font-size:clamp(56px,17vw,88px);line-height:.84}
-  .t-hero-copy h1 span{margin-bottom:6px}
+  .t-hero-copy h1 span{margin-bottom:4px}
   .t-hero-bottom{max-width:380px}
-  .t-hero-bottom>div:first-child{margin-bottom:20px}
+  .t-hero-bottom>div:first-child{margin-bottom:14px}
   .t-hero-bottom>div:first-child>p{font-size:16px;line-height:1.6}
   .t-hero-cta{gap:12px;margin-bottom:20px;justify-content:flex-start}
   .t-hero-cta .t-btn{min-width:0;padding:14px 22px;font-size:14px}
