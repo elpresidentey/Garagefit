@@ -690,7 +690,7 @@ export default function Landing() {
               <p>{VEHICLES.length} vehicles measured against your garage, your budget and five years of true cost — before you ever set foot in a dealership.</p>
               <div>
                 <a className="t-btn t-btn-solid" href={appLink()}>Compare Cars</a>
-                <a className="t-arrow-link" href={appLink('?preset=fam')}>Family SUVs <span aria-hidden="true">→</span></a>
+                <a className="t-btn t-btn-outline" href={appLink('?preset=fam')}>Family SUVs <span aria-hidden="true">→</span></a>
               </div>
             </div>
           </div>
