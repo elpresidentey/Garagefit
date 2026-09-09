@@ -20,7 +20,7 @@
 @media (prefers-reduced-motion:no-preference){.gf-smooth{scroll-behavior:smooth}}
 
 /* Navigation — Enhanced with glassmorphism and black as primary brand color */
-.t-nav{--nav-progress:0;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:clamp(18px,3vw,42px);padding:0 clamp(18px,4vw,56px);height:72px;
+.t-nav{--nav-progress:0;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:clamp(18px,3vw,42px);padding:0 clamp(18px,4vw,56px);height:72px;min-height:72px;
   background:rgba(255,255,255,.88);backdrop-filter:blur(20px) saturate(180%);
   transition:all .4s cubic-bezier(.22,.68,.22,.99);
   border-bottom:1px solid rgba(10,10,10,.06);
@@ -32,7 +32,7 @@
 .t-nav.scrolled{background:rgba(255,255,255,.96);
   box-shadow:0 1px 0 0 rgba(0,0,0,.03),0 12px 40px -18px rgba(0,0,0,.18)}
 @keyframes t-nav-enter{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
-.t-logo{display:flex;align-items:center;gap:11px;text-decoration:none;color:#0a0a0a;min-width:max-content;
+.t-logo{display:flex;align-items:center;gap:11px;text-decoration:none;color:#0a0a0a;min-width:max-content;min-height:48px;
   transition:opacity .25s ease,transform .3s cubic-bezier(.22,.68,.22,.99)}
 .t-logo:hover{opacity:.75;transform:translateY(-1px)}
 .t-logo img{width:28px;height:28px;transition:transform .5s cubic-bezier(.22,.68,.22,.99);
@@ -123,7 +123,7 @@
   transition:background .8s ease}
 .t-hero-copy{position:relative;z-index:1;box-sizing:border-box;height:100%;width:100%;
   display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;color:#fff;
-  padding:clamp(72px,14vh,160px) clamp(32px,7vw,112px) clamp(52px,8vh,96px)}
+  padding:clamp(72px,14vh,160px) clamp(32px,7vw,112px) clamp(52px,8vh,96px);min-height:400px}
 .t-hero-title{max-width:860px;margin-bottom:auto}
 .t-hero-copy h1{color:#fff;margin:0;font-size:clamp(68px,9vw,140px);line-height:.82;font-weight:500;
   filter:drop-shadow(0 4px 20px rgba(0,0,0,.55)) drop-shadow(0 2px 6px rgba(0,0,0,.35))}
@@ -173,7 +173,7 @@
   background:rgba(255,255,255,.85);
   box-shadow:0 0 0 3px rgba(255,255,255,.22),0 0 12px rgba(255,255,255,.4)}
 /* CTA section with better spacing */
-.t-hero-cta{display:flex;gap:16px;justify-content:flex-start;flex-wrap:wrap;margin-bottom:24px}
+.t-hero-cta{display:flex;gap:16px;justify-content:flex-start;flex-wrap:wrap;margin-bottom:24px;min-height:56px;align-items:center}
 .t-hero-note{margin:0!important;font-size:11px!important;font-weight:700!important;letter-spacing:.2em;
   text-transform:uppercase;color:rgba(255,255,255,.58)!important;
   filter:drop-shadow(0 1px 8px rgba(0,0,0,.35));
@@ -212,17 +212,25 @@
 @keyframes t-bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
 @media (prefers-reduced-motion:reduce){.t-scroll{animation:none}}
 @media(max-width:800px){
-  .t-hero-copy{padding:84px 28px 44px;text-align:left}
+  .t .wrap{padding:0 20px}
+  .t-hero{height:calc(100svh - 108px);min-height:560px}
+  .t-hero-copy{padding:64px 20px 40px;text-align:left}
   .t-hero-copy h1{font-size:clamp(56px,17vw,88px);line-height:.84}
   .t-hero-copy h1 span{margin-bottom:6px}
   .t-hero-bottom{max-width:380px}
   .t-hero-bottom>div:first-child{margin-bottom:20px}
   .t-hero-bottom>div:first-child>p{font-size:16px;line-height:1.6}
-  .t-hero-cta{gap:12px;margin-bottom:20px}
+  .t-hero-cta{gap:12px;margin-bottom:20px;justify-content:flex-start}
   .t-hero-cta .t-btn{min-width:0;padding:14px 22px;font-size:14px}
-  .t-hero-frames{right:26px;bottom:26px;padding:9px 12px}
+  .t-hero-frames{right:20px;bottom:20px;padding:9px 12px}
   .t-hero-frames::before{display:none}
   .t-hero-kicker{font-size:10px;padding:7px 13px;margin-bottom:16px}
+  .t-models-heading{padding:64px 20px 48px;grid-template-columns:1fr;gap:20px}
+  .t-models-heading .t-kicker{grid-column:auto}
+  .t-models-grid{grid-template-columns:1fr;gap:2px}
+  .t-panel{height:76svh;min-height:520px}
+  .t-panel-copy{row-gap:10px;padding-bottom:48px;padding-left:20px;padding-right:20px}
+  .t-panel-cta{justify-content:center}
 }
 
 /* Vehicle selection — Enhanced with better depth and interactions */
@@ -230,7 +238,7 @@
 .t-models::before{content:"";position:absolute;top:0;left:0;right:0;height:160px;
   background:linear-gradient(180deg,rgba(0,0,0,.015),transparent);pointer-events:none}
 .t-models-heading{padding-top:120px;padding-bottom:72px;display:grid;
-  grid-template-columns:1.1fr .72fr;column-gap:clamp(44px,8.5vw,160px);align-items:end}
+  grid-template-columns:1.1fr .72fr;column-gap:clamp(44px,8.5vw,160px);align-items:end;min-height:120px}
 .t-kicker{font-size:11.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
   color:#6b7280;margin:0 0 16px;
   display:inline-block;position:relative;padding-left:20px}
@@ -257,7 +265,7 @@
 .t-panel-copy{position:relative;z-index:1;display:grid;grid-auto-rows:auto;row-gap:14px;
   align-content:end;justify-items:center;text-align:center;color:#fff;
   padding:0 28px 72px;width:100%;box-sizing:border-box;
-  transition:transform .5s cubic-bezier(.22,.68,.22,.99),opacity .4s ease}
+  transition:transform .5s cubic-bezier(.22,.68,.22,.99),opacity .4s ease;min-height:200px}
 .t-panel-copy .t-pill{margin:0;box-shadow:0 3px 12px rgba(0,0,0,.4)}
 .t-panel-copy h3{color:#fff;font-size:clamp(44px,4.9vw,70px);
   filter:drop-shadow(0 3px 20px rgba(0,0,0,.45)) drop-shadow(0 1px 4px rgba(0,0,0,.3));
@@ -265,7 +273,7 @@
 .t-panel-copy p{font-size:17.5px;color:rgba(255,255,255,.8);margin:0;font-weight:400;
   line-height:1.5;align-self:start;max-width:32em;
   filter:drop-shadow(0 2px 10px rgba(0,0,0,.35))}
-.t-panel-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.t-panel-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:6px;min-height:56px;align-items:center}
 .t-panel-chips{display:flex;gap:10px;justify-content:center;align-content:start;
   flex-wrap:wrap;margin:0;min-height:38px}
 .t-panel-chips span{display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;
@@ -296,15 +304,16 @@
   .t-models-heading .t-kicker{grid-column:auto}
   .t-models-grid{grid-template-columns:1fr;gap:2px}
   .t-panel{height:76svh;min-height:520px}
-  .t-panel-copy{row-gap:10px;padding-bottom:48px}
+  .t-panel-copy{row-gap:10px;padding-bottom:48px;padding-left:20px;padding-right:20px}
+  .t-panel-cta{justify-content:center}
 }
 
 /* Fit strip */
 .t-strip{padding:104px 0;text-align:center}
 .t-strip .t-kicker{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#5c5e62;margin:0 0 14px}
 .t-strip h2{margin-bottom:40px}
-.t-fit{display:flex;flex-direction:column;align-items:center;gap:28px}
-.t-fit-row{display:flex;align-items:center;justify-content:center;gap:20px 32px;flex-wrap:wrap}
+.t-fit{display:flex;flex-direction:column;align-items:center;gap:28px;min-height:200px}
+.t-fit-row{display:flex;align-items:center;justify-content:center;gap:20px 32px;flex-wrap:wrap;min-height:64px}
 /* Live fit gauge — animated ruler: your opening vs each featured car (no automaker site has this) */
 .t-gauge{position:relative;width:min(680px,100%);height:64px}
 .t-gauge::before{content:"";position:absolute;left:0;right:0;top:26px;height:8px;border-radius:999px;background:#f0f0f1}
@@ -542,7 +551,7 @@
 .t-explore div{display:flex;gap:clamp(24px,4vw,56px);flex-wrap:wrap}
 .t-explore a{color:#0a0a0a;font-family:var(--disp);font-size:clamp(22px,2.8vw,32px);font-weight:500;letter-spacing:-.03em;text-decoration:none;border-bottom:2px solid transparent;padding-bottom:2px;transition:border-color .2s}
 .t-explore a:hover{border-color:#0a0a0a}
-@media(max-width:800px){.t-explore{padding:72px 0}.t-explore div{flex-direction:column;gap:16px}}
+@media(max-width:800px){.t-explore{padding:72px 0}.t-explore div{flex-direction:column;gap:16px;align-items:flex-start}}
 @media(max-width:800px){.t-final{padding:96px 0}.t-final .wrap{grid-template-columns:1fr;gap:32px;align-items:start}}
 
 /* Footer — Rivian statement + columns + fine print */
@@ -568,3 +577,22 @@
 
 /* Pill overlays on panels */
 .t-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:.04em;color:#fff;background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 16px;margin-bottom:16px}
+
+/* Car Slider - All vehicles showcase */
+.t-slider{padding:96px 0;background:#f8f8f9;border-top:1px solid #ebebeb;border-bottom:1px solid #ebebeb;overflow:hidden}
+.t-slider-in{max-width:1400px;margin:0 auto;padding:0 22px}
+.t-slider-header{margin-bottom:48px;text-align:center}
+.t-slider-header h2{font-size:clamp(32px,4vw,48px);font-weight:600;letter-spacing:-.03em;margin:0 0 12px;color:#0a0a0a}
+.t-slider-header p{font-size:17px;color:#5c5e62;margin:0;max-width:600px;line-height:1.6;margin-left:auto;margin-right:auto}
+.t-slider-marquee{display:flex;gap:60px;animation:marquee 30s linear infinite;white-space:nowrap;padding:40px 0}
+.t-slider-marquee:hover{animation-play-state:paused}
+.t-slider-brand{font-size:clamp(16px,2.5vw,32px);font-weight:600;letter-spacing:-.02em;color:#0a0a0a;text-transform:uppercase;opacity:.6;transition:opacity .3s ease}
+.t-slider-brand:hover{opacity:1}
+@keyframes marquee{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+@media(max-width:768px){
+  .t-slider{padding:64px 0}
+  .t-slider-marquee{gap:40px}
+}

@@ -413,6 +413,21 @@ function CompareTable({ gw }: { gw: number }) {
   );
 }
 
+function VehicleSlider() {
+  const brands = [...new Set(VEHICLES.map((v) => v.make))];
+  const duplicatedBrands = [...brands, ...brands];
+
+  return (
+    <div className="t-slider-marquee">
+      {duplicatedBrands.map((brand, index) => (
+        <span className="t-slider-brand" key={`${brand}-${index}`}>
+          {brand}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export default function Landing() {
   useReveal();
   useScrollSpy();
@@ -540,6 +555,16 @@ export default function Landing() {
               </div>
             </article>
           ))}
+          </div>
+        </section>
+
+        <section className="t-slider" aria-label="All vehicles">
+          <div className="t-slider-in">
+            <div className="t-slider-header rv">
+              <h2>Explore all {VEHICLES.length} vehicles</h2>
+              <p>Browse the complete lineup of cars, SUVs, and EVs with detailed dimensions, efficiency ratings, and pricing.</p>
+            </div>
+            <VehicleSlider />
           </div>
         </section>
 

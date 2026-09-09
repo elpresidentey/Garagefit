@@ -1,10 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img">
   <rect x="2" y="2" width="60" height="60" rx="16" fill="#0a0a0a"/>
-  <path d="M12 27 L32 11 L52 27" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M15.5 27 V45 M48.5 27 V45" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
-  <path d="M19 41 c0-3.2 2-4.6 5-4.9 l4.6-.8 2.8-4 c.7-1 1.7-1.5 2.9-1.5 h6.4 c1.2 0 2.2.5 2.9 1.5 l2.8 4 4.6.8 c3 .3 5 1.7 5 4.9 v2.4 H19 Z" fill="#ffffff"/>
-  <circle cx="26.5" cy="43.4" r="3.2" fill="#0a0a0a"/>
-  <circle cx="26.5" cy="43.4" r="1.1" fill="#ffffff"/>
-  <circle cx="43.5" cy="43.4" r="3.2" fill="#0a0a0a"/>
-  <circle cx="43.5" cy="43.4" r="1.1" fill="#ffffff"/>
+  <!-- Car silhouette -->
+  <path d="M16 38 L18 28 L24 22 L40 22 L46 28 L48 38 L48 42 L16 42 Z" fill="#ffffff"/>
+  <!-- Car windows -->
+  <path d="M25 24 L39 24 L43 28 L21 28 Z" fill="#0a0a0a"/>
+  <!-- Wheels -->
+  <circle cx="24" cy="42" r="5" fill="#0a0a0a"/>
+  <circle cx="24" cy="42" r="2.5" fill="#ffffff"/>
+  <circle cx="40" cy="42" r="5" fill="#0a0a0a"/>
+  <circle cx="40" cy="42" r="2.5" fill="#ffffff"/>
+  <!-- Measurement lines - top -->
+  <line x1="12" y1="18" x2="52" y2="18" stroke="#ffffff" stroke-width="1.5"/>
+  <line x1="12" y1="15" x2="12" y2="21" stroke="#ffffff" stroke-width="1.5"/>
+  <line x1="52" y1="15" x2="52" y2="21" stroke="#ffffff" stroke-width="1.5"/>
+  <!-- Measurement lines - bottom -->
+  <line x1="12" y1="50" x2="52" y2="50" stroke="#ffffff" stroke-width="1.5"/>
+  <line x1="12" y1="47" x2="12" y2="53" stroke="#ffffff" stroke-width="1.5"/>
+  <line x1="52" y1="47" x2="52" y2="53" stroke="#ffffff" stroke-width="1.5"/>
+  <!-- Vertical measurement marks -->
+  <line x1="8" y1="18" x2="8" y2="50" stroke="#ffffff" stroke-width="1"/>
+  <line x1="56" y1="18" x2="56" y2="50" stroke="#ffffff" stroke-width="1"/>
 </svg>
