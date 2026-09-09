@@ -129,7 +129,7 @@ function Delta({ kind, v, b, unit }: { kind: 'msrp' | 'eff' | 'width' | 'seats' 
   return <span className={`pill ds-pill ${cls}`} title={title}>{label}</span>;
 }
 
-function Modal({ label, onClose, children }: { label: string; onClose: () => void; children: React.ReactNode }) {
+function Modal({ label, onClose, children, tone }: { label: string; onClose: () => void; children: React.ReactNode; tone?: 'dark' }) {
   const ref = useRef<HTMLDivElement>(null);
   const prev = useRef<HTMLElement | null>(null);
   const closeRef = useRef(onClose);
@@ -158,7 +158,7 @@ function Modal({ label, onClose, children }: { label: string; onClose: () => voi
   }, []);
   return (
     <div className="modal" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={ref} className="sheet" role="dialog" aria-modal="true" aria-label={label} tabIndex={-1}>
+      <div ref={ref} className={'sheet' + (tone === 'dark' ? ' sheet-dark' : '')} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1}>
         {children}
       </div>
     </div>
@@ -792,7 +792,7 @@ export default function App() {
       )}
 
       {cmpOpen && (
-        <Modal label={`Side-by-side comparison of ${compare.length} vehicles`} onClose={() => setCmpOpen(false)}>
+        <Modal label={`Side-by-side comparison of ${compare.length} vehicles`} onClose={() => setCmpOpen(false)} tone="dark">
             <h2>Side-by-side ({compare.length})</h2>
             {(() => {
               const vs = compare.map((id) => byIdAll(id)!).filter(Boolean);
