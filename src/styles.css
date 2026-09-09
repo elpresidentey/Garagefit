@@ -3,7 +3,7 @@
    Green pass · Amber alert · Red fail */
 :root{
   color-scheme:light;
-  --bg:#f8fafc; --bg2:#f1f5f9; --card:#ffffff; --ink:#0f172a; --ink2:#1e293b;
+  --bg:#f8fafc; --bg2:#f1f5f9; --card:#ffffff; --ink:#0a0a0a; --ink2:#0a0a0a;
   --muted:#64748b; --line:#e2e8f0; --line2:#cbd5e1;
   --navy:#1e3a8a; --action:#3b82f6; --pass:#10b981; --alert:#f59e0b; --fail:#ef4444;
   --gold:#1e3a8a; --gold2:#3b82f6; --goldsoft:#dbeafe;
@@ -25,7 +25,7 @@
 /* Dark: navy-tinted surfaces, same traffic-light status colors. */
 [data-theme=dark]{
   color-scheme:dark;
-  --bg:#0b1220; --bg2:#0f172a; --card:#111827; --ink:#f8fafc; --ink2:#e2e8f0;
+  --bg:#0a0a0a; --bg2:#0a0a0a; --card:#111827; --ink:#f8fafc; --ink2:#e2e8f0;
   --muted:#94a3b8; --line:#1e293b; --line2:#334155;
   --gold:#93c5fd; --gold2:#60a5fa; --goldsoft:#172554;
   --accent:#3b82f6;
@@ -33,9 +33,9 @@
   --good:#34d399; --goodfill:#10b981; --goodbg:#064e3b;
   --warn:#fbbf24; --warnfill:#f59e0b; --warnbg:#451a03;
   --bad:#f87171; --badfill:#ef4444; --badbg:#450a0a;
-  --same:#cbd5e1; --samebg:#1e293b;
-  --chip:#1e293b;
-  --input:#0f172a;
+  --same:#cbd5e1; --samebg:#0a0a0a;
+  --chip:#0a0a0a;
+  --input:#0a0a0a;
   --shadow:0 1px 2px rgba(0,0,0,.55),0 16px 40px -16px rgba(0,0,0,.7);
   --lift:0 2px 6px rgba(0,0,0,.55),0 26px 56px -14px rgba(0,0,0,.7);
   --glow:0 0 0 1px rgba(59,130,246,.35),0 8px 26px -12px rgba(0,0,0,.5);
@@ -44,15 +44,15 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme]){
     color-scheme:dark;
-    --bg:#0b1220; --bg2:#0f172a; --card:#111827; --ink:#f8fafc; --ink2:#e2e8f0;
+    --bg:#0a0a0a; --bg2:#0a0a0a; --card:#111827; --ink:#f8fafc; --ink2:#e2e8f0;
     --muted:#94a3b8; --line:#1e293b; --line2:#334155;
     --gold:#93c5fd; --gold2:#60a5fa; --goldsoft:#172554;
     --accent:#3b82f6;
     --good:#34d399; --goodfill:#10b981; --goodbg:#064e3b;
     --warn:#fbbf24; --warnfill:#f59e0b; --warnbg:#451a03;
     --bad:#f87171; --badfill:#ef4444; --badbg:#450a0a;
-    --same:#cbd5e1; --samebg:#1e293b;
-    --chip:#1e293b; --input:#0f172a;
+    --same:#cbd5e1; --samebg:#0a0a0a;
+    --chip:#0a0a0a; --input:#0a0a0a;
   }
 }
 *{box-sizing:border-box}
@@ -231,12 +231,12 @@ input[type=checkbox],input[type=radio]{accent-color:var(--accent)}
 .card-click{cursor:pointer}
 .row-click{cursor:pointer}
 @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.99)}}
-.carimg{position:absolute;inset:0;padding-bottom:26%;display:grid;place-items:center;overflow:hidden;background:#1e293b}
+.carimg{position:absolute;inset:0;padding-bottom:26%;display:grid;place-items:center;overflow:hidden;background:#0a0a0a}
 .carimg.fuel-EV{background:#1e3a5f}
 .carimg.fuel-Hybrid{background:#134e4a}
 .carimg.fuel-PHEV{background:#1e3a4f}
 .carimg.fuel-Hydrogen{background:#164e63}
-.carimg.fuel-Gasoline{background:#1e293b}
+.carimg.fuel-Gasoline{background:#0a0a0a}
 .carimg::after{content:"";position:absolute;left:10%;right:10%;bottom:36%;height:22px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.45),transparent)}
 .carimg svg{width:150px;height:auto;position:relative;z-index:0;color:rgba(246,241,228,.95);filter:drop-shadow(0 14px 12px rgba(0,0,0,.45));transform:translateY(-4px)}
 .baseline .b-car svg{width:72px;height:auto}

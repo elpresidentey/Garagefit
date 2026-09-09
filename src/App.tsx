@@ -322,7 +322,7 @@ export default function App() {
         m.setAttribute('data-gf', '1');
         document.head.appendChild(m);
       }
-      m.content = dark ? '#0b1220' : '#1e3a8a';
+      m.content = dark ? '#0a0a0a' : '#0a0a0a';
     } catch { /* head not writable in some embeds */ }
   }, [dark]);
   // Follow the OS while the user hasn't picked a theme explicitly.
