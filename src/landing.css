@@ -1,4 +1,5 @@
-/* GarageFit landing v6 — Rivian DNA: huge type, pill buttons, editorial restraint. */
+/* GarageFit landing v7 — Rivian DNA, then further: scroll-linked hero, scrollspy nav,
+   live fit gauge, crosshair comparison table. */
 .t{background:#fff;color:#151515;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .t .wrap{max-width:1200px}
 .t h1,.t h2,.t h3,.t h4{font-family:var(--disp);font-weight:500;letter-spacing:-.04em;margin:0}
@@ -27,13 +28,14 @@
 .t-logo img{width:26px;height:26px}
 .t-logo strong{font-size:12px;letter-spacing:.28em;font-weight:700}
 .t-links{display:flex;gap:4px;margin:0 auto}
-.t-links a{color:#151515;text-decoration:none;font-size:14px;font-weight:500;padding:8px 14px;border-radius:999px;transition:background .2s}
+.t-links a{color:#151515;text-decoration:none;font-size:14px;font-weight:500;padding:8px 14px;border-radius:8px;transition:background .2s}
 .t-links a:hover{background:rgba(0,0,0,.05)}
+.t-links a.on{background:rgba(0,0,0,.07);font-weight:600}
 .t-nav-ctas{display:flex;gap:8px;align-items:center;margin-left:auto}
 @media(max-width:760px){.t-links{display:none}.t-nav-ctas .t-btn-ghost{display:none}.t-nav-ctas{margin-left:auto}}
 
 /* Buttons — Rivian pill style */
-.t-btn{display:inline-flex;align-items:center;justify-content:center;min-width:160px;min-height:48px;padding:14px 32px;border-radius:999px;font-size:15px;font-weight:500;letter-spacing:-.01em;text-decoration:none;border:none;cursor:pointer;transition:all .25s cubic-bezier(.25,.1,.25,1)}
+.t-btn{display:inline-flex;align-items:center;justify-content:center;min-width:160px;min-height:48px;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:500;letter-spacing:-.01em;text-decoration:none;border:none;cursor:pointer;transition:all .25s cubic-bezier(.25,.1,.25,1)}
 .t-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px -4px rgba(0,0,0,.2)}
 .t-btn:active{transform:none;box-shadow:none}
 .t-btn-dark{background:#151515;color:#fff}
@@ -49,49 +51,102 @@
 .t-btn-light:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
 .t-btn-sm{min-width:0;min-height:40px;padding:10px 24px;font-size:13px}
 
-/* Hero — Rivian dark left-aligned */
-.t-hero{position:relative;height:90svh;min-height:600px;display:grid;place-items:center;overflow:hidden;background:#0a0a0a}
+/* Hero — a low, left-anchored automotive poster composition. */
+.t-hero{position:relative;height:calc(100svh - 96px);min-height:560px;overflow:hidden;background:#0a0a0a}
 .t-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:t-kenburns 30s ease-in-out infinite alternate}
 @keyframes t-kenburns{from{transform:scale(1)}to{transform:scale(1.05)}}
 @media (prefers-reduced-motion:reduce){.t-hero-img{animation:none}}
-.t-hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.4) 0%,rgba(10,10,10,.1) 30%,rgba(10,10,10,.15) 60%,rgba(10,10,10,.55) 100%)}
-.t-hero-copy{position:relative;z-index:1;color:#fff;padding:0 clamp(24px,8vw,96px);max-width:900px;width:100%}
-.t-hero-copy h1{color:#fff;filter:drop-shadow(0 2px 12px rgba(0,0,0,.4));margin-bottom:12px}
-.t-hero-copy p{font-size:clamp(16px,2vw,20px);color:rgba(255,255,255,.85);margin:0 0 0;max-width:28em;font-weight:400;line-height:1.5;filter:drop-shadow(0 1px 8px rgba(0,0,0,.35))}
-.t-hero-cta{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap;margin-top:32px}
-.t-hero-specs{display:flex;gap:40px;justify-content:flex-start;flex-wrap:wrap;margin:36px 0 0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6)}
-.t-hero-specs b{display:block;font-size:32px;letter-spacing:-.03em;color:#fff;text-transform:none;font-weight:500;margin-bottom:2px}
+.t-hero-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,8,9,.7) 0%,rgba(7,8,9,.38) 35%,rgba(7,8,9,.05) 67%),linear-gradient(0deg,rgba(7,8,9,.72) 0%,rgba(7,8,9,.04) 48%,rgba(7,8,9,.14) 100%)}
+.t-hero-copy{position:relative;z-index:1;box-sizing:border-box;height:100%;width:100%;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;color:#fff;padding:clamp(60px,12vh,132px) clamp(24px,6vw,96px) clamp(38px,6vh,72px)}
+.t-hero-title{max-width:780px}
+.t-hero-copy h1{color:#fff;filter:drop-shadow(0 2px 12px rgba(0,0,0,.4));margin:0;font-size:clamp(60px,8vw,122px);line-height:.86}
+.t-hero-copy h1 span,.t-hero-copy h1 i{display:block}
+.t-hero-copy h1 i{font-family:Georgia,serif;font-size:.92em;font-weight:400;letter-spacing:-.075em;padding-left:.08em}
+.t-hero-bottom{max-width:440px}
+.t-hero-bottom>p:first-child{font-size:17px;color:rgba(255,255,255,.86);margin:0;max-width:27em;font-weight:400;line-height:1.55;filter:drop-shadow(0 1px 8px rgba(0,0,0,.35))}
+/* Scroll-linked hero (beyond Rivian's static hero): image dims, copy lifts as you scroll away. */
+.t-hero-img{opacity:calc(1 - var(--par,0)*.55)}
+.t-hero-copy{transform:translateY(calc(var(--par,0)*-56px));opacity:calc(1 - var(--par,0)*1.35);will-change:transform,opacity;transition:transform .12s linear,opacity .12s linear}
+.t-hero .t-scroll{opacity:calc(1 - var(--par,0)*2)}
+/* Staggered hero entrance */
+.t-hero-title .t-eyebrow{transition-delay:.06s}
+.t-hero-title h1{transition-delay:.16s}
+.t-hero-bottom{transition-delay:.32s}
+@media (prefers-reduced-motion:reduce){
+  .t-hero-copy{transform:none!important;opacity:1!important;transition:none!important}
+  .t-hero-img{opacity:1!important}
+  .t-hero-title .t-eyebrow,.t-hero-title h1,.t-hero-bottom{transition-delay:0s}
+}
+.t-hero-cta{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap;margin-top:28px}
+.t-hero-note{margin:22px 0 0!important;font-size:10px!important;font-weight:700!important;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.58)!important}
 .t-scroll{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:1;color:rgba(255,255,255,.6);font-size:18px;text-decoration:none;animation:t-bob 2.4s ease-in-out infinite}
 @keyframes t-bob{50%{transform:translate(-50%,6px)}}
 @media (prefers-reduced-motion:reduce){.t-scroll{animation:none}}
 @media(max-width:800px){
-  .t-hero-copy{padding:0 24px;text-align:center}
-  .t-hero-cta{justify-content:center}
-  .t-hero-specs{justify-content:center}
-  .t-hero-copy p{margin:12px auto 0}
+  .t-hero-copy{padding:72px 24px 34px;text-align:left}
+  .t-hero-copy h1{font-size:clamp(52px,15vw,76px);line-height:.88}
+  .t-hero-bottom{max-width:340px}
+  .t-hero-bottom>p:first-child{font-size:15px}
+  .t-hero-cta{gap:8px;margin-top:22px}
+  .t-hero-cta .t-btn{min-width:0;padding:13px 20px;font-size:14px}
 }
 
-/* Lineup panels — Rivian full-bleed dark */
-.t-panel{position:relative;height:90svh;min-height:560px;display:grid;place-items:end center;overflow:hidden;background:#0a0a0a}
+/* Vehicle selection — an editorial image rail rather than three repeated hero sections. */
+.t-models{background:#fff;padding-bottom:2px}
+.t-models-heading{padding-top:112px;padding-bottom:64px;display:grid;grid-template-columns:1.1fr .72fr;column-gap:clamp(40px,8vw,150px);align-items:end}
+.t-kicker{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#5c5e62;margin:0 0 14px}
+.t-models-heading .t-kicker{grid-column:1/-1}
+.t-models-heading h2{max-width:9.5em}
+.t-models-heading>p:last-child{margin:0;max-width:27em;color:#5c5e62;font-size:16px;line-height:1.65}
+.t-models-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}
+.t-panel{position:relative;height:min(68vw,720px);min-height:560px;display:grid;place-items:end center;overflow:hidden;background:#0a0a0a}
 .t-panel>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:t-kenburns 26s ease-in-out infinite alternate}
 .t-panel-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.08) 0%,transparent 20%,transparent 40%,rgba(10,10,10,.65) 75%,rgba(10,10,10,.85) 100%)}
 .t-panel-copy{position:relative;z-index:1;text-align:center;color:#fff;padding:0 24px 64px;width:100%}
-.t-panel-copy h2{color:#fff;font-size:clamp(48px,7vw,80px);filter:drop-shadow(0 2px 16px rgba(0,0,0,.35));letter-spacing:-.04em}
+.t-panel-copy h3{color:#fff;font-size:clamp(42px,4.7vw,66px);filter:drop-shadow(0 2px 16px rgba(0,0,0,.35));letter-spacing:-.05em}
 .t-panel-copy p{font-size:17px;color:rgba(255,255,255,.75);margin:8px 0 28px;font-weight:400}
 .t-panel-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.t-panel-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 28px}
+.t-panel-chips span{display:inline-flex;align-items:center;font-size:12px;font-weight:600;letter-spacing:.02em;color:#fff;background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:6px 14px}
+@media(max-width:800px){
+  .t-hero{height:calc(100svh - 108px);min-height:540px}
+  .t-models-heading{padding:80px 24px 44px;grid-template-columns:1fr;gap:18px}
+  .t-models-heading .t-kicker{grid-column:auto}
+  .t-models-grid{grid-template-columns:1fr;gap:2px}
+  .t-panel{height:76svh;min-height:520px}
+  .t-panel-copy{padding-bottom:48px}
+}
 
 /* Fit strip */
 .t-strip{padding:104px 0;text-align:center}
 .t-strip .t-kicker{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#5c5e62;margin:0 0 14px}
 .t-strip h2{margin-bottom:40px}
-.t-fit{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
+.t-fit{display:flex;flex-direction:column;align-items:center;gap:28px}
+.t-fit-row{display:flex;align-items:center;justify-content:center;gap:20px 32px;flex-wrap:wrap}
+/* Live fit gauge — animated ruler: your opening vs each featured car (no automaker site has this) */
+.t-gauge{position:relative;width:min(680px,100%);height:64px}
+.t-gauge::before{content:"";position:absolute;left:0;right:0;top:26px;height:8px;border-radius:999px;background:#f0f0f1}
+.t-gauge-fill{position:absolute;top:26px;height:8px;border-radius:999px;background:#151515;transition:width .5s cubic-bezier(.2,.7,.3,1)}
+.t-gauge-tick{position:absolute;top:22px;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.25);transform:translateX(-50%);transition:background .3s}
+.t-gauge-tick.fits{background:#12a37e}
+.t-gauge-tick.wide{background:#e0442c}
+.t-gauge-open{position:absolute;top:10px;height:40px;width:3px;border-radius:3px;background:#151515;transform:translateX(-50%);transition:left .5s cubic-bezier(.2,.7,.3,1),opacity .3s}
+.t-gauge-open em{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);font-style:normal;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#5c5e62;white-space:nowrap}
+.t-fit-verdicts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.t-verdict{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;border-radius:999px;padding:8px 16px;border:1px solid #ebebeb;background:#fafafa;color:#393c41;transition:all .25s ease}
+.t-verdict b{font-weight:700;color:#151515}
+.t-verdict.good{border-color:rgba(18,163,126,.4);background:rgba(18,163,126,.08);color:#0b7a5c}
+.t-verdict.good b{color:#0b7a5c}
+.t-verdict.bad{border-color:rgba(224,68,44,.35);background:rgba(224,68,44,.06);color:#b0331f}
+.t-verdict.bad b{color:#b0331f}
+.t-verdict.idle{color:#5c5e62}
 .t-fit-field{display:grid;gap:10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#5c5e62}
 .t-fit-input{display:flex;align-items:center;gap:10px}
 .t-fit-input input{width:120px;font-size:32px;font-weight:500;color:#151515;background:#f4f4f5;border:1px solid transparent;border-radius:999px;padding:12px 20px;transition:border-color .2s}
 .t-fit-input input:focus{outline:none;border-color:#151515}
 .t-fit-input em{font-style:normal;font-size:15px;color:#5c5e62;font-weight:400;text-transform:none;letter-spacing:0}
 .t-fit-presets{display:flex;gap:8px}
-.t-fit-presets button{min-height:44px;min-width:56px;border-radius:999px;border:1px solid #d0d1d2;background:#fff;color:#393c41;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s ease}
+.t-fit-presets button{min-height:44px;min-width:56px;border-radius:8px;border:1px solid #d0d1d2;background:#fff;color:#393c41;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s ease}
 .t-fit-presets button:hover{border-color:#151515;background:#f8f8f8}
 .t-fit-presets button.on{background:#151515;border-color:#151515;color:#fff}
 .t-fit-count{font-size:18px;color:#393c41;margin:0}
@@ -120,6 +175,9 @@
 .t-table-wrap tbody tr:hover{background:#fafafa}
 .t-best{display:inline-block;font-style:normal;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:#12a37e;border-radius:999px;padding:3px 12px;margin-left:12px;vertical-align:2px}
 .t-table-wrap tbody th[scope=row]{color:#5c5e62;font-weight:500;font-size:14px}
+/* Crosshair column highlight */
+.t-table-wrap th,.t-table-wrap td{transition:background .15s ease}
+.t-table-wrap thead th.hl,.t-table-wrap td.hl{background:#f4f4f5}
 
 /* How */
 .t-how{padding:104px 0;border-top:1px solid #ebebeb;text-align:center}
@@ -198,7 +256,7 @@
 
 /* Focus */
 .t :focus{outline:none}
-.t :focus-visible{outline:2px solid #3e6ae1;outline-offset:3px;border-radius:999px}
+.t :focus-visible{outline:2px solid #3e6ae1;outline-offset:3px;border-radius:8px}
 .t-eyebrow{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.7);border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:10px;margin:0 0 20px;filter:drop-shadow(0 1px 8px rgba(0,0,0,.4))}
 
 /* Pill overlays on panels */
