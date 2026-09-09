@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { VEHICLES } from './data';
+import type { Vehicle } from './types';
 
 const appLink = (q = '') => `#/app${q}`;
 const money = (n: number) => '$' + Math.round(n).toLocaleString();
+
+const HERO_FRAMES = [
+  { src: 'vehicles/mercedes-s-500-2024.jpg', alt: 'Mercedes S-Class driving through the city', label: 'The long view', position: '58% center' },
+  { src: 'vehicles/lucid-air-2024.jpg', alt: 'Lucid Air electric sedan', label: 'Electric forward', position: '52% center' },
+  { src: 'vehicles/bmw-i4-2024.jpg', alt: 'BMW i4 electric car', label: 'Daily driver', position: '56% center' },
+];
 
 function useReveal() {
   useEffect(() => {
@@ -16,10 +23,12 @@ function useReveal() {
       { threshold: 0.1 }
     );
     els.forEach((e) => io.observe(e));
-    const nav = document.querySelector('.t-nav');
+    const nav = document.querySelector<HTMLElement>('.t-nav');
     const hero = document.querySelector<HTMLElement>('.t-hero');
     const onScroll = () => {
       nav?.classList.toggle('scrolled', window.scrollY > 24);
+      const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      nav?.style.setProperty('--nav-progress', String(Math.min(1, window.scrollY / scrollable)));
       // Scroll-linked hero: copy drifts up and dims as the hero scrolls away.
       if (hero) {
         const p = Math.max(0, Math.min(1, window.scrollY / (hero.offsetHeight * 0.7)));
@@ -93,14 +102,70 @@ function Count({ to, suffix = '' }: { to: number; suffix?: string }) {
   return <span ref={ref}>{n.toLocaleString()}{suffix}</span>;
 }
 
-/** One-line fit checker: type a width, get a live gauge + per-car verdicts. */
+/** One-tap garage sizes: opening width × usable depth × door height, in inches. */
+const GARAGE_PRESETS = [
+  { name: 'Single', w: 96, d: 228, h: 84 },
+  { name: 'Double', w: 192, d: 228, h: 84 },
+];
+
+function loadGarage(): [number, number, number] {
+  try {
+    const g = JSON.parse(localStorage.getItem('gf-garage') || 'null');
+    if (g && typeof g === 'object') return [+g.w || 0, +g.d || 0, +g.h || 0];
+  } catch { /* fresh start */ }
+  return [88, 0, 0];
+}
+
+/** Smart 3D fit checker: width + depth + height, live top matches, near-misses, presets, persisted. */
 function FitStrip() {
-  const [gw, setGw] = useState(88);
-  const n = VEHICLES.filter((v) => v.widthExtended <= (gw || 0)).length;
+  const [dims, setDims] = useState<[number, number, number]>(loadGarage);
+  const [gw, gl, gh] = dims;
+  useEffect(() => {
+    try { localStorage.setItem('gf-garage', JSON.stringify({ w: gw, d: gl, h: gh })); } catch { /* private mode */ }
+  }, [gw, gl, gh]);
+  const set = (i: number, v: number) =>
+    setDims((d) => { const n: [number, number, number] = [d[0], d[1], d[2]]; n[i] = v; return n; });
+  const num = (v: string, max: number) => (v === '' ? 0 : Math.min(max, Math.max(0, +v)));
+  const applyPreset = (p: { w: number; d: number; h: number }) => setDims([p.w, p.d, p.h]);
+  const activePreset = GARAGE_PRESETS.find((p) => p.w === gw && p.d === gl && p.h === gh)?.name;
+
+  // Per-car clearances on each SET dimension; unset dims are ignored.
+  const clearances = (v: Vehicle): { w: number | null; d: number | null; h: number | null } => ({
+    w: gw > 0 ? +(gw - v.widthExtended).toFixed(1) : null,
+    d: gl > 0 && v.lengthIn != null ? +(gl - v.lengthIn).toFixed(1) : null,
+    h: gh > 0 && v.heightIn != null ? +(gh - v.heightIn).toFixed(1) : null,
+  });
+  const dimsSet = (gw > 0 ? 1 : 0) + (gl > 0 ? 1 : 0) + (gh > 0 ? 1 : 0);
+  const fits3 = (v: Vehicle) => {
+    const c = clearances(v);
+    const vals = [c.w, c.d, c.h].filter((x): x is number => x !== null);
+    return vals.length > 0 && vals.every((x) => x >= 0);
+  };
+  const minClear = (v: Vehicle) => {
+    const vals = Object.values(clearances(v)).filter((x): x is number => x !== null);
+    return vals.length ? Math.min(...vals) : Infinity;
+  };
+
+  const matches = dimsSet > 0 ? VEHICLES.filter(fits3).sort((a, b) => minClear(a) - minClear(b)) : [];
+  const top = matches.slice(0, 5);
+  const nearMiss = gw > 0
+    ? VEHICLES.filter((v) => { const c = +(gw - v.widthExtended).toFixed(1); return c < 0 && c >= -3; })
+      .sort((a, b) => (gw - b.widthExtended) - (gw - a.widthExtended)).slice(0, 3)
+    : [];
   const gaugeCars = LINEUP.map((c) => VEHICLES.find((v) => v.id === c.id)!).filter(Boolean);
   const scaleLo = gaugeCars.length ? Math.min(...gaugeCars.map((c) => c.widthExtended)) - 8 : 60;
   const scaleHi = gaugeCars.length ? Math.max(...gaugeCars.map((c) => c.widthExtended)) + 8 : 100;
   const pct = (x: number) => Math.max(0, Math.min(100, ((x - scaleLo) / (scaleHi - scaleLo)) * 100));
+  const dimWord = [gw > 0 && `${gw}″ wide`, gl > 0 && `${gl}″ deep`, gh > 0 && `${gh}″ tall`].filter(Boolean).join(' · ');
+  const link = dimsSet > 0
+    ? appLink(`?gw=${gw}&gl=${gl}&gh=${gh}&gwOnly=1`)
+    : appLink();
+  const fields: { label: string; value: number; max: number; ph: string; hint: string }[] = [
+    { label: 'Opening width', value: gw, max: 220, ph: '88', hint: 'in' },
+    { label: 'Usable depth', value: gl, max: 400, ph: '228', hint: 'in' },
+    { label: 'Door height', value: gh, max: 200, ph: '84', hint: 'in' },
+  ];
+
   return (
     <div className="t-fit rv">
       <div className="t-gauge" aria-hidden="true">
@@ -108,7 +173,7 @@ function FitStrip() {
         {gaugeCars.map((c) => (
           <span
             key={c.id}
-            className={`t-gauge-tick ${gw > 0 && c.widthExtended <= gw ? 'fits' : 'wide'}`}
+            className={`t-gauge-tick ${dimsSet > 0 && fits3(c) ? 'fits' : dimsSet > 0 ? 'wide' : ''}`}
             style={{ left: `${pct(c.widthExtended)}%` }}
           />
         ))}
@@ -117,41 +182,71 @@ function FitStrip() {
         </span>
       </div>
       <div className="t-fit-row">
-        <label className="t-fit-field">
-          <span>Your garage opening</span>
-          <span className="t-fit-input">
-            <input
-              type="number" inputMode="decimal" min={60} max={140} step={0.5} value={gw || ''}
-              placeholder="88" aria-label="Garage opening width in inches"
-              onChange={(e) => setGw(e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)))}
-            />
-            <em>in</em>
-          </span>
-          <span className="t-fit-presets" role="group" aria-label="Common openings">
-            {[84, 96, 108].map((w) => (
-              <button key={w} type="button" className={gw === w ? 'on' : ''} onClick={() => setGw(w)} aria-pressed={gw === w}>
-                {w}″
+        {fields.map((f, i) => (
+          <label className="t-fit-field" key={f.label}>
+            <span>{f.label}</span>
+            <span className="t-fit-input">
+              <input
+                type="number" inputMode="decimal" min={0} max={f.max} step={0.5}
+                value={f.value || ''} placeholder={f.ph}
+                aria-label={`${f.label} in inches`}
+                onChange={(e) => set(i, num(e.target.value, f.max))}
+              />
+              <em>{f.hint}</em>
+            </span>
+          </label>
+        ))}
+        <div className="t-fit-field">
+          <span>Garage type</span>
+          <span className="t-fit-presets" role="group" aria-label="Garage presets">
+            {GARAGE_PRESETS.map((p) => (
+              <button key={p.name} type="button" className={activePreset === p.name ? 'on' : ''} onClick={() => applyPreset(p)} aria-pressed={activePreset === p.name}>
+                {p.name}
               </button>
             ))}
+            {dimsSet > 0 && <button type="button" onClick={() => setDims([0, 0, 0])}>Clear</button>}
           </span>
-        </label>
-        <div className="t-fit-verdicts" aria-live="polite">
-          {gw > 0
-            ? gaugeCars.map((c) => {
-                const cl = +(gw - c.widthExtended).toFixed(1);
-                return (
-                  <span key={c.id} className={`t-verdict ${cl >= 0 ? 'good' : 'bad'}`}>
-                    <b>{c.model}</b> {cl >= 0 ? `${cl.toFixed(1)}″ spare` : `${(-cl).toFixed(1)}″ too wide`}
-                  </span>
-                );
-              })
-            : <span className="t-verdict idle">Type a width to compare</span>}
         </div>
       </div>
-      <p className="t-fit-count">
-        {gw > 0 ? <><strong><Count to={n} /></strong> of {VEHICLES.length} vehicles fit</> : 'Type a width to see what fits'}
-      </p>
-      <a className="t-btn t-btn-dark" href={gw > 0 ? appLink(`?gw=${gw}&gwOnly=1`) : appLink()}>See them</a>
+      {dimsSet > 0 ? (
+        <>
+          <p className="t-fit-count">
+            <strong><Count to={matches.length} /></strong>
+            of {VEHICLES.length} vehicles fit{dimWord ? ` — ${dimWord}` : ''}
+          </p>
+          {top.length > 0 && (
+            <div className="t-matches" aria-live="polite" aria-label="Closest fits">
+              {top.map((v) => (
+                <a className="t-match" key={v.id} href={appLink(`?b=${v.id}&gw=${gw}&gl=${gl}&gh=${gh}`)}>
+                  {v.imageUrl && <img src={v.imageUrl} alt="" loading="lazy" />}
+                  <span><b>{v.year} {v.make} {v.model}</b><em>{minClear(v).toFixed(1)}″ to spare</em></span>
+                </a>
+              ))}
+            </div>
+          )}
+          {nearMiss.length > 0 && (
+            <p className="t-near" aria-live="polite">
+              Just misses: {nearMiss.map((v) => `${v.model} (+${(v.widthExtended - gw).toFixed(1)}″)`).join(' · ')}
+            </p>
+          )}
+        </>
+      ) : (
+        <p className="t-fit-count">Type any dimension to see what fits</p>
+      )}
+      <div className="t-fit-verdicts" aria-live="polite">
+        {dimsSet > 0
+          ? gaugeCars.map((c) => {
+              const ok = fits3(c);
+              const cl = minClear(c);
+              return (
+                <span key={c.id} className={`t-verdict ${ok ? 'good' : 'bad'}`}>
+                  <b>{c.model}</b> {ok ? `${cl.toFixed(1)}″ spare` : 'doesn’t fit'}
+                </span>
+              );
+            })
+          : <span className="t-verdict idle">Headliners will report here</span>}
+      </div>
+      <a className="t-btn t-btn-dark" href={link}>See them in the app</a>
     </div>
   );
 }
@@ -261,10 +356,17 @@ function CompareTable({ gw }: { gw: number }) {
 export default function Landing() {
   useReveal();
   useScrollSpy();
+  const [heroFrame, setHeroFrame] = useState(0);
   const years = VEHICLES.map((v) => v.year);
   const lo = Math.min(...years), hi = Math.max(...years);
   const evs = VEHICLES.filter((v) => v.fuel === 'EV').length;
   const gw = 88;
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setInterval(() => setHeroFrame((frame) => (frame + 1) % HERO_FRAMES.length), 6200);
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
     <div className="lp t">
@@ -273,7 +375,7 @@ export default function Landing() {
       <header className="t-nav">
         <a className="t-logo" href="#top" aria-label="GarageFit home">
           <img src="logo.svg" alt="" aria-hidden="true" />
-          <strong>GARAGEFIT</strong>
+          <span className="t-logo-label"><strong>GARAGEFIT</strong><small>Car guide</small></span>
         </a>
         <nav className="t-links" aria-label="Landing">
           <a href="#t-models">Vehicles</a>
@@ -282,21 +384,33 @@ export default function Landing() {
           <a href="#t-faq">FAQ</a>
         </nav>
         <span className="t-nav-ctas">
-          <a className="t-btn t-btn-ghost t-btn-sm" href="#t-how">How It Works</a>
-          <a className="t-btn t-btn-dark t-btn-sm" href={appLink()}>Compare Cars</a>
+          <a className="t-nav-utility" href="#t-models">Explore vehicles <span aria-hidden="true">↗</span></a>
+          <a className="t-btn t-btn-dark t-btn-sm" href={appLink()}>Start comparing <span aria-hidden="true">→</span></a>
         </span>
       </header>
 
       <main id="top">
         <section className="t-hero" aria-label="GarageFit introduction">
-          <img className="t-hero-img" src="vehicles/tesla-model-y-2024.jpg" alt="Tesla Model Y on the road" fetchPriority="high" />
+          <div className="t-hero-media" aria-live="polite">
+            {HERO_FRAMES.map((frame, index) => (
+              <img
+                className={`t-hero-img ${heroFrame === index ? 'active' : ''}`}
+                src={frame.src}
+                alt={frame.alt}
+                style={{ objectPosition: frame.position }}
+                aria-hidden={heroFrame !== index}
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                key={frame.src}
+              />
+            ))}
+          </div>
           <div className="t-hero-scrim" aria-hidden="true" />
           <div className="t-hero-copy">
             <div className="t-hero-title">
-              <p className="t-eyebrow rv">GarageFit · 2026 vehicle guide</p>
-              <h1 className="rv"><span>Find the car</span><i>that fits.</i></h1>
+              <p className="t-eyebrow t-hero-reveal t-hero-kicker">GarageFit · 2026 vehicle guide</p>
+              <h1 className="t-hero-reveal t-hero-headline"><span>Find the car</span><i>that fits.</i></h1>
             </div>
-            <div className="t-hero-bottom rv">
+            <div className="t-hero-bottom t-hero-reveal">
               <p>Measure the things that matter before the test drive: your garage, your budget and the road ahead.</p>
               <div className="t-hero-cta">
                 <a className="t-btn t-btn-solid" href={appLink()}>Find your fit</a>
@@ -304,6 +418,18 @@ export default function Landing() {
               </div>
               <p className="t-hero-note">{VEHICLES.length} vehicles · Free to use · No account</p>
             </div>
+          </div>
+          <div className="t-hero-frames" aria-label="Hero vehicle photos">
+            {HERO_FRAMES.map((frame, index) => (
+              <button
+                type="button"
+                className={heroFrame === index ? 'on' : ''}
+                onClick={() => setHeroFrame(index)}
+                aria-label={`Show ${frame.label} photo`}
+                aria-pressed={heroFrame === index}
+                key={frame.src}
+              />
+            ))}
           </div>
           <a className="t-scroll" href="#t-models" aria-label="Scroll to vehicles">↓</a>
         </section>
@@ -354,6 +480,27 @@ export default function Landing() {
             ].map(({ v, s }) => (
               <div className="rv" key={s}><b>{v}</b><span>{s}</span></div>
             ))}
+          </div>
+        </section>
+
+        <section className="t-decision" aria-label="A better way to choose a car">
+          <div className="t-decision-inner">
+            <div className="t-decision-media rv">
+              <img src="vehicles/honda-pilot-2024.jpg" alt="Honda Pilot parked outdoors" loading="lazy" />
+              <div className="t-decision-scrim" aria-hidden="true" />
+              <p><span>01</span> The decision starts at home.</p>
+            </div>
+            <div className="t-decision-copy rv">
+              <p className="t-kicker">Built for the real world</p>
+              <h2>Choose for the life you have.</h2>
+              <p className="t-decision-lede">Check the dimensions, monthly ownership cost and real-world range before your shortlist becomes a compromise.</p>
+              <ol className="t-decision-list">
+                <li><b>01</b><span><strong>Measure your space</strong>Know the clearance before the driveway does.</span></li>
+                <li><b>02</b><span><strong>Set your baseline</strong>Compare every option to the car you have now.</span></li>
+                <li><b>03</b><span><strong>See the trade-offs</strong>Price, efficiency and fit — in one clear view.</span></li>
+              </ol>
+              <a className="t-arrow-link t-arrow-dark" href={appLink()}>Build your comparison <span aria-hidden="true">→</span></a>
+            </div>
           </div>
         </section>
 

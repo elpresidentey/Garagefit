@@ -19,18 +19,30 @@
 
 @media (prefers-reduced-motion:no-preference){.gf-smooth{scroll-behavior:smooth}}
 
-/* Nav — Rivian pill-style */
-.t-nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:24px;padding:0 clamp(16px,4vw,48px);height:56px;background:rgba(255,255,255,.92);backdrop-filter:blur(24px) saturate(1.4);transition:box-shadow .3s ease,border-color .3s ease;border-bottom:1px solid transparent}
-.t-nav.scrolled{border-bottom-color:rgba(0,0,0,.06);box-shadow:0 4px 24px -8px rgba(0,0,0,.12)}
-.t-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#151515}
-.t-logo img{width:26px;height:26px}
-.t-logo strong{font-size:12px;letter-spacing:.28em;font-weight:700}
-.t-links{display:flex;gap:4px;margin:0 auto}
-.t-links a{color:#151515;text-decoration:none;font-size:14px;font-weight:500;padding:8px 14px;border-radius:8px;transition:background .2s}
-.t-links a:hover{background:rgba(0,0,0,.05)}
-.t-links a.on{background:rgba(0,0,0,.07);font-weight:600}
-.t-nav-ctas{display:flex;gap:8px;align-items:center;margin-left:auto}
-@media(max-width:760px){.t-links{display:none}.t-nav-ctas .t-btn-ghost{display:none}.t-nav-ctas{margin-left:auto}}
+/* Navigation — an intentional command bar, not a row of loose links. */
+.t-nav{--nav-progress:0;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:clamp(18px,3vw,42px);padding:0 clamp(18px,4vw,56px);height:68px;background:rgba(250,250,249,.84);backdrop-filter:blur(20px) saturate(1.2);transition:background .35s ease,box-shadow .35s ease,border-color .35s ease;border-bottom:1px solid rgba(21,21,21,.08);animation:t-nav-enter .65s cubic-bezier(.2,.7,.25,1) both}
+.t-nav::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:#151515;transform:scaleX(var(--nav-progress));transform-origin:left;transition:transform .1s linear}
+.t-nav.scrolled{background:rgba(255,255,255,.96);box-shadow:0 10px 30px -22px rgba(0,0,0,.34)}
+@keyframes t-nav-enter{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.t-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#151515;min-width:max-content;transition:opacity .2s ease}
+.t-logo:hover{opacity:.7}
+.t-logo img{width:26px;height:26px;transition:transform .45s cubic-bezier(.2,.7,.25,1)}
+.t-logo:hover img{transform:rotate(-10deg) scale(1.08)}
+.t-logo-label{display:grid;gap:2px}
+.t-logo strong{font-size:12px;letter-spacing:.22em;font-weight:800;line-height:1}
+.t-logo small{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#767676;font-weight:700;line-height:1}
+.t-links{display:flex;gap:clamp(8px,1.4vw,22px);margin:0 auto}
+.t-links a{position:relative;color:#343434;text-decoration:none;font-size:13px;font-weight:600;padding:26px 0 24px;letter-spacing:.01em;transition:color .2s ease}
+.t-links a::after{content:"";position:absolute;left:0;right:0;bottom:17px;height:1.5px;background:#151515;transform:scaleX(0);transform-origin:right;transition:transform .3s cubic-bezier(.2,.7,.25,1)}
+.t-links a:hover,.t-links a.on{color:#151515}
+.t-links a:hover::after,.t-links a.on::after{transform:scaleX(1);transform-origin:left}
+.t-nav-ctas{display:flex;gap:18px;align-items:center;margin-left:auto}
+.t-nav-utility{color:#4b4b4b;text-decoration:none;font-size:12px;font-weight:600;white-space:nowrap;transition:color .2s ease}
+.t-nav-utility span{display:inline-block;margin-left:3px;transition:transform .25s cubic-bezier(.2,.7,.25,1)}
+.t-nav-utility:hover{color:#151515}.t-nav-utility:hover span{transform:translate(2px,-2px)}
+.t-nav .t-btn span{display:inline-block;margin-left:8px;font-size:17px;line-height:0;transition:transform .25s cubic-bezier(.2,.7,.25,1)}
+.t-nav .t-btn:hover span{transform:translateX(3px)}
+@media(max-width:760px){.t-nav{height:60px;padding:0 18px}.t-links,.t-nav-utility,.t-logo small{display:none}.t-nav-ctas{margin-left:auto;gap:0}.t-nav .t-btn{min-height:38px;padding:9px 14px;font-size:12px}}
 
 /* Buttons — Rivian pill style */
 .t-btn{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;min-width:160px;min-height:48px;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:500;letter-spacing:-.01em;text-decoration:none;border:none;cursor:pointer;transition:transform .25s cubic-bezier(.25,.1,.25,1),box-shadow .25s ease,background .25s ease}
@@ -54,7 +66,9 @@
 
 /* Hero — a low, left-anchored automotive poster composition. */
 .t-hero{position:relative;height:calc(100svh - 96px);min-height:560px;overflow:hidden;background:#0a0a0a}
-.t-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;animation:t-kenburns 30s ease-in-out infinite alternate}
+.t-hero-media{position:absolute;inset:0;overflow:hidden}
+.t-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.035);filter:saturate(.88) brightness(.92);transition:opacity 1.2s ease,transform 7s cubic-bezier(.2,.7,.25,1),filter 1.2s ease;will-change:opacity,transform}
+.t-hero-img.active{opacity:calc(1 - var(--par,0)*.55);transform:scale(1);filter:saturate(1) brightness(1);animation:t-kenburns 12s ease-in-out forwards}
 @keyframes t-kenburns{from{transform:scale(1)}to{transform:scale(1.05)}}
 @media (prefers-reduced-motion:reduce){.t-hero-img{animation:none}}
 .t-hero-scrim{position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,8,9,.86) 0%,rgba(7,8,9,.57) 36%,rgba(7,8,9,.16) 70%,rgba(7,8,9,.08) 100%),linear-gradient(0deg,rgba(7,8,9,.84) 0%,rgba(7,8,9,.12) 58%,rgba(7,8,9,.32) 100%);transition:background .7s ease}
@@ -66,20 +80,29 @@
 .t-hero-bottom{max-width:440px}
 .t-hero-bottom>p:first-child{font-size:17px;color:rgba(255,255,255,.86);margin:0;max-width:27em;font-weight:400;line-height:1.55;filter:drop-shadow(0 1px 8px rgba(0,0,0,.35))}
 /* Scroll-linked hero (beyond Rivian's static hero): image dims, copy lifts as you scroll away. */
-.t-hero-img{opacity:calc(1 - var(--par,0)*.55)}
 .t-hero-copy{transform:translateY(calc(var(--par,0)*-56px));opacity:calc(1 - var(--par,0)*1.35);will-change:transform,opacity;transition:transform .12s linear,opacity .12s linear}
 .t-hero .t-scroll{opacity:calc(1 - var(--par,0)*2)}
-/* Staggered hero entrance */
-.t-hero-title .t-eyebrow{transition-delay:.06s}
-.t-hero-title h1{transition-delay:.16s}
-.t-hero-bottom{transition-delay:.32s}
+/* The first viewport has its own visible entrance sequence. */
+.t-hero-reveal{opacity:1;transform:none}
+@media (prefers-reduced-motion:no-preference){
+  .t-hero-reveal{opacity:0;animation:t-hero-rise .9s cubic-bezier(.16,1,.3,1) forwards}
+  .t-hero-kicker{animation-delay:.18s}
+  .t-hero-headline{animation-delay:.32s}
+  .t-hero-bottom{animation-delay:.62s}
+}
+@keyframes t-hero-rise{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){
   .t-hero-copy{transform:none!important;opacity:1!important;transition:none!important}
   .t-hero-img{opacity:1!important}
-  .t-hero-title .t-eyebrow,.t-hero-title h1,.t-hero-bottom{transition-delay:0s}
+  .t-hero-reveal{animation:none!important;opacity:1!important;transform:none!important}
 }
 .t-hero-cta{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap;margin-top:28px}
 .t-hero-note{margin:22px 0 0!important;font-size:10px!important;font-weight:700!important;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.58)!important}
+.t-hero-frames{position:absolute;z-index:2;right:clamp(24px,5vw,72px);bottom:clamp(34px,6vh,72px);display:flex;gap:9px;align-items:center}
+.t-hero-frames::before{content:"PHOTO";font-size:9px;font-weight:700;letter-spacing:.18em;color:rgba(255,255,255,.55);margin-right:4px}
+.t-hero-frames button{width:26px;height:3px;padding:0;border:0;background:rgba(255,255,255,.38);cursor:pointer;transition:width .35s cubic-bezier(.2,.7,.25,1),background .25s ease;outline-offset:5px}
+.t-hero-frames button:hover{background:rgba(255,255,255,.75)}
+.t-hero-frames button.on{width:50px;background:#fff}
 .t-scroll{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:1;color:rgba(255,255,255,.6);font-size:18px;text-decoration:none;animation:t-bob 2.4s ease-in-out infinite;transition:color .2s ease,transform .2s ease}
 .t-scroll:hover{color:#fff;animation-play-state:paused;transform:translate(-50%,4px)}
 @keyframes t-bob{50%{transform:translate(-50%,6px)}}
@@ -91,6 +114,9 @@
   .t-hero-bottom>p:first-child{font-size:15px}
   .t-hero-cta{gap:8px;margin-top:22px}
   .t-hero-cta .t-btn{min-width:0;padding:13px 20px;font-size:14px}
+  .t-hero-frames{right:24px;bottom:22px}
+  .t-hero-frames::before{display:none}
+  .t-hero-frames button{width:18px}.t-hero-frames button.on{width:34px}
 }
 
 /* Vehicle selection — an editorial image rail rather than three repeated hero sections. */
@@ -104,11 +130,12 @@
 .t-panel{position:relative;height:min(68vw,720px);min-height:560px;display:grid;place-items:end center;overflow:hidden;background:#0a0a0a}
 .t-panel>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.78) saturate(.9);animation:t-kenburns 26s ease-in-out infinite alternate;transition:transform .8s cubic-bezier(.2,.7,.25,1),filter .6s ease}
 .t-panel-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,7,8,.32) 0%,rgba(6,7,8,.08) 28%,rgba(6,7,8,.18) 50%,rgba(6,7,8,.78) 78%,rgba(6,7,8,.94) 100%);transition:background .6s ease}
-.t-panel-copy{position:relative;z-index:1;text-align:center;color:#fff;padding:0 24px 64px;width:100%;transition:transform .45s cubic-bezier(.2,.7,.25,1)}
+.t-panel-copy{position:relative;z-index:1;display:grid;grid-template-rows:32px 58px 54px 54px 48px;row-gap:10px;align-items:center;justify-items:center;text-align:center;color:#fff;padding:0 24px 64px;width:100%;box-sizing:border-box;transition:transform .45s cubic-bezier(.2,.7,.25,1)}
+.t-panel-copy .t-pill{margin:0}
 .t-panel-copy h3{color:#fff;font-size:clamp(42px,4.7vw,66px);filter:drop-shadow(0 2px 16px rgba(0,0,0,.35));letter-spacing:-.05em}
-.t-panel-copy p{font-size:17px;color:rgba(255,255,255,.75);margin:8px 0 28px;font-weight:400}
+.t-panel-copy p{font-size:17px;color:rgba(255,255,255,.75);margin:0;font-weight:400;line-height:1.45;align-self:start}
 .t-panel-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.t-panel-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 28px}
+.t-panel-chips{display:flex;gap:8px;justify-content:center;align-content:start;flex-wrap:wrap;margin:0;min-height:34px}
 .t-panel-chips span{display:inline-flex;align-items:center;font-size:12px;font-weight:600;letter-spacing:.02em;color:#fff;background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:6px 14px}
 @media(hover:hover) and (pointer:fine){
   .t-panel:hover>img{transform:scale(1.055);filter:brightness(.68) saturate(1)}
@@ -116,13 +143,18 @@
   .t-panel:hover .t-panel-copy{transform:translateY(-10px)}
   .t-panel:hover .t-pill{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.42)}
 }
+@media (min-width:801px) and (max-width:1050px){
+  .t-panel-copy{padding-left:18px;padding-right:18px}
+  .t-panel-cta{gap:8px}
+  .t-panel-cta .t-btn{min-width:100px;padding:10px 12px;font-size:13px}
+}
 @media(max-width:800px){
   .t-hero{height:calc(100svh - 108px);min-height:540px}
   .t-models-heading{padding:80px 24px 44px;grid-template-columns:1fr;gap:18px}
   .t-models-heading .t-kicker{grid-column:auto}
   .t-models-grid{grid-template-columns:1fr;gap:2px}
   .t-panel{height:76svh;min-height:520px}
-  .t-panel-copy{padding-bottom:48px}
+  .t-panel-copy{grid-template-rows:32px 56px 54px 58px 48px;padding-bottom:48px}
 }
 
 /* Fit strip */
@@ -150,8 +182,18 @@
 .t-verdict.idle{color:#5c5e62}
 .t-fit-field{display:grid;gap:10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#5c5e62}
 .t-fit-input{display:flex;align-items:center;gap:10px}
-.t-fit-input input{width:120px;font-size:32px;font-weight:500;color:#151515;background:#f4f4f5;border:1px solid transparent;border-radius:999px;padding:12px 20px;transition:border-color .2s}
+.t-fit-input input{width:96px;font-size:24px;font-weight:500;color:#151515;background:#f4f4f5;border:1px solid transparent;border-radius:999px;padding:10px 16px;transition:border-color .2s}
 .t-fit-input input:focus{outline:none;border-color:#151515}
+.t-matches{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;width:min(920px,100%)}
+@media(max-width:800px){.t-matches{grid-template-columns:repeat(2,minmax(0,1fr))}.t-match:last-child:nth-child(odd){grid-column:1/-1}}
+.t-match{display:grid;gap:8px;text-decoration:none;color:inherit;background:#fafafa;border:1px solid #ebebeb;border-radius:12px;overflow:hidden;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;text-align:left}
+.t-match:hover{transform:translateY(-2px);box-shadow:0 10px 28px -12px rgba(0,0,0,.25);border-color:#d8d8d8}
+.t-match img{display:block;width:100%;height:88px;object-fit:cover;background:#eee}
+.t-match span{display:grid;gap:2px;padding:0 12px 12px}
+.t-match b{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.t-match em{font-style:normal;font-size:12px;color:#0b7a5c;font-weight:600}
+.t-near{font-size:14px;color:#5c5e62;margin:0}
+.t-near::before{content:"◐ ";color:#b07908}
 .t-fit-input em{font-style:normal;font-size:15px;color:#5c5e62;font-weight:400;text-transform:none;letter-spacing:0}
 .t-fit-presets{display:flex;gap:8px}
 .t-fit-presets button{min-height:44px;min-width:56px;border-radius:8px;border:1px solid #d0d1d2;background:#fff;color:#393c41;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s ease}
@@ -166,6 +208,33 @@
 .t-stats b{display:block;font-size:clamp(40px,5.5vw,64px);font-weight:500;letter-spacing:-.04em}
 .t-stats span{color:#5c5e62;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500}
 @media(max-width:700px){.t-stats-in{grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 8px}}
+
+/* Decision story — a single editorial pause between proof and product depth. */
+.t-decision{background:#161817;color:#fff;overflow:hidden}
+.t-decision-inner{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(360px,.96fr);min-height:760px}
+.t-decision-media{position:relative;overflow:hidden;min-height:620px}
+.t-decision-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.72) saturate(.86);transition:transform 1.1s cubic-bezier(.2,.7,.25,1),filter .7s ease}
+.t-decision-scrim{position:absolute;inset:0;background:linear-gradient(0deg,rgba(5,6,6,.84),rgba(5,6,6,.02) 70%),linear-gradient(90deg,rgba(5,6,6,.18),transparent 65%);transition:opacity .6s ease}
+.t-decision-media p{position:absolute;z-index:1;left:clamp(24px,5vw,72px);bottom:clamp(28px,5vw,64px);margin:0;font-size:clamp(18px,2.1vw,26px);font-family:var(--disp);letter-spacing:-.03em}
+.t-decision-media p span{display:block;margin-bottom:12px;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.2em;color:rgba(255,255,255,.62)}
+.t-decision-copy{display:flex;flex-direction:column;justify-content:center;padding:clamp(72px,10vw,156px) clamp(28px,8vw,128px);max-width:640px;box-sizing:border-box}
+.t-decision .t-kicker{color:rgba(255,255,255,.55)}
+.t-decision h2{color:#fff;max-width:9em;margin-bottom:24px}
+.t-decision-lede{margin:0;color:rgba(255,255,255,.72);font-size:16px;line-height:1.65;max-width:29em}
+.t-decision-list{display:grid;gap:0;margin:44px 0 32px;padding:0;list-style:none;border-top:1px solid rgba(255,255,255,.2)}
+.t-decision-list li{display:grid;grid-template-columns:42px 1fr;gap:12px;padding:17px 0;border-bottom:1px solid rgba(255,255,255,.16);font-size:14px;line-height:1.45;color:rgba(255,255,255,.72)}
+.t-decision-list b{font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.52);padding-top:3px}
+.t-decision-list strong{display:block;color:#fff;font-size:15px;font-weight:600;margin-bottom:3px}
+.t-decision .t-arrow-link{align-self:flex-start}
+@media(hover:hover) and (pointer:fine){
+  .t-decision-inner:hover .t-decision-media img{transform:scale(1.055);filter:brightness(.62) saturate(1)}
+  .t-decision-inner:hover .t-decision-scrim{opacity:.82}
+}
+@media(max-width:800px){
+  .t-decision-inner{grid-template-columns:1fr;min-height:0}
+  .t-decision-media{min-height:64svh}
+  .t-decision-copy{padding:72px 24px 80px}
+}
 
 /* (Legacy alternating feature rows replaced by .t-editorial — Rivian 3-column) */
 
