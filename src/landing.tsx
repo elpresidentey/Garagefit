@@ -292,6 +292,53 @@ const FEATURES = [
 
 const STEPS = ['Set your baseline', 'Measure your garage', 'Filter & compare', 'Decide with numbers'];
 
+/** Rotating stories for the "Built for the real world" panel — same cadence as the hero. */
+const DECISION_FRAMES = [
+  { src: 'vehicles/honda-pilot-2024.jpg', alt: 'Honda Pilot parked outdoors', n: '01', cap: 'The decision starts at home.' },
+  { src: 'vehicles/toyota-prius-2024.jpg', alt: 'Toyota Prius hybrid on the road', n: '02', cap: 'Know what it really costs.' },
+  { src: 'vehicles/hyundai-ioniq-5-2024.jpg', alt: 'Hyundai Ioniq 5 electric SUV', n: '03', cap: 'Go electric with confidence.' },
+];
+
+function DecisionMedia() {
+  const [frame, setFrame] = useState(0);
+  const [live, setLive] = useState(true);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(([e]) => setLive(e.isIntersecting), { threshold: 0.12 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!live || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = window.setInterval(() => setFrame((f) => (f + 1) % DECISION_FRAMES.length), 6200);
+    return () => window.clearInterval(t);
+  }, [live]);
+  return (
+    <div className="t-decision-media rv" ref={ref}>
+      {DECISION_FRAMES.map((f, i) => (
+        <figure className={`t-decision-slide ${frame === i ? 'active' : ''}`} key={f.src} aria-hidden={frame !== i}>
+          <img src={f.src} alt={f.alt} loading="lazy" />
+          <div className="t-decision-scrim" aria-hidden="true" />
+          <figcaption><span>{f.n}</span> {f.cap}</figcaption>
+        </figure>
+      ))}
+      <div className="t-decision-frames" role="group" aria-label="Choose story">
+        {DECISION_FRAMES.map((f, i) => (
+          <button
+            key={f.src} type="button"
+            className={frame === i ? 'on' : ''}
+            onClick={() => setFrame(i)}
+            aria-label={`Show story ${f.n}: ${f.cap}`}
+            aria-pressed={frame === i}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const FAQS = [
   {
     q: 'Is GarageFit free?',
@@ -486,11 +533,7 @@ export default function Landing() {
 
         <section className="t-decision" aria-label="A better way to choose a car">
           <div className="t-decision-inner">
-            <div className="t-decision-media rv">
-              <img src="vehicles/honda-pilot-2024.jpg" alt="Honda Pilot parked outdoors" loading="lazy" />
-              <div className="t-decision-scrim" aria-hidden="true" />
-              <p><span>01</span> The decision starts at home.</p>
-            </div>
+            <DecisionMedia />
             <div className="t-decision-copy rv">
               <p className="t-kicker">Built for the real world</p>
               <h2>Choose for the life you have.</h2>
