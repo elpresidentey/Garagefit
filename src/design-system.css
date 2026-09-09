@@ -181,7 +181,7 @@
   height: 20px;
   padding: 0 6px;
   border-radius: var(--ds-r-pill);
-  background: var(--navy, #1e3a8a);
+  background: var(--navy, #0a0a0a);
   color: #fff;
   font-size: var(--ds-fs-11);
   font-weight: var(--ds-fw-xbold);
