@@ -399,6 +399,7 @@ export default function Landing() {
                 alt={frame.alt}
                 style={{ objectPosition: frame.position }}
                 aria-hidden={heroFrame !== index}
+                loading={index === 0 ? 'eager' : 'lazy'}
                 fetchPriority={index === 0 ? 'high' : 'auto'}
                 key={frame.src}
               />
