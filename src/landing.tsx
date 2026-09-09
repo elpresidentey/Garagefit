@@ -416,16 +416,25 @@ export default function Landing() {
   useReveal();
   useScrollSpy();
   const [heroFrame, setHeroFrame] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
   const years = VEHICLES.map((v) => v.year);
   const lo = Math.min(...years), hi = Math.max(...years);
   const evs = VEHICLES.filter((v) => v.fuel === 'EV').length;
   const gw = 88;
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const timer = window.setInterval(() => setHeroFrame((frame) => (frame + 1) % HERO_FRAMES.length), 6200);
-    return () => window.clearInterval(timer);
+    const onVis = () => setHeroPaused(document.hidden);
+    document.addEventListener('visibilitychange', onVis);
+    onVis();
+    return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
+
+  useEffect(() => {
+    if (heroPaused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // HERO_DWELL: each frame stays a full 8s so the headline can be read; matches t-dotfill.
+    const timer = window.setInterval(() => setHeroFrame((frame) => (frame + 1) % HERO_FRAMES.length), 8000);
+    return () => window.clearInterval(timer);
+  }, [heroPaused]);
 
   return (
     <div className="lp t">
@@ -449,7 +458,12 @@ export default function Landing() {
       </header>
 
       <main id="top">
-        <section className="t-hero" aria-label="GarageFit introduction">
+        <section
+          className="t-hero"
+          aria-label="GarageFit introduction"
+          onMouseEnter={() => setHeroPaused(true)}
+          onMouseLeave={() => setHeroPaused(document.hidden)}
+        >
           <div className="t-hero-media" aria-live="polite">
             {HERO_FRAMES.map((frame, index) => (
               <img

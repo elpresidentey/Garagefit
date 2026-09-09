@@ -100,15 +100,20 @@
   .t-hero-copy{transform:none!important;opacity:1!important;transition:none!important}
   .t-hero-img{opacity:0!important;transition:none!important;animation:none!important}
   .t-hero-img.active{opacity:1!important}
+  .t-hero-frames button.on::before{animation:none!important;width:calc(100% - 8px)}
   .t-hero-reveal{animation:none!important;opacity:1!important;transform:none!important}
 }
 .t-hero-cta{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap;margin-top:28px}
 .t-hero-note{margin:22px 0 0!important;font-size:10px!important;font-weight:700!important;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.58)!important}
 .t-hero-frames{position:absolute;z-index:2;right:clamp(24px,5vw,72px);bottom:clamp(34px,6vh,72px);display:flex;gap:9px;align-items:center}
 .t-hero-frames::before{content:"PHOTO";font-size:9px;font-weight:700;letter-spacing:.18em;color:rgba(255,255,255,.55);margin-right:4px}
-.t-hero-frames button{width:26px;height:3px;padding:16px 4px;border:0;background:rgba(255,255,255,.38);background-clip:content-box;cursor:pointer;transition:width .35s cubic-bezier(.2,.7,.25,1),background-color .25s ease;outline-offset:5px}
-.t-hero-frames button:hover{background-color:rgba(255,255,255,.75)}
-.t-hero-frames button.on{width:50px;background-color:#fff}
+.t-hero-frames button{position:relative;width:36px;height:35px;padding:0;border:0;background:none;cursor:pointer;outline-offset:5px}
+.t-hero-frames button::after{content:"";position:absolute;left:4px;right:4px;top:50%;height:3px;transform:translateY(-50%);background:rgba(255,255,255,.38);border-radius:8px;transition:background-color .25s ease}
+.t-hero-frames button:hover::after{background:rgba(255,255,255,.75)}
+/* Progress fill on the live dot — 8s matches HERO_DWELL; restarts as .on moves. */
+.t-hero-frames button.on::before{content:"";position:absolute;left:4px;top:50%;height:3px;transform:translateY(-50%);background:#fff;border-radius:8px;z-index:1;animation:t-dotfill 8s linear forwards}
+@keyframes t-dotfill{from{width:0}to{width:calc(100% - 8px)}}
+.t-hero:hover .t-hero-frames button.on::before{animation-play-state:paused}
 .t-scroll{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:1;color:rgba(255,255,255,.6);font-size:18px;text-decoration:none;animation:t-bob 2.4s ease-in-out infinite;transition:color .2s ease,transform .2s ease}
 .t-scroll:hover{color:#fff;animation-play-state:paused;transform:translate(-50%,4px)}
 @keyframes t-bob{50%{transform:translate(-50%,6px)}}
@@ -122,7 +127,6 @@
   .t-hero-cta .t-btn{min-width:0;padding:13px 20px;font-size:14px}
   .t-hero-frames{right:24px;bottom:22px}
   .t-hero-frames::before{display:none}
-  .t-hero-frames button{width:18px}.t-hero-frames button.on{width:34px}
 }
 
 /* Vehicle selection — an editorial image rail rather than three repeated hero sections. */
