@@ -30,9 +30,11 @@ function useReveal() {
       els.forEach((e) => e.classList.add('vis'));
       return;
     }
+    // Two-way reveal: elements animate in whether you scroll down to them or
+    // back up to them — leaving the viewport resets them so they replay.
     const io = new IntersectionObserver(
-      (es) => es.forEach((e) => e.isIntersecting && e.target.classList.add('vis')),
-      { threshold: 0.1 }
+      (es) => es.forEach((e) => e.target.classList.toggle('vis', e.isIntersecting)),
+      { threshold: 0.12, rootMargin: '0px 0px -6% 0px' }
     );
     els.forEach((e) => io.observe(e));
     const nav = document.querySelector<HTMLElement>('.t-nav');
