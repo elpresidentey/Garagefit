@@ -31,10 +31,11 @@ function useReveal() {
       return;
     }
     // Two-way reveal: elements animate in whether you scroll down to them or
-    // back up to them — leaving the viewport resets them so they replay.
+    // back up to them. Threshold 0 so fast momentum flings (which can jump a
+    // whole section between observer frames) can never leave one stuck blank.
     const io = new IntersectionObserver(
       (es) => es.forEach((e) => e.target.classList.toggle('vis', e.isIntersecting)),
-      { threshold: 0.12, rootMargin: '0px 0px -6% 0px' }
+      { threshold: 0, rootMargin: '0px 0px -8% 0px' }
     );
     els.forEach((e) => io.observe(e));
     const nav = document.querySelector<HTMLElement>('.t-nav');
@@ -48,6 +49,14 @@ function useReveal() {
         const p = Math.max(0, Math.min(1, window.scrollY / (hero.offsetHeight * 0.7)));
         hero.style.setProperty('--par', p.toFixed(4));
       }
+      // Fail-safe: content the user has already scrolled past must never sit
+      // at opacity 0 when they come back for it (mobile flings skip frames).
+      const hideLine = -24;
+      els.forEach((el) => {
+        if (!el.classList.contains('vis') && el.getBoundingClientRect().bottom < hideLine) {
+          el.classList.add('vis');
+        }
+      });
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });

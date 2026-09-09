@@ -559,6 +559,7 @@ export default function App() {
           </nav>
           <div className="top-actions">
             {offline && <span className="pill warn">offline — cached</span>}
+            <a className="home-link" href="#/" aria-label="Back to the landing page" onClick={() => { if (location.search) history.replaceState(null, '', location.pathname + '#/'); }}>Home</a>
             <div className="searchbox"><label className="sr-only" htmlFor="gf-search">Search make, model, or trim</label><input id="gf-search" value={f.q} onChange={(e) => patch({ q: e.target.value })} type="search" placeholder="Search make, model, trim…" /></div>
             <button className="btn ghost icon-btn" onClick={() => setDark((d) => !d)} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} aria-pressed={dark} title={dark ? 'Light mode' : 'Dark mode'}>
               {dark ? (
