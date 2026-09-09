@@ -323,7 +323,8 @@ function DecisionMedia() {
     return () => io.disconnect();
   }, []);
   useEffect(() => {
-    if (!live || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!live) return;
+    // Same as hero: instant cuts under reduced motion, crossfade otherwise.
     const t = window.setInterval(() => setFrame((f) => (f + 1) % DECISION_FRAMES.length), 6200);
     return () => window.clearInterval(t);
   }, [live]);
@@ -430,7 +431,9 @@ export default function Landing() {
   }, []);
 
   useEffect(() => {
-    if (heroPaused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (heroPaused) return;
+    // Rotates for everyone: motion-safe users get the crossfade, reduced-motion
+    // users get instant cuts (all transitions are disabled for them in CSS).
     // HERO_DWELL: each frame stays a full 8s so the headline can be read; matches t-dotfill.
     const timer = window.setInterval(() => setHeroFrame((frame) => (frame + 1) % HERO_FRAMES.length), 8000);
     return () => window.clearInterval(timer);
