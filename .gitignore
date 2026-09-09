@@ -10,3 +10,8 @@ image-*.log
 Thumbs.db
 
 .vercel
+.vscode/
+dev-server.log
+*-run.log
+nhtsa-report.json
+image-*.json

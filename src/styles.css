@@ -72,7 +72,8 @@ body{
 }
 ::selection{background:color-mix(in srgb,var(--gold) 32%,transparent)}
 /* Smooth theme cross-fade (disabled for reduced motion). */
-body,.topbar,.stickybar,.card,.filters,.tablewrap,.sheet,.dpage-bar,.searchbox,.btn,.preset,.foot{transition:background-color .25s ease,border-color .25s ease,box-shadow .25s ease}
+*{will-change:auto}
+body,.topbar,.stickybar,.card,.filters,.tablewrap,.sheet,.dpage-bar,.searchbox,.btn,.preset,.foot{transition:background-color .3s cubic-bezier(.22,.68,.22,.99),border-color .3s cubic-bezier(.22,.68,.22,.99),box-shadow .3s cubic-bezier(.22,.68,.22,.99)}
 @media (prefers-reduced-motion:reduce){body,.topbar,.stickybar,.card,.filters,.tablewrap,.sheet,.dpage-bar,.searchbox,.btn,.preset,.foot{transition:none}}
 *{scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 ::-webkit-scrollbar{width:10px;height:10px}
@@ -153,7 +154,9 @@ select:focus-visible,input[type=number]:focus-visible{outline:none;border-color:
 /* ---------- baseline banner (flat status tint) ---------- */
 .baseline{position:relative;margin:24px 0;border-radius:20px;padding:22px 24px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;
   color:var(--ink);background:color-mix(in srgb,var(--goldsoft) 55%,var(--card));
-  border:1px solid var(--line2);box-shadow:var(--shadow)}
+  border:1px solid var(--line2);box-shadow:var(--shadow);
+  animation:slide-up .5s cubic-bezier(.22,.68,.22,.99) backwards}
+@keyframes slide-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 .baseline .b-car{position:relative;width:112px;height:112px;border-radius:16px;display:grid;place-items:center;font-size:56px;flex:none;overflow:hidden;
   color:var(--ink);background:var(--card);border:1px solid var(--line2);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
 [data-theme=dark] .baseline .b-car{box-shadow:none}
@@ -176,7 +179,9 @@ select:focus-visible,input[type=number]:focus-visible{outline:none;border-color:
 
 /* ---------- sticky filter bar ---------- */
 .stickybar{position:sticky;top:70px;z-index:20;margin:0 0 14px;padding:10px 12px;border:1px solid var(--line2);border-radius:var(--ds-r-lg,16px);
-  background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);box-shadow:var(--shadow)}
+  background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);box-shadow:var(--shadow);
+  animation:fade-in .4s cubic-bezier(.22,.68,.22,.99) backwards}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
 .toolbar{display:flex;gap:8px 12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:8px;min-height:40px}
 .toolbar .btn{display:inline-flex;align-items:center;gap:8px}
 .presets{display:flex;gap:8px;overflow:auto;padding:0 2px 8px;scrollbar-width:thin}
@@ -213,7 +218,9 @@ input[type=checkbox],input[type=radio]{accent-color:var(--accent)}
 .checks label:has(input:checked){border-color:var(--accent);background:var(--goldsoft);color:var(--gold)}
 .f-actions{margin-top:12px;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;min-height:44px}
 .count{display:inline-flex;align-items:center;gap:8px;margin:14px 2px 12px;color:var(--muted);font-size:12.5px;font-weight:600;
-  background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 13px;box-shadow:var(--shadow)}
+  background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 13px;box-shadow:var(--shadow);
+  animation:pop-in .4s cubic-bezier(.22,.68,.22,.99) backwards}
+@keyframes pop-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 .count strong{color:var(--ink);font-variant-numeric:tabular-nums}
 .count::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--goodfill);box-shadow:0 0 0 3px var(--goodbg)}
 
@@ -221,17 +228,17 @@ input[type=checkbox],input[type=radio]{accent-color:var(--accent)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:16px;align-items:start}
 .grid-lean{grid-template-columns:repeat(auto-fill,minmax(264px,1fr));align-items:start}
 .card{position:relative;height:474px;border-radius:var(--r);overflow:hidden;background:#0a0a0a;box-shadow:var(--shadow);border:1px solid rgba(20,20,18,.10);
-  animation:rise .45s cubic-bezier(.2,.7,.3,1) backwards;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;display:flex;flex-direction:column}
+  animation:rise .6s cubic-bezier(.22,.68,.22,.99) backwards;transition:transform .3s cubic-bezier(.22,.68,.22,.99),box-shadow .3s cubic-bezier(.22,.68,.22,.99),border-color .3s cubic-bezier(.22,.68,.22,.99);display:flex;flex-direction:column}
 .card-lean{height:412px;border-radius:20px;display:flex;flex-direction:column}
 /* Cards stay cinematic in both modes; in dark they need a hairline + dimmed photos to separate from the bg. */
 [data-theme=dark] .card{border:1px solid rgba(255,255,255,.10)}
 [data-theme=dark] .car-photo.ld{filter:brightness(.9) saturate(.96)}
 [data-theme=dark] .card:hover .car-photo.ld{filter:brightness(.94) saturate(1)}
-.card:hover{transform:translateY(-3px);box-shadow:var(--lift)}
+.card:hover{transform:translateY(-4px);box-shadow:var(--lift)}
 .card:focus-visible{outline-offset:-3px}
 .card-click{cursor:pointer}
 .row-click{cursor:pointer}
-@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.99)}}
+@keyframes rise{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:none}}
 .carimg{position:absolute;inset:0;padding-bottom:26%;display:grid;place-items:center;overflow:hidden;background:#0a0a0a}
 .carimg.fuel-EV{background:#1e3a5f}
 .carimg.fuel-Hybrid{background:#134e4a}
@@ -330,12 +337,12 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
   max-width:calc(100vw - 32px);
   animation:slide-up .4s cubic-bezier(.22,.68,.22,.99);
 }
-@keyframes slide-up{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes slide-up{from{opacity:0;transform:translate(-50%,40px)}to{opacity:1;transform:translate(-50%,0)}}
 .installbar svg{
   flex-shrink:0;
-  animation:bounce-down 2s ease-in-out infinite;
+  animation:float 3s ease-in-out infinite;
 }
-@keyframes bounce-down{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .installbar span{
   font-weight:600;
   letter-spacing:-.01em;
@@ -346,7 +353,31 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
 }
 .updatebar{position:sticky;top:0;z-index:60;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;background:var(--navy,#0a0a0a);color:#fff;padding:10px 16px;font-size:14px}
 .updatebar .btn{padding:6px 14px}
-.tray{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0a0a0a,#1a1a1a);color:#f6f1e4;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:10px 12px 10px 20px;display:flex;gap:10px;align-items:center;z-index:40;box-shadow:0 8px 32px -8px rgba(0,0,0,.6),0 20px 50px -12px rgba(0,0,0,.4);max-width:94vw;overflow:auto;backdrop-filter:blur(12px)}
+.tray{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(135deg,#0a0a0a,#1a1a1a);
+  color:#f6f1e4;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:16px;
+  padding:10px 12px 10px 20px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  z-index:40;
+  box-shadow:0 8px 32px -8px rgba(0,0,0,.6),0 20px 50px -12px rgba(0,0,0,.4);
+  max-width:94vw;
+  overflow:auto;
+  backdrop-filter:blur(12px);
+  animation:slide-up-bounce .5s cubic-bezier(.22,.68,.22,.99) backwards;
+}
+@keyframes slide-up-bounce{
+  0%{opacity:0;transform:translate(-50%,40px)}
+  70%{transform:translate(-50%,-4px)}
+  100%{opacity:1;transform:translate(-50%,0)}
+}
 .tray button{border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#f6f1e4;padding:8px 15px;cursor:pointer;font-weight:700;transition:all .25s cubic-bezier(.22,.68,.22,.99);backdrop-filter:blur(8px)}
 .tray button:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.4);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .tray .go{background:#0a0a0a;color:#fff;border:1px solid #0a0a0a;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.1)}
@@ -404,8 +435,8 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
 .cmp-photo{width:132px;height:76px;object-fit:cover;border-radius:10px;display:block;margin-bottom:8px;background:var(--chip);box-shadow:0 2px 8px rgba(0,0,0,.08);transition:transform .3s cubic-bezier(.22,.68,.22,.99),box-shadow .3s ease}
 .cmp-photo:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
 .credit{font-size:12px;color:var(--muted);margin:10px 0 0}
-.toast{position:fixed;bottom:82px;right:22px;background:color-mix(in srgb,var(--ink) 94%,transparent);color:var(--bg);padding:12px 18px;border-radius:14px;opacity:0;transition:.3s;z-index:60;box-shadow:var(--lift);font-weight:600}
-.toast.show{opacity:1;transform:translateY(-4px)}
+.toast{position:fixed;bottom:82px;right:22px;background:color-mix(in srgb,var(--ink) 94%,transparent);color:var(--bg);padding:12px 18px;border-radius:14px;opacity:0;transition:all .3s cubic-bezier(.22,.68,.22,.99);z-index:60;box-shadow:var(--lift);font-weight:600}
+.toast.show{opacity:1;transform:translateY(-8px)}
 .totop{position:fixed;right:22px;bottom:22px;z-index:45;width:46px;height:46px;border-radius:8px;border:1px solid var(--line2);background:var(--card);color:var(--ink);
   display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--lift);opacity:0;transform:translateY(16px) scale(.9);pointer-events:none;transition:opacity .25s,transform .25s,border-color .12s,color .12s}
 .totop.show{opacity:1;transform:none;pointer-events:auto}
