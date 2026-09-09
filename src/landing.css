@@ -20,7 +20,7 @@
 @media (prefers-reduced-motion:no-preference){.gf-smooth{scroll-behavior:smooth}}
 
 /* Navigation — an intentional command bar, not a row of loose links. */
-.t-nav{--nav-progress:0;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:clamp(18px,3vw,42px);padding:0 clamp(18px,4vw,56px);height:68px;background:rgba(250,250,249,.84);backdrop-filter:blur(20px) saturate(1.2);transition:background .35s ease,box-shadow .35s ease,border-color .35s ease;border-bottom:1px solid rgba(21,21,21,.08);animation:t-nav-enter .65s cubic-bezier(.2,.7,.25,1) both}
+.t-nav{--nav-progress:0;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:clamp(18px,3vw,42px);padding:0 clamp(18px,4vw,56px);height:68px;background:rgba(250,250,249,.84);backdrop-filter:blur(12px);transition:background .35s ease,box-shadow .35s ease,border-color .35s ease;border-bottom:1px solid rgba(21,21,21,.08);animation:t-nav-enter .65s cubic-bezier(.2,.7,.25,1) both}
 .t-nav::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:#151515;transform:scaleX(var(--nav-progress));transform-origin:left;transition:transform .1s linear}
 .t-nav.scrolled{background:rgba(255,255,255,.96);box-shadow:0 10px 30px -22px rgba(0,0,0,.34)}
 @keyframes t-nav-enter{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
@@ -67,7 +67,7 @@
 /* Hero — a low, left-anchored automotive poster composition. */
 .t-hero{position:relative;height:calc(100svh - 96px);min-height:560px;overflow:hidden;background:#0a0a0a}
 .t-hero-media{position:absolute;inset:0;overflow:hidden}
-.t-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.035);filter:saturate(.88) brightness(.92);transition:opacity 1.2s ease,transform 7s cubic-bezier(.2,.7,.25,1),filter 1.2s ease;will-change:opacity,transform}
+.t-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.05);filter:saturate(.88) brightness(.92);transition:opacity .8s ease;will-change:opacity,transform}
 .t-hero-img.active{opacity:calc(1 - var(--par,0)*.55);transform:scale(1);filter:saturate(1) brightness(1);animation:t-kenburns 12s ease-in-out forwards}
 @keyframes t-kenburns{from{transform:scale(1)}to{transform:scale(1.05)}}
 @media (prefers-reduced-motion:reduce){.t-hero-img{animation:none}}
@@ -100,7 +100,7 @@
   .t-hero-copy{transform:none!important;opacity:1!important;transition:none!important}
   .t-hero-img{opacity:0!important;transition:none!important;animation:none!important}
   .t-hero-img.active{opacity:1!important}
-  .t-hero-frames button.on::before{animation:none!important;width:calc(100% - 8px)}
+  .t-hero-frames button.on::before{animation:none!important;transform:translateY(-50%) scaleX(1)}
   .t-hero-reveal{animation:none!important;opacity:1!important;transform:none!important}
 }
 .t-hero-cta{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap;margin-top:28px}
@@ -111,8 +111,8 @@
 .t-hero-frames button::after{content:"";position:absolute;left:4px;right:4px;top:50%;height:3px;transform:translateY(-50%);background:rgba(255,255,255,.38);border-radius:8px;transition:background-color .25s ease}
 .t-hero-frames button:hover::after{background:rgba(255,255,255,.75)}
 /* Progress fill on the live dot — 8s matches HERO_DWELL; restarts as .on moves. */
-.t-hero-frames button.on::before{content:"";position:absolute;left:4px;top:50%;height:3px;transform:translateY(-50%);background:#fff;border-radius:8px;z-index:1;animation:t-dotfill 8s linear forwards}
-@keyframes t-dotfill{from{width:0}to{width:calc(100% - 8px)}}
+.t-hero-frames button.on::before{content:"";position:absolute;left:4px;top:50%;width:calc(100% - 8px);height:3px;transform:translateY(-50%) scaleX(0);transform-origin:left center;background:#fff;border-radius:8px;z-index:1;animation:t-dotfill 8s linear forwards}
+@keyframes t-dotfill{from{transform:translateY(-50%) scaleX(0)}to{transform:translateY(-50%) scaleX(1)}}
 .t-hero:hover .t-hero-frames button.on::before{animation-play-state:paused}
 .t-scroll{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:1;color:rgba(255,255,255,.6);font-size:18px;text-decoration:none;animation:t-bob 2.4s ease-in-out infinite;transition:color .2s ease,transform .2s ease}
 .t-scroll:hover{color:#fff;animation-play-state:paused;transform:translate(-50%,4px)}
@@ -223,9 +223,9 @@
 .t-decision{background:#161817;color:#fff;overflow:hidden}
 .t-decision-inner{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(360px,.96fr);min-height:760px}
 .t-decision-media{position:relative;overflow:hidden;min-height:620px}
-.t-decision-slide{position:absolute;inset:0;margin:0;opacity:0;transition:opacity 1.2s ease}
+.t-decision-slide{position:absolute;inset:0;margin:0;opacity:0;transition:opacity 1s ease}
 .t-decision-slide.active{opacity:1;z-index:1}
-.t-decision-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.72) saturate(.86);transform:scale(1.04);transition:transform 7s cubic-bezier(.2,.7,.25,1),filter .7s ease}
+.t-decision-slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.72) saturate(.86);transform:scale(1.04);transition:transform 7s cubic-bezier(.2,.7,.25,1)}
 .t-decision-slide.active img{transform:scale(1);filter:brightness(.78) saturate(1)}
 .t-decision-scrim{position:absolute;inset:0;background:linear-gradient(0deg,rgba(5,6,6,.84),rgba(5,6,6,.02) 70%),linear-gradient(90deg,rgba(5,6,6,.18),transparent 65%);transition:opacity .6s ease}
 .t-decision-slide figcaption{position:absolute;z-index:1;left:clamp(24px,5vw,72px);bottom:clamp(28px,5vw,64px);margin:0;font-size:clamp(18px,2.1vw,26px);font-family:var(--disp);letter-spacing:-.03em}
