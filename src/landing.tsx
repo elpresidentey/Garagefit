@@ -17,7 +17,15 @@ function useReveal() {
     );
     els.forEach((e) => io.observe(e));
     const nav = document.querySelector('.t-nav');
-    const onScroll = () => nav?.classList.toggle('scrolled', window.scrollY > 24);
+    const hero = document.querySelector<HTMLElement>('.t-hero');
+    const onScroll = () => {
+      nav?.classList.toggle('scrolled', window.scrollY > 24);
+      // Scroll-linked hero: copy drifts up and dims as the hero scrolls away.
+      if (hero) {
+        const p = Math.max(0, Math.min(1, window.scrollY / (hero.offsetHeight * 0.7)));
+        hero.style.setProperty('--par', p.toFixed(4));
+      }
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     const root = document.documentElement;
@@ -27,6 +35,34 @@ function useReveal() {
       window.removeEventListener('scroll', onScroll);
       root.classList.remove('gf-smooth');
     };
+  }, []);
+}
+
+/** Scrollspy: light up the nav pill for the section currently in view. */
+function useScrollSpy() {
+  useEffect(() => {
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('.t-links a')];
+    if (!links.length || !('IntersectionObserver' in window)) return;
+    const byId = new Map<string, HTMLAnchorElement>();
+    links.forEach((l) => {
+      const id = l.getAttribute('href')?.replace('#', '');
+      if (id) byId.set(id, l);
+    });
+    const io = new IntersectionObserver(
+      (es) => {
+        es.forEach((e) => {
+          if (!e.isIntersecting) return;
+          links.forEach((l) => l.classList.remove('on'));
+          byId.get(e.target.id)?.classList.add('on');
+        });
+      },
+      { rootMargin: '-35% 0px -55% 0px' }
+    );
+    byId.forEach((_, id) => {
+      const sec = document.getElementById(id);
+      if (sec) io.observe(sec);
+    });
+    return () => io.disconnect();
   }, []);
 }
 
@@ -57,30 +93,61 @@ function Count({ to, suffix = '' }: { to: number; suffix?: string }) {
   return <span ref={ref}>{n.toLocaleString()}{suffix}</span>;
 }
 
-/** One-line fit checker: type a width, get a count. */
+/** One-line fit checker: type a width, get a live gauge + per-car verdicts. */
 function FitStrip() {
   const [gw, setGw] = useState(88);
   const n = VEHICLES.filter((v) => v.widthExtended <= (gw || 0)).length;
+  const gaugeCars = LINEUP.map((c) => VEHICLES.find((v) => v.id === c.id)!).filter(Boolean);
+  const scaleLo = gaugeCars.length ? Math.min(...gaugeCars.map((c) => c.widthExtended)) - 8 : 60;
+  const scaleHi = gaugeCars.length ? Math.max(...gaugeCars.map((c) => c.widthExtended)) + 8 : 100;
+  const pct = (x: number) => Math.max(0, Math.min(100, ((x - scaleLo) / (scaleHi - scaleLo)) * 100));
   return (
     <div className="t-fit rv">
-      <label className="t-fit-field">
-        <span>Your garage opening</span>
-        <span className="t-fit-input">
-          <input
-            type="number" inputMode="decimal" min={60} max={140} step={0.5} value={gw || ''}
-            placeholder="88" aria-label="Garage opening width in inches"
-            onChange={(e) => setGw(e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)))}
+      <div className="t-gauge" aria-hidden="true">
+        <span className="t-gauge-fill" style={{ width: gw > 0 ? `${pct(gw)}%` : '0%' }} />
+        {gaugeCars.map((c) => (
+          <span
+            key={c.id}
+            className={`t-gauge-tick ${gw > 0 && c.widthExtended <= gw ? 'fits' : 'wide'}`}
+            style={{ left: `${pct(c.widthExtended)}%` }}
           />
-          <em>in</em>
+        ))}
+        <span className="t-gauge-open" style={{ left: gw > 0 ? `${pct(gw)}%` : '0%', opacity: gw > 0 ? 1 : 0 }}>
+          <em>your opening</em>
         </span>
-        <span className="t-fit-presets" role="group" aria-label="Common openings">
-          {[84, 96, 108].map((w) => (
-            <button key={w} type="button" className={gw === w ? 'on' : ''} onClick={() => setGw(w)} aria-pressed={gw === w}>
-              {w}″
-            </button>
-          ))}
-        </span>
-      </label>
+      </div>
+      <div className="t-fit-row">
+        <label className="t-fit-field">
+          <span>Your garage opening</span>
+          <span className="t-fit-input">
+            <input
+              type="number" inputMode="decimal" min={60} max={140} step={0.5} value={gw || ''}
+              placeholder="88" aria-label="Garage opening width in inches"
+              onChange={(e) => setGw(e.target.value === '' ? 0 : Math.min(200, Math.max(0, +e.target.value)))}
+            />
+            <em>in</em>
+          </span>
+          <span className="t-fit-presets" role="group" aria-label="Common openings">
+            {[84, 96, 108].map((w) => (
+              <button key={w} type="button" className={gw === w ? 'on' : ''} onClick={() => setGw(w)} aria-pressed={gw === w}>
+                {w}″
+              </button>
+            ))}
+          </span>
+        </label>
+        <div className="t-fit-verdicts" aria-live="polite">
+          {gw > 0
+            ? gaugeCars.map((c) => {
+                const cl = +(gw - c.widthExtended).toFixed(1);
+                return (
+                  <span key={c.id} className={`t-verdict ${cl >= 0 ? 'good' : 'bad'}`}>
+                    <b>{c.model}</b> {cl >= 0 ? `${cl.toFixed(1)}″ spare` : `${(-cl).toFixed(1)}″ too wide`}
+                  </span>
+                );
+              })
+            : <span className="t-verdict idle">Type a width to compare</span>}
+        </div>
+      </div>
       <p className="t-fit-count">
         {gw > 0 ? <><strong><Count to={n} /></strong> of {VEHICLES.length} vehicles fit</> : 'Type a width to see what fits'}
       </p>
@@ -92,15 +159,21 @@ function FitStrip() {
 const LINEUP = [
   {
     id: 'tesla-model-y-2024', name: 'Model Y', line: 'Long Range AWD · 310 mi · $47,990',
+    eyebrow: 'Electric everyday',
     img: 'vehicles/tesla-model-y-2024.jpg',
+    chips: ['310 mi range', 'Dual AWD', 'From $47,990'],
   },
   {
     id: 'toyota-rav4-2024-le', name: 'RAV4', line: 'LE AWD · 30 MPG · $30,075',
+    eyebrow: 'The all-rounder',
     img: 'vehicles/toyota-rav4-2024-le.jpg',
+    chips: ['30 MPG', 'AWD', 'From $30,075'],
   },
   {
     id: 'ford-f150-2024', name: 'F-150', line: 'XL SuperCrew 4WD · 20 MPG · $47,600',
+    eyebrow: 'Works hard',
     img: 'vehicles/ford-f150-2024.jpg',
+    chips: ['America\'s truck', '4WD', 'From $47,600'],
   },
 ];
 
@@ -145,23 +218,57 @@ const FAQS = [
 
 const PREVIEW_IDS = ['toyota-rav4-2026-le-awd', 'tesla-model-y-2026-long-range-awd', 'honda-civic-2025-sport-hybrid'];
 
+/** Comparison preview with crosshair column highlight — hover a car, its whole column lights up. */
+function CompareTable({ gw }: { gw: number }) {
+  const cars = PREVIEW_IDS.map((id) => VEHICLES.find((v) => v.id === id)!).filter(Boolean);
+  const best = Math.min(...cars.map((c) => c.msrp));
+  const [hl, setHl] = useState(-1);
+  const col = (i: number) => ({ className: hl === i ? 'hl' : undefined, onMouseEnter: () => setHl(i) });
+  return (
+    <div className="t-table-wrap rv" onMouseLeave={() => setHl(-1)}>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col"><span className="sr-only">Dimension</span></th>
+            {cars.map((c, i) => (
+              <th scope="col" key={c.id} {...col(i)}><a href={appLink(`?b=${c.id}`)}>{c.year} {c.make} {c.model}<small>{c.trim}</small></a></th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Price</th>{cars.map((c, i) => <td key={c.id} {...col(i)}>{money(c.msrp)}{c.msrp === best && <em className="t-best">Best</em>}</td>)}</tr>
+          <tr><th scope="row">Efficiency</th>{cars.map((c, i) => <td key={c.id} {...col(i)}>{c.eff} {c.effUnit}</td>)}</tr>
+          <tr><th scope="row">Width</th>{cars.map((c, i) => <td key={c.id} {...col(i)}>{c.widthExtended}″</td>)}</tr>
+          <tr>
+            <th scope="row">{gw}″ garage</th>
+            {cars.map((c, i) => {
+              const cl = +(gw - c.widthExtended).toFixed(1);
+              return (
+                <td key={c.id} {...col(i)}>
+                  {cl >= 0
+                    ? <span className="pill good">{cl.toFixed(1)}″ spare</span>
+                    : <span className="pill bad">{(-cl).toFixed(1)}″ too wide</span>}
+                </td>
+              );
+            })}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export default function Landing() {
   useReveal();
+  useScrollSpy();
   const years = VEHICLES.map((v) => v.year);
   const lo = Math.min(...years), hi = Math.max(...years);
   const evs = VEHICLES.filter((v) => v.fuel === 'EV').length;
-  const cars = PREVIEW_IDS.map((id) => VEHICLES.find((v) => v.id === id)!).filter(Boolean);
   const gw = 88;
-  const best = Math.min(...cars.map((c) => c.msrp));
 
   return (
     <div className="lp t">
       <a className="skip" href="#t-models">Skip to content</a>
-
-      <div className="t-banner" role="note">
-        <span>2026 models are live — RAV4, Model Y Juniper, Palisade + 16 more<sup><a href="#t-fine" aria-label="See footnote about 2026 model coverage">1</a></sup></span>
-        <a href={appLink()}>Open the app</a>
-      </div>
 
       <header className="t-nav">
         <a className="t-logo" href="#top" aria-label="GarageFit home">
@@ -185,31 +292,40 @@ export default function Landing() {
           <img className="t-hero-img" src="vehicles/tesla-model-y-2024.jpg" alt="Tesla Model Y on the road" fetchPriority="high" />
           <div className="t-hero-scrim" aria-hidden="true" />
           <div className="t-hero-copy">
-            <p className="t-eyebrow rv">Fit before you buy</p>
-            <h1 className="rv">Cars that fit<br/>your life</h1>
-            <p className="rv">Compare {VEHICLES.length} vehicles ({lo}–{hi}) against your car, your garage and your budget.</p>
-            <div className="t-hero-cta rv">
-              <a className="t-btn t-btn-solid" href={appLink()}>Compare Cars</a>
-              <a className="t-btn t-btn-outline" href="#t-how">How It Works</a>
+            <div className="t-hero-title">
+              <p className="t-eyebrow rv">GarageFit · 2026 vehicle guide</p>
+              <h1 className="rv"><span>Find the car</span><i>that fits.</i></h1>
             </div>
-            <p className="t-hero-specs rv" aria-label="Highlights">
-              <span><b>{VEHICLES.length}</b> vehicles</span>
-              <span><b>3D</b> garage fit</span>
-              <span><b>5-yr</b> true cost</span>
-            </p>
+            <div className="t-hero-bottom rv">
+              <p>Measure the things that matter before the test drive: your garage, your budget and the road ahead.</p>
+              <div className="t-hero-cta">
+                <a className="t-btn t-btn-solid" href={appLink()}>Find your fit</a>
+                <a className="t-btn t-btn-outline" href="#t-how">See how it works</a>
+              </div>
+              <p className="t-hero-note">{VEHICLES.length} vehicles · Free to use · No account</p>
+            </div>
           </div>
           <a className="t-scroll" href="#t-models" aria-label="Scroll to vehicles">↓</a>
         </section>
 
-        <section id="t-models" aria-label="Featured vehicles">
+        <section id="t-models" className="t-models" aria-label="Featured vehicles">
+          <div className="t-models-heading wrap rv">
+            <p className="t-kicker">Start with a point of view</p>
+            <h2>A few good places<br/>to begin.</h2>
+            <p>Every vehicle is measured on the same terms, so the comparison starts clear and stays useful.</p>
+          </div>
+          <div className="t-models-grid">
           {LINEUP.map((c) => (
             <article className="t-panel" key={c.id}>
               <img src={c.img} alt={`${c.name} vehicle photo`} loading="lazy" />
               <div className="t-panel-scrim" aria-hidden="true" />
               <div className="t-panel-copy rv">
-                <span className="t-pill">Featured</span>
-                <h2>{c.name}</h2>
+                <span className="t-pill">{c.eyebrow}</span>
+                <h3>{c.name}</h3>
                 <p>{c.line}</p>
+                <div className="t-panel-chips">
+                  {c.chips.map((s) => <span key={s}>{s}</span>)}
+                </div>
                 <div className="t-panel-cta">
                   <a className="t-btn t-btn-solid" href={appLink(`?b=${c.id}`)}>Compare</a>
                   <a className="t-btn t-btn-outline" href={appLink()}>All Cars</a>
@@ -217,6 +333,7 @@ export default function Landing() {
               </div>
             </article>
           ))}
+          </div>
         </section>
 
         <section className="t-strip" aria-label="Garage fit checker">
@@ -259,36 +376,7 @@ export default function Landing() {
         <section id="t-compare" className="t-table-sec" aria-label="Comparison preview">
           <div className="wrap">
             <h2 className="rv">Three headliners, one {gw}″ garage</h2>
-            <div className="t-table-wrap rv">
-              <table>
-                <thead>
-                  <tr>
-                    <th scope="col"><span className="sr-only">Dimension</span></th>
-                    {cars.map((c) => (
-                      <th scope="col" key={c.id}><a href={appLink(`?b=${c.id}`)}>{c.year} {c.make} {c.model}<small>{c.trim}</small></a></th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><th scope="row">Price</th>{cars.map((c) => <td key={c.id}>{money(c.msrp)}{c.msrp === best && <em className="t-best">Best</em>}</td>)}</tr>
-                  <tr><th scope="row">Efficiency</th>{cars.map((c) => <td key={c.id}>{c.eff} {c.effUnit}</td>)}</tr>
-                  <tr><th scope="row">Width</th>{cars.map((c) => <td key={c.id}>{c.widthExtended}″</td>)}</tr>
-                  <tr>
-                    <th scope="row">{gw}″ garage</th>
-                    {cars.map((c) => {
-                      const cl = +(gw - c.widthExtended).toFixed(1);
-                      return (
-                        <td key={c.id}>
-                          {cl >= 0
-                            ? <span className="pill good">{cl.toFixed(1)}″ spare</span>
-                            : <span className="pill bad">{(-cl).toFixed(1)}″ too wide</span>}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <CompareTable gw={gw} />
             <p className="rv"><a className="t-btn t-btn-dark" href={appLink()}>Full Comparison</a></p>
           </div>
         </section>
