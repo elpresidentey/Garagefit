@@ -91,6 +91,11 @@
   .t-hero-bottom{animation-delay:.62s}
 }
 @keyframes t-hero-rise{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
+/* Frame swap: headline + sub fade-rise in sync with each new hero image. Replays on every rotation via React key. */
+@media (prefers-reduced-motion:no-preference){
+  .t-hero-swap{animation:t-hero-swap .8s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes t-hero-swap{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){
   .t-hero-copy{transform:none!important;opacity:1!important;transition:none!important}
   .t-hero-img{opacity:0!important;transition:none!important;animation:none!important}

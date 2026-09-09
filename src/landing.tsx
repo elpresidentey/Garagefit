@@ -6,9 +6,21 @@ const appLink = (q = '') => `#/app${q}`;
 const money = (n: number) => '$' + Math.round(n).toLocaleString();
 
 const HERO_FRAMES = [
-  { src: 'vehicles/mercedes-s-500-2024.jpg', alt: 'Mercedes S-Class driving through the city', label: 'The long view', position: '58% center' },
-  { src: 'vehicles/lucid-air-2024.jpg', alt: 'Lucid Air electric sedan', label: 'Electric forward', position: '52% center' },
-  { src: 'vehicles/bmw-i4-2024.jpg', alt: 'BMW i4 electric car', label: 'Daily driver', position: '56% center' },
+  {
+    src: 'vehicles/mercedes-s-500-2024.jpg', alt: 'Mercedes S-Class driving through the city', label: 'The long view', position: '58% center',
+    eyebrow: 'GarageFit · 2026 vehicle guide', headA: 'Find the car', headB: 'that fits.',
+    sub: 'Measure the things that matter before the test drive: your garage, your budget and the road ahead.',
+  },
+  {
+    src: 'vehicles/lucid-air-2024.jpg', alt: 'Lucid Air electric sedan', label: 'Electric forward', position: '52% center',
+    eyebrow: 'GarageFit · EVs, judged fairly', headA: 'Electric,', headB: 'made obvious.',
+    sub: 'Range, charging speed and true five-year cost — gas and electric on equal terms.',
+  },
+  {
+    src: 'vehicles/bmw-i4-2024.jpg', alt: 'BMW i4 electric car', label: 'Daily driver', position: '56% center',
+    eyebrow: 'GarageFit · 196 vehicles', headA: 'Built for', headB: 'the daily drive.',
+    sub: 'Every option measured against the car you have, the garage you own and the budget you set.',
+  },
 ];
 
 function useReveal() {
@@ -455,11 +467,15 @@ export default function Landing() {
           <div className="t-hero-scrim" aria-hidden="true" />
           <div className="t-hero-copy">
             <div className="t-hero-title">
-              <p className="t-eyebrow t-hero-reveal t-hero-kicker">GarageFit · 2026 vehicle guide</p>
-              <h1 className="t-hero-reveal t-hero-headline"><span>Find the car</span><i>that fits.</i></h1>
+              <div className="t-hero-swap" key={`t-${heroFrame}`}>
+                <p className="t-eyebrow t-hero-reveal t-hero-kicker">{HERO_FRAMES[heroFrame].eyebrow}</p>
+                <h1 className="t-hero-reveal t-hero-headline"><span>{HERO_FRAMES[heroFrame].headA}</span><i>{HERO_FRAMES[heroFrame].headB}</i></h1>
+              </div>
             </div>
             <div className="t-hero-bottom t-hero-reveal">
-              <p>Measure the things that matter before the test drive: your garage, your budget and the road ahead.</p>
+              <div className="t-hero-swap" key={`b-${heroFrame}`}>
+                <p>{HERO_FRAMES[heroFrame].sub}</p>
+              </div>
               <div className="t-hero-cta">
                 <a className="t-btn t-btn-solid" href={appLink()}>Find your fit</a>
                 <a className="t-btn t-btn-outline" href="#t-how">See how it works</a>
