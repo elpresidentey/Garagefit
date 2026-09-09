@@ -273,6 +273,36 @@ export default function App() {
   });
   const [offline, setOffline] = useState(!navigator.onLine);
   const [swUpdate, setSwUpdate] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstall, setShowInstall] = useState(false);
+  
+  // PWA Install prompt
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Show install prompt after 3 seconds if not already installed
+      setTimeout(() => {
+        if (!window.matchMedia('(display-mode: standalone)').matches) {
+          setShowInstall(true);
+        }
+      }, 3000);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    setShowInstall(false);
+    if (outcome === 'accepted') {
+      setToast('App installed successfully!');
+    }
+  };
+
   // Full-page vehicle view: browser-back/Escape support, body scroll lock, reset scroll on open
   const dpRef = useRef<HTMLDivElement>(null);
   const pushedRef = useRef(false);
@@ -494,6 +524,18 @@ export default function App() {
           </div>
           <button ref={splashBtn} type="button" className="splash-skip" onClick={dismissSplash}>Skip</button>
           <div className="splash-bar" aria-hidden="true"><span /></div>
+        </div>
+      )}
+      {showInstall && (
+        <div className="installbar" role="status">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Install GarageFit for quick access and offline use</span>
+          <button className="btn primary" onClick={handleInstallClick}>Install App</button>
+          <button className="btn ghost" onClick={() => setShowInstall(false)} aria-label="Dismiss install prompt">Not now</button>
         </div>
       )}
       {swUpdate && (
