@@ -131,7 +131,7 @@
 .t-panel{position:relative;height:min(68vw,720px);min-height:560px;display:grid;place-items:end center;overflow:hidden;background:#0a0a0a}
 .t-panel>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.78) saturate(.9);animation:t-kenburns 26s ease-in-out infinite alternate;transition:transform .8s cubic-bezier(.2,.7,.25,1),filter .6s ease}
 .t-panel-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,7,8,.32) 0%,rgba(6,7,8,.08) 28%,rgba(6,7,8,.18) 50%,rgba(6,7,8,.78) 78%,rgba(6,7,8,.94) 100%);transition:background .6s ease}
-.t-panel-copy{position:relative;z-index:1;display:grid;grid-template-rows:32px 58px 54px 54px 48px;row-gap:10px;align-items:center;justify-items:center;text-align:center;color:#fff;padding:0 24px 64px;width:100%;box-sizing:border-box;transition:transform .45s cubic-bezier(.2,.7,.25,1)}
+.t-panel-copy{position:relative;z-index:1;display:grid;grid-auto-rows:auto;row-gap:12px;align-content:end;justify-items:center;text-align:center;color:#fff;padding:0 24px 64px;width:100%;box-sizing:border-box;transition:transform .45s cubic-bezier(.2,.7,.25,1)}
 .t-panel-copy .t-pill{margin:0}
 .t-panel-copy h3{color:#fff;font-size:clamp(42px,4.7vw,66px);filter:drop-shadow(0 2px 16px rgba(0,0,0,.35));letter-spacing:-.05em}
 .t-panel-copy p{font-size:17px;color:rgba(255,255,255,.75);margin:0;font-weight:400;line-height:1.45;align-self:start}
@@ -155,7 +155,7 @@
   .t-models-heading .t-kicker{grid-column:auto}
   .t-models-grid{grid-template-columns:1fr;gap:2px}
   .t-panel{height:76svh;min-height:520px}
-  .t-panel-copy{grid-template-rows:32px 56px 54px 58px 48px;padding-bottom:48px}
+  .t-panel-copy{row-gap:10px;padding-bottom:48px}
 }
 
 /* Fit strip */
@@ -190,8 +190,8 @@
 .t-match{display:grid;gap:8px;text-decoration:none;color:inherit;background:#fafafa;border:1px solid #ebebeb;border-radius:12px;overflow:hidden;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;text-align:left}
 .t-match:hover{transform:translateY(-2px);box-shadow:0 10px 28px -12px rgba(0,0,0,.25);border-color:#d8d8d8}
 .t-match img{display:block;width:100%;height:88px;object-fit:cover;background:#eee}
-.t-match span{display:grid;gap:2px;padding:0 12px 12px}
-.t-match b{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.t-match span{display:grid;gap:2px;padding:0 12px 12px;min-width:0}
+.t-match b{font-size:13px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .t-match em{font-style:normal;font-size:12px;color:#0b7a5c;font-weight:600}
 .t-near{font-size:14px;color:#5c5e62;margin:0}
 .t-near::before{content:"◐ ";color:#b07908}
@@ -316,7 +316,7 @@
 .t-editorial-k{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#5c5e62;margin:0}
 .t-editorial-col h3{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.25}
 .t-editorial-col>p:not(.t-editorial-k){color:#393c41;font-size:15.5px;line-height:1.65;margin:0 0 8px}
-.t-editorial-col .t-arrow-link{justify-self:start;margin-top:4px}
+.t-editorial-col .t-arrow-link{justify-self:start;margin-top:auto;padding-top:12px}
 @media(max-width:800px){.t-editorial{padding:88px 0}.t-editorial-grid{grid-template-columns:1fr;gap:40px}.t-editorial h2{margin-bottom:48px}}
 
 /* Band — Rivian "Get behind the wheel" compact CTA */

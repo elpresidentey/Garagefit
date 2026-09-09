@@ -219,7 +219,7 @@ function FitStrip() {
               {top.map((v) => (
                 <a className="t-match" key={v.id} href={appLink(`?b=${v.id}&gw=${gw}&gl=${gl}&gh=${gh}`)}>
                   {v.imageUrl && <img src={v.imageUrl} alt="" loading="lazy" />}
-                  <span><b>{v.year} {v.make} {v.model}</b><em>{minClear(v).toFixed(1)}″ to spare</em></span>
+                  <span title={`${v.year} ${v.make} ${v.model} ${v.trim}`}><b>{v.year} {v.make} {v.model}</b><em>{minClear(v).toFixed(1)}″ to spare</em></span>
                 </a>
               ))}
             </div>
