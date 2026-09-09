@@ -521,7 +521,7 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
   .brand strong{font-size:16px}
   .brand small{font-size:10px}
   .icon-btn{min-width:44px;min-height:44px;width:44px;height:44px}
-  .top-actions{gap:4px}
+  .top-actions{gap:8px;row-gap:10px}
   .b-select{margin-left:0;min-height:120px}
   .b-select select{max-width:100%;font-size:16px}
   .b-garage{min-height:auto}
@@ -644,9 +644,6 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
 @media (hover: hover) and (pointer: fine) {
   .btn:active,.card:active,.preset:active{opacity:1}
 }
-
-/* Improve tap targets with larger hit areas */
-.fav::before,.icon-btn::before{content:"";position:absolute;inset:-4px;border-radius:inherit}
 
 /* Touch-friendly: prevent text selection on interactive elements */
 .btn,.card,.preset,.fav,.icon-btn,.seg button{-webkit-user-select:none;user-select:none}
