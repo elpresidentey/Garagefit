@@ -522,6 +522,8 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
   .brand small{font-size:10px}
   .icon-btn{min-width:44px;min-height:44px;width:44px;height:44px}
   .top-actions{gap:8px;row-gap:10px}
+  .home-link{flex:1 1 120px;justify-content:center;min-height:48px;background:var(--chip);border:1px solid var(--line2);font-size:14px}
+  .home-link:active{transform:scale(.97)}
   .b-select{margin-left:0;min-height:120px}
   .b-select select{max-width:100%;font-size:16px}
   .b-garage{min-height:auto}
