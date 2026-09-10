@@ -515,7 +515,7 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
 .empty .btn{margin-top:8px}
 @media(max-width:640px){
   .wrap{padding:0 16px}
-  .topbar-in{padding:9px 12px;gap:8px}
+  .topbar-in{padding:6px 12px;gap:8px}
   .brand{gap:8px}
   .logo{width:32px;height:32px}
   .brand strong{font-size:16px}
@@ -564,6 +564,7 @@ tbody tr:hover{background:color-mix(in srgb,var(--goldsoft) 45%,transparent)}
   .gfit-dot{width:16px;height:16px;bottom:16px;right:16px}
   .top-actions .btn-txt{display:none}
   .searchbox{flex:1 1 100%;max-width:none;order:3;min-width:0}
+  .searchbox input{font-size:16px}
   #baseline,#browse,#results{scroll-margin-top:275px}
   .foot{padding:32px 16px 70px}
   .tablewrap{margin-left:-16px;margin-right:-16px;border-radius:0;border-left:0;border-right:0;position:relative}
