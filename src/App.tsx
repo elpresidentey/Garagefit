@@ -275,32 +275,57 @@ export default function App() {
   const [swUpdate, setSwUpdate] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstall, setShowInstall] = useState(false);
-  
-  // PWA Install prompt
+  const [installHow, setInstallHow] = useState(false);
+
+  // PWA install reminder: always available after a few seconds when not installed —
+  // `beforeinstallprompt` only ever fires in Chromium, never on iOS Safari/Firefox.
+  // Native one-tap install when the browser offers it, guided manual steps otherwise.
   useEffect(() => {
-    const handleBeforeInstall = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      // Show install prompt after 3 seconds if not already installed
-      setTimeout(() => {
-        if (!window.matchMedia('(display-mode: standalone)').matches) {
-          setShowInstall(true);
-        }
-      }, 3000);
+    const isStandalone = () =>
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (navigator as unknown as { standalone?: boolean }).standalone === true;
+    const snoozed = () => {
+      try {
+        if (localStorage.getItem('gf-installed') === '1') return true;
+        const t = +(localStorage.getItem('gf-install-snooze') || 0);
+        return Date.now() - t < 14 * 24 * 3600 * 1000;
+      } catch { return false; }
     };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    const onBip = (e: Event) => { e.preventDefault(); setDeferredPrompt(e); };
+    const onInstalled = () => {
+      try { localStorage.setItem('gf-installed', '1'); } catch { /* private mode */ }
+      setDeferredPrompt(null); setShowInstall(false); setInstallHow(false);
+      setToast('App installed successfully!');
+    };
+    window.addEventListener('beforeinstallprompt', onBip);
+    window.addEventListener('appinstalled', onInstalled);
+    const t = window.setTimeout(() => { if (!isStandalone() && !snoozed()) setShowInstall(true); }, 4000);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onBip);
+      window.removeEventListener('appinstalled', onInstalled);
+      window.clearTimeout(t);
+    };
   }, []);
 
+  const dismissInstall = () => {
+    try { localStorage.setItem('gf-install-snooze', String(Date.now())); } catch { /* private mode */ }
+    setShowInstall(false); setInstallHow(false);
+  };
+
+  const isIOS = () =>
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    setShowInstall(false);
-    if (outcome === 'accepted') {
-      setToast('App installed successfully!');
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      if (outcome === 'accepted') return; // `appinstalled` hides the bar + thanks
+      dismissInstall();
+      return;
     }
+    setInstallHow((v) => !v); // No native prompt (Safari etc.): show manual steps
   };
 
   // Full-page vehicle view: browser-back/Escape support, body scroll lock, reset scroll on open
@@ -533,9 +558,21 @@ export default function App() {
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          <span>Install GarageFit for quick access and offline use</span>
-          <button className="btn primary" onClick={handleInstallClick}>Install App</button>
-          <button className="btn ghost" onClick={() => setShowInstall(false)} aria-label="Dismiss install prompt">Not now</button>
+          {installHow && !deferredPrompt ? (
+            isIOS() ? (
+              <span><b>iPhone/iPad:</b> tap Share, then “Add to Home Screen”.</span>
+            ) : (
+              <span><b>Android/Desktop:</b> open the browser menu, then “Install app”.</span>
+            )
+          ) : (
+            <span>Install GarageFit for quick access and offline use</span>
+          )}
+          {installHow && !deferredPrompt ? (
+            <button className="btn primary" onClick={() => setInstallHow(false)}>Got it</button>
+          ) : (
+            <button className="btn primary" onClick={handleInstallClick}>{deferredPrompt ? 'Install App' : 'How to install'}</button>
+          )}
+          <button className="btn ghost" onClick={dismissInstall} aria-label="Dismiss install prompt">Not now</button>
         </div>
       )}
       {swUpdate && (
