@@ -547,7 +547,7 @@ export default function App() {
       )}
       <header className="topbar">
         <div className="wrap topbar-in">
-          <a className="brand" href="#results" onClick={(e) => { e.preventDefault(); jump('results'); }} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <a className="brand" href="#/" aria-label="GarageFit home" onClick={(e) => { e.preventDefault(); if (location.hash !== '#/') location.hash = '#/'; else window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ textDecoration: 'none', color: 'inherit' }}>
             <img className="logo" src="logo.svg" alt="" aria-hidden="true" />
             <div><strong>GarageFit</strong><small>Fit before you buy</small></div>
           </a>
