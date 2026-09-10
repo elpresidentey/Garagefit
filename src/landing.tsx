@@ -471,7 +471,7 @@ export default function Landing() {
 
       <header className="t-nav">
         <a className="t-logo" href="#top" aria-label="GarageFit home">
-          <img src="logo.svg" alt="" aria-hidden="true" />
+          <img src="GARAGE.png" alt="" aria-hidden="true" />
           <span className="t-logo-label"><strong>GARAGEFIT</strong><small>Car guide</small></span>
         </a>
         <nav className="t-links" aria-label="Landing">

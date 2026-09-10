@@ -518,7 +518,7 @@ export default function App() {
       {splash && (
         <div className="splash" role="dialog" aria-modal="true" aria-label="Welcome to GarageFit" onClick={dismissSplash}>
           <div className="splash-in">
-            <img className="splash-logo" src="logo.svg" alt="" aria-hidden="true" />
+            <img className="splash-logo" src="GARAGE.png" alt="" aria-hidden="true" />
             <h1>GarageFit</h1>
             <p className="splash-tag">Find cars that actually fit your life</p>
           </div>
@@ -548,7 +548,7 @@ export default function App() {
       <header className="topbar">
         <div className="wrap topbar-in">
           <a className="brand" href="#/" aria-label="GarageFit home" onClick={(e) => { e.preventDefault(); if (location.hash !== '#/') location.hash = '#/'; else window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <img className="logo" src="logo.svg" alt="" aria-hidden="true" />
+            <img className="logo" src="GARAGE.png" alt="" aria-hidden="true" />
             <div><strong>GarageFit</strong><small>Fit before you buy</small></div>
           </a>
           <nav className="topnav" aria-label="Section navigation">
@@ -1179,7 +1179,7 @@ export default function App() {
       <footer className="foot">
         <div className="wrap foot-in">
           <div className="foot-brand">
-            <img className="logo" src="logo.svg" alt="" aria-hidden="true" />
+            <img className="logo" src="GARAGE.png" alt="" aria-hidden="true" />
             <div><strong>GarageFit</strong><small>Find cars that actually fit your life</small></div>
             <p>Compare {ALL.length} vehicles ({Math.min(...ALL.map((v) => v.year))}–{Math.max(...ALL.map((v) => v.year))}) against your own car — price, efficiency, garage fit, safety and seats, side by side.</p>
           </div>
